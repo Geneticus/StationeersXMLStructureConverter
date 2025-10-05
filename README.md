@@ -1,0 +1,1 @@
+This project is intended to be used for extracting object data from a save file, transforming it into the XMl Structure used for Spawning new objects for a New World game start. It is basically a tool to aid in the construction of Custom Scenarios, using the <Spawn> tags from the Tutorial worlds. 
