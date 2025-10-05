@@ -48,9 +48,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="LiquidTechnologies.XmlObjects.Runtime, Version=20.7.17.13201, Culture=neutral, PublicKeyToken=64bee40f6e1c14f0, processorArchitecture=MSIL">
-      <HintPath>packages\LiquidTechnologies.XmlObjects.Runtime.20.7.17\lib\net45\LiquidTechnologies.XmlObjects.Runtime.dll</HintPath>
-    </Reference>
     <Reference Include="SmartAssembly.Attributes, Version=8.1.1.4963, Culture=neutral, PublicKeyToken=7f465a1c156d4d57, processorArchitecture=MSIL">
       <HintPath>packages\RedGate.SmartAssembly.Attributes.8.1.1.4963\lib\net20\SmartAssembly.Attributes.dll</HintPath>
     </Reference>
@@ -62,6 +59,7 @@
     <Reference Include="System.ServiceModel.Primitives, Version=4.6.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.ServiceModel.Primitives.4.6.0\lib\net461\System.ServiceModel.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -79,6 +77,8 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\Component.cs" />
+    <Compile Include="Models\World.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OldWorld.cs" />
