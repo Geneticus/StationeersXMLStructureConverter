@@ -1,0 +1,628 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           targetNamespace="http://example.com/world" 
+           elementFormDefault="qualified">
+
+
+  <!-- Root Element for WorldData -->
+  <xs:element name="WorldData">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ISpawnPoints" type="xs:string" minOccurs="0" />
+        <xs:element name="Game" type="xs:string" minOccurs="0" />
+        <xs:element name="GameVersion" type="xs:string" minOccurs="0" />
+        <xs:element name="DateTime" type="xs:string" minOccurs="0" />
+        <xs:element name="DaysPast" type="xs:int" minOccurs="0" />
+        <xs:element name="WorldName" type="xs:string" minOccurs="0" />
+        <xs:element name="Clouds" type="xs:string" minOccurs="0" />
+        <xs:element name="RespawnDifficulty" type="xs:string" minOccurs="0" />
+        <xs:element name="CurrentMission" type="xs:string" minOccurs="0" />
+        <xs:element name="ActiveMissions" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="CompletedMissions" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="StationContacts">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Angle" nillable="true" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="x" type="xs:float" />
+                    <xs:element name="y" type="xs:float" />
+                    <xs:element name="z" type="xs:float" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="ContactName" type="xs:string" minOccurs="0" />
+              <xs:element name="ContactType" type="xs:string" minOccurs="0" />
+              <xs:element name="Lifetime" type="xs:float" minOccurs="0" />
+              <xs:element name="TradeItemData" type="xs:string" minOccurs="0" />
+              <xs:element name="TraderInventorySelector" type="xs:string" minOccurs="0" />
+              <xs:element name="OverallIndex" type="xs:int" minOccurs="0" />
+              <xs:element name="VisitorCurrency" type="xs:int" minOccurs="0" />
+              <xs:element name="ContactID" type="xs:int" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ResearchKey" type="xs:string" minOccurs="0" />
+        <xs:element name="UnlockedResearchHash" type="xs:string" minOccurs="0" />
+        <xs:element name="OverallIndexOfContacts" type="xs:int" minOccurs="0" />
+        <xs:element name="WorldType" type="xs:string" minOccurs="0" />
+        <xs:element name="WorldSeed" type="xs:int" minOccurs="0" />
+        <xs:element name="BedrockLevel" type="xs:int" minOccurs="0" />
+        <xs:element name="SunTime" type="xs:string" minOccurs="0" />
+        <xs:element name="Rooms" type="xs:string" minOccurs="0" maxOccurs="1" />
+        <xs:element name="PipeNetworks">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="CableNetworks">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="ChuteNetworks">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="RocketShuttleNetworks" type="xs:string" minOccurs="0" />
+        <xs:element name="SpawnPoints" type="xs:string" minOccurs="0" />
+        <xs:element name="Motherships" type="xs:string" minOccurs="0" />
+        <xs:element name="Things" type="xs:string" minOccurs="0" />
+        <xs:element name="TileSystemData" type="xs:string" minOccurs="0" />
+        <xs:element name="WeatherManagerData" type="xs:string" minOccurs="0" />
+        <xs:element name="OriginPosition" type="xs:string" minOccurs="0" />
+        <xs:element name="ResearchPodData" type="xs:string" minOccurs="0" />
+        <xs:element name="Atmospheres" type="xs:string" minOccurs="0" />
+        <xs:element name="UserInterface" type="xs:string" minOccurs="0" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Things (Polymorphic section with all xsi:type subtypes) -->
+  <xs:element name="Things">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ThingSaveData" maxOccurs="unbounded" minOccurs="0">
+          <xs:complexType>
+            <xs:complexContent>
+              <xs:extension base="ThingSaveDataBase" />
+            </xs:complexContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Base ThingSaveData Type -->
+  <xs:complexType name="ThingSaveDataBase" abstract="true">
+    <xs:sequence>
+      <xs:element name="ReferenceId" type="xs:int" />
+      <xs:element name="PrefabName" type="xs:string" />
+      <xs:element name="CustomName" type="xs:string" />
+      <xs:element name="WorldPosition" type="WorldPositionType" minOccurs="1" />
+      <xs:element name="WorldRotation" type="WorldRotationType" />
+      <xs:element name="eulerAngles" type="EulerAnglesType" minOccurs="0" />
+      <xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+      <xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+      <xs:element name="DamageState" type="DamageStateType" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Polymorphic ThingSaveData Subtypes -->
+
+  <!-- StructureSaveData SubType -->
+  <xs:complexType name="StructureSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          <xs:element name="IsCustomName" type="xs:boolean" minOccurs="0" />
+          <xs:element name="CustomColorIndex" type="xs:int" minOccurs="0" />
+          <xs:element name="OwnerSteamId" type="xs:long" minOccurs="0" />
+          <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- DeviceImportExportSaveData SubType -->
+  <xs:complexType name="DeviceImportExportSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          <xs:element name="ImportCount" type="xs:int" minOccurs="0" />
+          <xs:element name="ImportState" type="xs:int" minOccurs="0" />
+          <xs:element name="ExportCount" type="xs:int" minOccurs="0" />
+          <xs:element name="ExportState" type="xs:int" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- MachineSaveData SubType -->
+<xs:complexType name="MachineSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="MachineState" type="xs:int" minOccurs="0" />
+          	<xs:element name="GoalPressure" type="xs:float" minOccurs="0" />
+          	<xs:element name="PowerStored" type="xs:float" minOccurs="0" />
+          	<xs:element name="Setting" type="xs:int" minOccurs="0" />
+          	<xs:element name="OutputSetting" type="xs:int" minOccurs="0" />
+          	<xs:element name="FabricatorJob" type="FabricatorJobType" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <!-- DynamicThingSaveData SubType -->
+<xs:complexType name="DynamicThingSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="States" type="StatesType" minOccurs="0" />
+          	<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+          	<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+          	<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+          	<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+          	<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+          	<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+          	<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <!-- BatterySaveData SubType -->
+<xs:complexType name="BatterySaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="PowerStored" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- StackableSaveData SubType -->
+<xs:complexType name="StackableSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Quantity" type="xs:int" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- AtmosphereSaveData SubType -->
+<xs:complexType name="AtmosphereSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Oxygen" type="xs:float" minOccurs="0" />
+          	<xs:element name="Nitrogen" type="xs:float" minOccurs="0" />
+          	<xs:element name="CarbonDioxide" type="xs:float" minOccurs="0" />
+          	<xs:element name="Volatiles" type="xs:float" minOccurs="0" />
+          	<xs:element name="Chlorine" type="xs:float" minOccurs="0" />
+          	<xs:element name="Energy" type="xs:float" minOccurs="0" />
+          	<xs:element name="Volume" type="xs:float" minOccurs="0" />
+          	<xs:element name="NetworkReferenceId" type="xs:int" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- SimpleFabricatorSaveData SubType -->
+  <xs:complexType name="SimpleFabricatorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="CurrentIndex" type="xs:int" minOccurs="0" />
+          	<xs:element name="JobQuantity" type="xs:int" minOccurs="0" />
+          	<xs:element name="JobType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- ChuteSaveData SubType -->
+<xs:complexType name="ChuteSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="ItemCount" type="xs:int" minOccurs="0" />
+          	<xs:element name="ChuteType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- DoorSaveData SubType -->
+  <xs:complexType name="DoorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="IsOpen" type="xs:boolean" minOccurs="0" />
+          	<xs:element name="LockState" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- JetpackSaveData SubType -->
+  <xs:complexType name="JetpackSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="FuelLevel" type="xs:float" minOccurs="0" />
+          	<xs:element name="IsActivated" type="xs:boolean" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- GrenadeSaveData SubType -->
+  <xs:complexType name="GrenadeSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="FuseTime" type="xs:float" minOccurs="0" />
+          	<xs:element name="IsArmed" type="xs:boolean" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- OreSaveData SubType -->
+  <xs:complexType name="OreSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="OreType" type="xs:string" minOccurs="0" />
+          	<xs:element name="Quantity" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- HarvestableSaveData SubType -->
+<xs:complexType name="HarvestableSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="HarvestQuantity" type="xs:int" minOccurs="0" />
+          	<xs:element name="HarvestStage" type="xs:int" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- GasCanisterSaveData SubType -->
+  <xs:complexType name="GasCanisterSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="GasType" type="xs:string" minOccurs="0" />
+          	<xs:element name="Pressure" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- ToolSaveData SubType -->
+  <xs:complexType name="ToolSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Durability" type="xs:float" minOccurs="0" />
+          	<xs:element name="ToolType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- StorageContainerSaveData SubType -->
+  <xs:complexType name="StorageContainerSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Capacity" type="xs:int" minOccurs="0" />
+          	<xs:element name="StoredItems" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- DeviceAtmosphericSaveData SubType -->
+  <xs:complexType name="DeviceAtmosphericSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="AtmospherePressure" type="xs:float" minOccurs="0" />
+          	<xs:element name="AtmosphereType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- SolarPanelSaveData SubType -->
+<xs:complexType name="SolarPanelSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Efficiency" type="xs:float" minOccurs="0" />
+          	<xs:element name="CurrentOutput" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- GeneratorSaveData SubType -->
+  <xs:complexType name="GeneratorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="FuelLevel" type="xs:float" minOccurs="0" />
+          	<xs:element name="PowerOutput" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- LightSaveData SubType -->
+<xs:complexType name="LightSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="LightIntensity" type="xs:float" minOccurs="0" />
+          	<xs:element name="Color" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- PowerCableSaveData SubType -->
+  <xs:complexType name="PowerCableSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="CableLength" type="xs:float" minOccurs="0" />
+          	<xs:element name="IsConnected" type="xs:boolean" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- SignalProcessorSaveData SubType -->
+<xs:complexType name="SignalProcessorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="SignalStrength" type="xs:float" minOccurs="0" />
+          	<xs:element name="SignalType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- MiningDrillSaveData SubType -->
+  <xs:complexType name="MiningDrillSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="DrillDepth" type="xs:float" minOccurs="0" />
+          	<xs:element name="PowerConsumption" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- StationBatterySaveData SubType -->
+<xs:complexType name="StationBatterySaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="BatteryCharge" type="xs:float" minOccurs="0" />
+          	<xs:element name="MaxCapacity" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- ReactorSaveData SubType -->
+<xs:complexType name="ReactorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="ReactorCoreTemperature" type="xs:float" minOccurs="0" />
+          	<xs:element name="ReactorPowerOutput" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+  <!-- GasPipeSaveData SubType -->
+<xs:complexType name="GasPipeSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="PipePressure" type="xs:float" minOccurs="0" />
+          	<xs:element name="GasType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent> 
+</xs:complexType>
+
+  
+<!-- AngleType Definition -->
+<xs:complexType name="AngleType">
+    <xs:sequence>
+        	<xs:element name="x" type="xs:float" />
+        	<xs:element name="y" type="xs:float" />
+        	<xs:element name="z" type="xs:float" />
+    </xs:sequence>
+</xs:complexType>
+
+
+<!-- BatteryCellSaveData Definition -->
+<xs:complexType name="BatteryCellSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Capacity" type="xs:float" minOccurs="0" />
+          	<xs:element name="Charge" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+</xs:complexType>
+
+<!-- Supporting Types -->
+
+<!-- FabricatorJobType Definition -->
+<xs:complexType name="FabricatorJobType">
+    <xs:sequence>
+        	<xs:element name="Quantity" type="xs:int" minOccurs="0" />
+        	<xs:element name="JobType" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+</xs:complexType>
+  
+<!-- ReagentsType Definition -->
+<xs:complexType name="ReagentsType">
+    <xs:sequence>
+        	<xs:element name="Reagent" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+                <xs:sequence>
+                    	<xs:element name="TypeName" type="xs:string" />
+                    	<xs:element name="Quantity" type="xs:float" />
+                </xs:sequence>
+            </xs:complexType>
+
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+  
+<!-- StatesType Definition -->
+<xs:complexType name="StatesType">
+    <xs:sequence>
+        	<xs:element name="State" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+                <xs:sequence>
+                    	<xs:element name="StateName" type="xs:string" />
+                    	<xs:element name="Value" type="xs:string" />
+                </xs:sequence>
+            </xs:complexType>
+
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+
+  <xs:complexType name="WorldPositionType">
+    <xs:sequence>
+      	<xs:element name="x" type="xs:float" />
+      	<xs:element name="y" type="xs:float" />
+      	<xs:element name="z" type="xs:float" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="WorldRotationType">
+    <xs:sequence>
+      	<xs:element name="x" type="xs:float" />
+      	<xs:element name="y" type="xs:float" />
+      	<xs:element name="z" type="xs:float" />
+      	<xs:element name="w" type="xs:float" />
+      	<xs:element name="eulerAngles" type="EulerAnglesType" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="EulerAnglesType">
+    <xs:sequence>
+        	<xs:element name="x" type="xs:float" />
+        	<xs:element name="y" type="xs:float" />
+        	<xs:element name="z" type="xs:float" />
+    </xs:sequence>
+</xs:complexType>
+
+
+  <xs:complexType name="Vector3Type">
+    <xs:sequence>
+      	<xs:element name="x" type="xs:float" />
+      	<xs:element name="y" type="xs:float" />
+      	<xs:element name="z" type="xs:float" />
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="DamageStateType">
+    <xs:sequence>
+      	<xs:element name="Brute" type="xs:float" minOccurs="0" />
+      	<xs:element name="Burn" type="xs:float" minOccurs="0" />
+      	<xs:element name="Oxygen" type="xs:float" minOccurs="0" />
+      	<xs:element name="Hydration" type="xs:float" minOccurs="0" />
+      	<xs:element name="Starvation" type="xs:float" minOccurs="0" />
+      	<xs:element name="Toxic" type="xs:float" minOccurs="0" />
+      	<xs:element name="Radiation" type="xs:float" minOccurs="0" />
+      	<xs:element name="Stun" type="xs:float" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+ <!-- Add enum for Component types if fixed -->
+  <xs:simpleType name="ComponentType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Position"/>
+      <xs:enumeration value="Physics"/>
+      <xs:enumeration value="Render"/>
+      <!-- Add more as needed -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Update Component base -->
+  <xs:complexType name="Component" abstract="true">
+    <xs:sequence/>
+    <xs:attribute name="type" type="ComponentType" use="required"/>
+    <xs:attribute name="id" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <!-- Entity with minOccurs=1 for components -->
+  <xs:complexType name="Entity">
+    <xs:sequence>
+      <xs:element name="Component" type="Component" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:ID" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="optional"/>
+  </xs:complexType>
+  
+   <!-- Unique ID constraint -->
+  <xs:element name="World">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Entity" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:unique name="UniqueEntityId">
+      <xs:selector xpath="Entity"/>
+      <xs:field xpath="@id"/>
+    </xs:unique>
+  </xs:element>
+  
+</xs:schema>

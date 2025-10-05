@@ -1,0 +1,662 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">  
+  
+	<!-- Root Element for WorldData -->
+	<xs:element name="WorldData">
+	<xs:complexType>
+	  <xs:choice maxOccurs="unbounded">
+		<xs:element name="Game" type="xs:string" minOccurs="0" />
+		<xs:element name="GameVersion" type="xs:string" minOccurs="0" />
+		<xs:element name="DateTime" type="xs:string" minOccurs="0" />
+		<xs:element name="DaysPast" type="xs:int" minOccurs="0" />
+		<xs:element name="WorldName" type="xs:string" minOccurs="0" />
+		<xs:element name="Clouds" type="xs:string" minOccurs="0" />
+		<xs:element name="RespawnDifficulty" type="xs:string" minOccurs="0" />
+		<xs:element name="CurrentMission" type="xs:string" minOccurs="0" />
+		<xs:element name="ActiveMissions" type="xs:string" minOccurs="0" maxOccurs="1" />
+		<xs:element name="CompletedMissions" type="xs:string" minOccurs="0" maxOccurs="1" />
+		<xs:element name="StationContacts">
+		  <xs:complexType>
+			<xs:sequence>
+			  <!-- Add the StationContactData element -->
+			  <xs:element name="StationContactData" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+				  <xs:sequence>
+					<xs:element name="Angle" nillable="true" minOccurs="0">
+					  <xs:complexType>
+						<xs:sequence>
+						  <xs:element name="x" type="xs:float" />
+						  <xs:element name="y" type="xs:float" />
+						  <xs:element name="z" type="xs:float" />
+						</xs:sequence>
+					  </xs:complexType>
+					</xs:element>
+					<xs:element name="ContactName" type="xs:string" minOccurs="0" />
+					<xs:element name="ContactType" type="xs:string" minOccurs="0" />
+					<xs:element name="Lifetime" type="xs:float" minOccurs="0" />
+					<xs:element name="TradeItemData" type="xs:string" minOccurs="0" />
+					<xs:element name="TraderInventorySelector" type="xs:string" minOccurs="0" />
+					<xs:element name="OverallIndex" type="xs:int" minOccurs="0" />
+					<xs:element name="VisitorCurrency" type="xs:int" minOccurs="0" />
+					<xs:element name="ContactID" type="xs:int" minOccurs="0" />
+				  </xs:sequence>
+				</xs:complexType>
+			  </xs:element>
+			 </xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="ResearchKey" type="xs:string" minOccurs="0" />
+		<xs:element name="UnlockedResearchHash" type="xs:string" minOccurs="0" />
+		<xs:element name="OverallIndexOfContacts" type="xs:int" minOccurs="0" />
+		<xs:element name="WorldType" type="xs:string" minOccurs="0" />
+		<xs:element name="WorldSeed" type="xs:int" minOccurs="0" />
+		<xs:element name="BedrockLevel" type="xs:int" minOccurs="0" />
+		<xs:element name="SunTime" type="xs:string" minOccurs="0" />
+		<xs:element name="Rooms" type="xs:string" minOccurs="0" maxOccurs="1" />
+		<xs:element name="PipeNetworks">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="CableNetworks">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="ChuteNetworks">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="NetworkId" type="xs:int" maxOccurs="unbounded" minOccurs="0" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="RocketShuttleNetworks" type="xs:string" minOccurs="0" />
+		<xs:element name="SpawnPoints" type="xs:string" minOccurs="0" />
+		<xs:element name="Motherships" type="xs:string" minOccurs="0" />
+		<xs:element name="Things">
+			<xs:complexType>
+			  <xs:sequence>
+				<xs:element name="ThingSaveData" type="ThingSaveDataBase" maxOccurs="unbounded" />
+			  </xs:sequence>
+			</xs:complexType>
+		  </xs:element>
+		<xs:element name="ISpawnPoints" />
+		<xs:element name="Atmospheres">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="AtmosphereSaveData" type="AtmosphereSaveData" maxOccurs="unbounded" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="UserInterface">
+		<xs:complexType>
+		  <xs:sequence>
+			<xs:element name="OpenSlots" type="xs:string" minOccurs="0" />
+			<xs:element name="SelectedButton" type="xs:int" />
+			<xs:element name="ActiveHandSlot" type="xs:int" />
+		  </xs:sequence>
+		</xs:complexType>
+	  </xs:element>
+		<xs:element name="TileSystemData">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="Incidents" type="xs:string" minOccurs="0" />
+			  <xs:element name="VoxelFeatures" type="xs:string" minOccurs="0" />
+			  <xs:element name="EnteredTiles" type="xs:string" minOccurs="0" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="WeatherManagerData">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="IsWeatherEventRunning" type="xs:boolean" minOccurs="0" />
+			  <xs:element name="IsWeatherEventScheduled" type="xs:boolean" minOccurs="0" />
+			  <xs:element name="WeatherStartTime" type="xs:float" minOccurs="0" />
+			  <xs:element name="WeatherEventLength" type="xs:float" minOccurs="0" />
+			  <xs:element name="DaysSinceLastWeatherEvent" type="xs:int" minOccurs="0" />
+			  <xs:element name="LastEventCoolDown" type="xs:int" minOccurs="0" />
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="OriginPosition" type="PositionType" minOccurs="0" />
+		<xs:element name="ResearchPodData">
+		  <xs:complexType>
+			<xs:sequence>
+			  <xs:element name="ResearchPod" maxOccurs="unbounded">
+				<xs:complexType>
+				  <xs:sequence>
+					<xs:element name="ResearchType" type="xs:string" />
+					<xs:element name="Quantity" type="xs:int" />
+				  </xs:sequence>
+				</xs:complexType>
+			  </xs:element>
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>        
+	  </xs:choice>
+	</xs:complexType>
+	</xs:element>
+
+	<!-- Base ThingSaveData Type -->
+	<xs:complexType name="ThingSaveDataBase" abstract="true">
+	 <xs:choice maxOccurs="unbounded">
+		<xs:element name="ReferenceId" type="xs:int" />
+		<xs:element name="PrefabName" type="xs:string" />
+		<xs:element name="CustomName" type="xs:string" />
+		<xs:element name="WorldPosition" type="WorldPositionType" minOccurs="1" />
+		<xs:element name="WorldRotation" type="WorldRotationType" />
+		<xs:element name="eulerAngles" type="EulerAnglesType" minOccurs="0" />
+		<xs:element name="States" minOccurs="0">
+		  <xs:complexType>
+			<xs:sequence minOccurs="0">
+			  <xs:element name="State" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+				  <xs:sequence>
+					<xs:element name="StateName" type="xs:string" />
+					<xs:element name="State" type="xs:string" />
+				  </xs:sequence>
+				</xs:complexType>
+			  </xs:element>
+			</xs:sequence>
+		  </xs:complexType>
+		</xs:element>
+		<xs:element name="Reagents" type="ReagentsType" minOccurs="0" nillable="true" />
+		<xs:element name="Indestructable" type="xs:boolean" minOccurs="0" nillable="true" />
+		<xs:element name="DamageState" type="DamageStateType" minOccurs="0" nillable="true" />
+		<xs:element name="IsCustomName" type="xs:boolean" minOccurs="0" nillable="true" />
+		<xs:element name="CustomColorIndex" type="xs:int" minOccurs="0" nillable="true" />
+		<xs:element name="OwnerSteamId" type="xs:long" minOccurs="0" nillable="true" />
+	</xs:choice>
+	</xs:complexType>
+
+	<!-- StructureSaveData SubType -->
+	<xs:complexType name="StructureSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- DynamicThingSaveData SubType -->
+	<xs:complexType name="DynamicThingSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+		  <xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+		  <xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+		  <xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+		  <xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+		  <xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+		   <xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- BatteryCellSaveData SubType -->
+	<xs:complexType name="BatteryCellSaveData">
+	  <xs:complexContent>
+		<xs:extension base="ThingSaveDataBase">
+		  <xs:choice maxOccurs="unbounded">
+			<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="HealthCurrent" type="xs:float" minOccurs="0" />
+			<xs:element name="PowerStored" type="xs:float" minOccurs="0" />
+		  </xs:choice>
+		</xs:extension>
+	  </xs:complexContent>
+	</xs:complexType>
+
+	<!--ConsumableSaveData -->
+	<xs:complexType name="ConsumableSaveData">
+	<xs:complexContent>
+	<xs:extension base="ThingSaveDataBase">
+	  <xs:choice maxOccurs="unbounded">
+		  <xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+		  <xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+		  <xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+		  <xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+		  <xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+		   <xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+		<xs:element name="Quantity" type="xs:float" minOccurs="0" />                
+	  </xs:choice>
+	</xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- DoorSaveData SubType -->
+	<xs:complexType name="DoorSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+		  <xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+		  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+		  <xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />          
+		  <xs:element name="Setting" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- MachineSaveData SubType -->
+	<xs:complexType name="MachineSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" nillable="true" />
+			<xs:element name="MachineState" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="GoalPressure" type="xs:float" minOccurs="0" nillable="true" />
+			<xs:element name="PowerStored" type="xs:float" minOccurs="0" nillable="true" />
+			<xs:element name="Setting" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="OutputSetting" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="FabricatorJob" type="FabricatorJobType" minOccurs="0" nillable="true" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- PowerCableSaveData SubType -->
+	<xs:complexType name="CableSaveSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+		  <xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+		  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+		  <xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+		  <xs:element name="CableNetworkId" type="xs:float" minOccurs="0" />          	
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- SimpleFabricatorSaveData SubType -->
+	<xs:complexType name="SimpleFabricatorSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">          
+		  <xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" nillable="true" />
+		  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" nillable="true" />
+		  <xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" nillable="true"  />
+		  <xs:element name="ImportCount" type="xs:int" minOccurs="0" />
+		  <xs:element name="ImportState" type="xs:int" minOccurs="0" />
+		  <xs:element name="ExportCount" type="xs:int" minOccurs="0" />
+		  <xs:element name="ExportState" type="xs:int" minOccurs="0" />
+		  <xs:element name="JobQuantity" type="xs:int" minOccurs="0" />
+		  <xs:element name="FabricatorJob" type="FabricatorJobType" minOccurs="0" />
+		  <xs:element name="CurrentIndex" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- StackableSaveData SubType -->
+	<xs:complexType name="StackableSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+		  <xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+		  <xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+		  <xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+		  <xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+		  <xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+		  <xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+		   <xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+		  <xs:element name="Quantity" type="xs:int" minOccurs="0" />
+		  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- DeviceImportExportSaveData SubType -->
+	<xs:complexType name="DeviceImportExportSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+	   <xs:choice maxOccurs="unbounded">         
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="ImportCount" type="xs:int" minOccurs="0" />
+			<xs:element name="ImportState" type="xs:int" minOccurs="0" />
+			<xs:element name="ExportCount" type="xs:int" minOccurs="0" />
+			<xs:element name="ExportState" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- ChuteSaveData SubType -->
+	<xs:complexType name="ChuteSaveData">
+	<xs:complexContent>
+	  <xs:extension base="ThingSaveDataBase">
+		<xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="ChuteNetworkId" type="xs:int" minOccurs="0" />
+			<xs:element name="NextNeighborId" type="xs:int" minOccurs="0" />
+		</xs:choice>
+	  </xs:extension>
+	</xs:complexContent>
+	</xs:complexType>
+
+	<!-- MachineSaveData SubType -->
+	<xs:complexType name="TransformerSaveData">
+		<xs:complexContent>
+		  <xs:extension base="ThingSaveDataBase">
+			<xs:choice maxOccurs="unbounded">            
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="MachineState" type="xs:int" minOccurs="0" />
+			<xs:element name="GoalPressure" type="xs:float" minOccurs="0" />
+			<xs:element name="OutputSetting" type="xs:int" minOccurs="0" />
+			</xs:choice>
+		  </xs:extension>
+		</xs:complexContent>
+	  </xs:complexType>
+
+	<!-- DeviceAtmosphericSaveData SubType -->
+	<xs:complexType name="DeviceAtmosphericSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="OutputSetting" type="xs:int" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+	<!-- GasPipeSaveData SubType -->
+	<xs:complexType name="PipeSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="PipeNetworkId" type="xs:int" minOccurs="0" />
+			<xs:element name="IsBurst" type="xs:boolean" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent> 
+</xs:complexType>
+
+	<!-- BatterySaveData SubType -->
+	<xs:complexType name="BatterySaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="CurrentBuildState" type="xs:int" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="HasSpawnedWreckage" type="xs:boolean" minOccurs="0" />
+			<xs:element name="MachineState" type="xs:int" minOccurs="0" />
+			<xs:element name="GoalPressure" type="xs:float" minOccurs="0" />
+			<xs:element name="PowerStored" type="xs:float" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+	<!-- GasCanisterSaveData SubType -->
+	<xs:complexType name="DynamicGasCanisterSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+			<xs:element name="OutputSetting" type="xs:int" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>  
+  
+    <!-- PlantSaveData SubType -->
+	<xs:complexType name="PlantSaveData">
+		<xs:complexContent>
+		  <xs:extension base="ThingSaveDataBase">
+			<xs:choice maxOccurs="unbounded">
+			  <xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			  <xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			  <xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			  <xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			  <xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			  <xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			  <xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			  <xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+			  <xs:element name="Quantity" type="xs:int" minOccurs="0" />
+			  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" />
+			  <xs:element name="StageTime" type="xs:int" minOccurs="0" />
+			  <xs:element name="Stage" type="xs:int" minOccurs="0" />
+			  <xs:element name="HarvestQuantity" type="xs:int" minOccurs="0" />
+			</xs:choice>
+		  </xs:extension>
+		</xs:complexContent>
+	  </xs:complexType>  
+  
+	<!-- JetpackSaveData SubType -->
+	<xs:complexType name="JetpackSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+			<xs:element name="LeakRatio" type="xs:int" minOccurs="0" />
+			<xs:element name="OutputSetting" type="xs:int" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>  
+  
+	<!-- GrenadeSaveData SubType -->
+	<xs:complexType name="GrenadeSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+			<xs:element name="Lifetime" type="xs:int" minOccurs="0" />         
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>  
+  
+	<!-- OreSaveData SubType -->
+	<xs:complexType name="OreSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:choice maxOccurs="unbounded">
+			<xs:element name="ParentReferenceId" type="xs:int" minOccurs="0" />
+			<xs:element name="ParentSlotId" type="xs:int" minOccurs="0" />
+			<xs:element name="Dragged" type="xs:boolean" minOccurs="0" />
+			<xs:element name="DraggedInteractionIndex" type="xs:int" minOccurs="0" />
+			<xs:element name="DragOffset" type="Vector3Type" minOccurs="0" />
+			<xs:element name="Velocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="AngularVelocity" type="Vector3Type" minOccurs="0" />
+			<xs:element name="HealthCurrent" type="xs:int" minOccurs="0" />
+			<xs:element name="Quantity" type="xs:float" minOccurs="0" />
+			<xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" nillable="true" />
+			<xs:element name="QuantitySmelted" type="xs:float" minOccurs="0" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>  
+
+	<!-- AtmosphereSaveData SubType -->
+	<xs:complexType name="AtmosphereSaveData">
+		<xs:complexContent>
+		  <xs:extension base="ThingSaveDataBase">
+			<xs:choice maxOccurs="unbounded">
+			  <xs:element name="Position" type="PositionType" minOccurs="1" />
+			  <xs:element name="Oxygen" type="xs:float" minOccurs="0" />
+			  <xs:element name="Nitrogen" type="xs:float" minOccurs="0" />
+			  <xs:element name="CarbonDioxide" type="xs:float" minOccurs="0" />
+			  <xs:element name="Volatiles" type="xs:float" minOccurs="0" />
+			  <xs:element name="Chlorine" type="xs:float" minOccurs="0" />
+			  <xs:element name="Water" type="xs:float" minOccurs="0" />
+			  <xs:element name="PollutedWater" type="xs:float" minOccurs="0" />
+			  <xs:element name="NitrousOxide" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidNitrogen" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidOxygen" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidVolatiles" type="xs:float" minOccurs="0" />
+			  <xs:element name="Steam" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidCarbonDioxide" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidPollutant" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidNitrousOxide" type="xs:float" minOccurs="0" />
+			  <xs:element name="Hydrogen" type="xs:float" minOccurs="0" />
+			  <xs:element name="LiquidHydrogen" type="xs:float" minOccurs="0" />
+			  <xs:element name="Energy" type="xs:float" minOccurs="0" />
+			  <xs:element name="Volume" type="xs:float" minOccurs="0" />
+			  <xs:element name="Direction" type="DirectionType" minOccurs="1" />
+			  <xs:element name="NetworkReferenceId" type="xs:int" minOccurs="0" />
+			  <xs:element name="ThingReferenceId" type="xs:int" minOccurs="0" />
+			  <xs:element name="CleanBurnRate" type="xs:int" minOccurs="0" />
+			  <xs:element name="MothershipReferenceId" type="xs:int" minOccurs="0" nillable="true" />
+			</xs:choice>
+		  </xs:extension>
+		</xs:complexContent>
+	  </xs:complexType>
+
+<!-- Supporting Types -->
+
+	<!-- FabricatorJobType Definition -->
+	<xs:complexType name="FabricatorJobType">
+    <xs:sequence>
+        <xs:element name="JobType" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="Quantity" type="xs:int" use="optional" />
+</xs:complexType>
+
+	<!-- StatesType Definition -->
+	<xs:complexType name="StatesType">
+    <xs:sequence>
+          <xs:element name="State" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+                <xs:sequence>
+                      <xs:element name="StateName" type="xs:string" />
+                      <xs:element name="Value" type="xs:string" />
+                </xs:sequence>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+	<!-- ReagentsType Definition -->
+	<xs:complexType name="ReagentsType">
+      <xs:sequence>
+          	<xs:element name="Reagent" maxOccurs="unbounded" minOccurs="0">
+              <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="TypeName" type="xs:string" minOccurs="0" nillable="true" />
+                    <xs:element name="Quantity" type="xs:float" minOccurs="0" nillable="true" />
+                  </xs:sequence>
+              </xs:complexType>  
+          </xs:element>
+      </xs:sequence>
+  </xs:complexType>
+
+	<xs:complexType name="WorldPositionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+	<xs:complexType name="PositionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+	<xs:complexType name="DirectionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+	<xs:complexType name="WorldRotationType">
+    <xs:complexContent>
+        <xs:extension base="VectorType">
+            <xs:sequence>
+                <xs:element name="w" type="xs:float" />
+                <xs:element name="eulerAngles" type="EulerAnglesType" minOccurs="0" />
+            </xs:sequence>
+        </xs:extension>
+    </xs:complexContent>
+</xs:complexType>
+
+	<xs:complexType name="EulerAnglesType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+	<xs:complexType name="Vector3Type">
+		<xs:complexContent>
+			<xs:extension base="VectorType" />
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="VectorType">
+		<xs:sequence>
+			<xs:element name="x" type="xs:float" />
+			<xs:element name="y" type="xs:float" />
+			<xs:element name="z" type="xs:float" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="DamageStateType">
+    <xs:sequence>
+          <xs:element name="Brute" type="xs:float" minOccurs="0" />
+          <xs:element name="Burn" type="xs:float" minOccurs="0" />
+          <xs:element name="Oxygen" type="xs:float" minOccurs="0" />
+          <xs:element name="Hydration" type="xs:float" minOccurs="0" />
+          <xs:element name="Starvation" type="xs:float" minOccurs="0" />
+          <xs:element name="Toxic" type="xs:float" minOccurs="0" />
+          <xs:element name="Radiation" type="xs:float" minOccurs="0" />
+          <xs:element name="Stun" type="xs:float" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+ 
+
+
+<!-- ToolSaveData SubType -->
+  <xs:complexType name="ToolSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Durability" type="xs:float" minOccurs="0" />
+          	<xs:element name="ToolType" type="xs:string" minOccurs="0" />
+          <xs:element name="Reagents" type="ReagentsType" minOccurs="0" nillable="true" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- StorageContainerSaveData SubType -->
+  <xs:complexType name="StorageContainerSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Capacity" type="xs:int" minOccurs="0" />
+          	<xs:element name="StoredItems" type="xs:string" minOccurs="0" />
+          <xs:element name="Indestructable" type="xs:boolean" minOccurs="0" />
+          <xs:element name="Reagents" type="ReagentsType" minOccurs="0" nillable="true" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- SolarPanelSaveData SubType -->
+<xs:complexType name="SolarPanelSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="Efficiency" type="xs:float" minOccurs="0" />
+          	<xs:element name="CurrentOutput" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- GeneratorSaveData SubType -->
+  <xs:complexType name="GeneratorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="FuelLevel" type="xs:float" minOccurs="0" />
+          	<xs:element name="PowerOutput" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- LightSaveData SubType -->
+<xs:complexType name="LightSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="LightIntensity" type="xs:float" minOccurs="0" />
+          	<xs:element name="Color" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- SignalProcessorSaveData SubType -->
+<xs:complexType name="SignalProcessorSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="SignalStrength" type="xs:float" minOccurs="0" />
+          	<xs:element name="SignalType" type="xs:string" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+<!-- MiningDrillSaveData SubType -->
+  <xs:complexType name="MiningDrillSaveData">
+    <xs:complexContent>
+      <xs:extension base="ThingSaveDataBase">
+        <xs:sequence>
+          	<xs:element name="DrillDepth" type="xs:float" minOccurs="0" />
+          	<xs:element name="PowerConsumption" type="xs:float" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+ <!-- AngleType Definition -->
+<xs:complexType name="AngleType">
+    <xs:sequence>
+        	<xs:element name="x" type="xs:float" />
+        	<xs:element name="y" type="xs:float" />
+        	<xs:element name="z" type="xs:float" />
+    </xs:sequence>
+</xs:complexType>
+ 
+
+
+
+
+<!-- Supporting Types -->
+
+<!-- FabricatorJobType Definition -->
+<xs:complexType name="FabricatorJobType">
+    <xs:sequence>
+        <xs:element name="JobType" type="xs:string" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="Quantity" type="xs:int" use="optional" />
+</xs:complexType>
+
+<!-- StatesType Definition -->
+<xs:complexType name="StatesType">
+    <xs:sequence>
+          <xs:element name="State" maxOccurs="unbounded" minOccurs="0">
+            <xs:complexType>
+                <xs:sequence>
+                      <xs:element name="StateName" type="xs:string" />
+                      <xs:element name="Value" type="xs:string" />
+                </xs:sequence>
+            </xs:complexType>
+        </xs:element>
+    </xs:sequence>
+</xs:complexType>
+
+  <!-- ReagentsType Definition -->
+  <xs:complexType name="ReagentsType">
+      <xs:sequence>
+          	<xs:element name="Reagent" maxOccurs="unbounded" minOccurs="0">
+              <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="TypeName" type="xs:string" minOccurs="0" nillable="true" />
+                    <xs:element name="Quantity" type="xs:float" minOccurs="0" nillable="true" />
+                  </xs:sequence>
+              </xs:complexType>
+  
+          </xs:element>
+      </xs:sequence>
+  </xs:complexType>
+
+<xs:complexType name="WorldPositionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="PositionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="DirectionType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="WorldRotationType">
+    <xs:complexContent>
+        <xs:extension base="VectorType">
+            <xs:sequence>
+                <xs:element name="w" type="xs:float" />
+                <xs:element name="eulerAngles" type="EulerAnglesType" minOccurs="0" />
+            </xs:sequence>
+        </xs:extension>
+    </xs:complexContent>
+</xs:complexType>
+
+ <xs:complexType name="EulerAnglesType">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="Vector3Type">
+    <xs:complexContent>
+        <xs:extension base="VectorType" />
+    </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="VectorType">
+    <xs:sequence>
+        <xs:element name="x" type="xs:float" />
+        <xs:element name="y" type="xs:float" />
+        <xs:element name="z" type="xs:float" />
+    </xs:sequence>
+</xs:complexType>
+
+  <xs:complexType name="DamageStateType">
+    <xs:sequence>
+          <xs:element name="Brute" type="xs:float" minOccurs="0" />
+          <xs:element name="Burn" type="xs:float" minOccurs="0" />
+          <xs:element name="Oxygen" type="xs:float" minOccurs="0" />
+          <xs:element name="Hydration" type="xs:float" minOccurs="0" />
+          <xs:element name="Starvation" type="xs:float" minOccurs="0" />
+          <xs:element name="Toxic" type="xs:float" minOccurs="0" />
+          <xs:element name="Radiation" type="xs:float" minOccurs="0" />
+          <xs:element name="Stun" type="xs:float" minOccurs="0" />
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>
