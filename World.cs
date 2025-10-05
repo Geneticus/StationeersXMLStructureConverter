@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 
 namespace StationeersStructureXMLConverter {
 
-    [XmlRoot("World", Namespace = "http://example.com/world")]
+    [XmlRoot("WorldData", Namespace = "")]
 
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.8.3928.0")]
@@ -12,15 +12,8 @@ namespace StationeersStructureXMLConverter {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true)]
-    [System.Xml.Serialization.XmlRootAttribute(Namespace="", IsNullable=false)]
-    public class World
-    {
-        [XmlElement("Entity")]
-        public List<Entity> Entities { get; set; } = new List<Entity>();
+    //[System.Xml.Serialization.XmlRootAttribute(Namespace= "http://example.com/world", IsNullable=false)]
 
-        [XmlElement("AllThings")]
-        public List<Thing> AllThings { get; set; } = new List<Thing>();  // Adjust if AllThings is named differently in your file
-    }
     public partial class WorldData {
         
         /// <remarks/>

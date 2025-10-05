@@ -125,13 +125,15 @@ namespace StationeersStructureXMLConverter
             // 
             // output_textBox
             // 
+            this.output_textBox.AcceptsReturn = true;
             this.output_textBox.BackColor = System.Drawing.SystemColors.Window;
             this.output_textBox.Location = new System.Drawing.Point(23, 157);
             this.output_textBox.Multiline = true;
             this.output_textBox.Name = "output_textBox";
+            this.output_textBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.output_textBox.Size = new System.Drawing.Size(1307, 383);
             this.output_textBox.TabIndex = 9;
-            this.output_textBox.TextChanged += new System.EventHandler(this.output_textBox_TextChanged);
+            this.output_textBox.WordWrap = false;
             // 
             // Form1
             // 

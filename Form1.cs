@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StationeersXMLStructureConverter;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,6 +7,9 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +17,9 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using static StationeersStructureXMLConverter.SaveFileClass;
+using static System.Windows.Forms.LinkLabel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using WinFormsTextBox = System.Windows.Forms.TextBox;
 
 namespace StationeersStructureXMLConverter
 {
@@ -110,6 +116,17 @@ namespace StationeersStructureXMLConverter
         public Form1()
         {
             InitializeComponent();
+            if (string.IsNullOrEmpty(sourceFile_TextBox.Text))
+            {
+                sourceFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\10-25-World.xml";
+                //sourceFile_TextBox.Text = "U:\\Repos\\StationeersStructureXMLConverter\\ThingsTest.xml";
+            }
+
+            if (string.IsNullOrEmpty(destinationFile_TextBox.Text))
+            {
+                destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.xml";
+                //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
+            }
         }
 
         private void sourceButton_Click_1(object sender, EventArgs e)
@@ -124,119 +141,265 @@ namespace StationeersStructureXMLConverter
         {
             if(saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                //destinationFile_TextBox.Text = saveFileDialog1.InitialDirectory += saveFileDialog1.FileName;
-                
+                destinationFile_TextBox.Text = saveFileDialog1.InitialDirectory += saveFileDialog1.FileName;
+
             }
-            
+
         }
 
         private void Convert_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(sourceFile_TextBox.Text))
+            string xmlPath = sourceFile_TextBox.Text.Trim();
+            string xmlSpawnPath = destinationFile_TextBox.Text.Trim();
+            string progressLog = output_textBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(xmlPath) || !File.Exists(xmlPath))
             {
-                sourceFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\10-25-World.xml";
-                //sourceFile_TextBox.Text = "U:\\Repos\\StationeersStructureXMLConverter\\ThingsTest.xml";
+                output_textBox.Text = $"Invalid XML path: {xmlPath}";
+                return;
             }
 
-            if (string.IsNullOrEmpty(destinationFile_TextBox.Text))
+            if (string.IsNullOrEmpty(xmlSpawnPath))
             {
-                destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.json";
-                //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
+                output_textBox.Text = "Invalid output path.";
+                return;
             }
 
+            output_textBox.Text = "Starting deserialization...\n";  // Start logging
 
-            if (sourceFile_TextBox.Text != null)
+            try
             {
-                string xmlPath = sourceFile_TextBox.Text.Trim();  // Use textBox value (your form's default)
+                var rootAttr = new XmlRootAttribute("WorldData");
+                rootAttr.Namespace = "";
+                var serializer = new XmlSerializer(typeof(WorldData), rootAttr);
 
-                if (string.IsNullOrEmpty(xmlPath) || !File.Exists(xmlPath))
+                var settings = new XmlReaderSettings
                 {
-                    MessageBox.Show($"Invalid XML path: {xmlPath}", "Error");
-                    return;
-                }
+                    IgnoreWhitespace = true,
+                    ValidationType = ValidationType.None
+                };
 
-                try
+                using (var streamReader = new StreamReader(xmlPath))
+                using (var xmlReader = XmlReader.Create(streamReader, settings))
                 {
-                    var serializer = new XmlSerializer(typeof(World));
-                    using (var reader = new StreamReader(xmlPath))
-                    {
-                        var worldObj = serializer.Deserialize(reader);
-                        var world = worldObj as World ?? new World();  // Deserialized data in objects
+                    var worldData = (WorldData)serializer.Deserialize(xmlReader);
 
-                        MessageBox.Show($"Deserialized {world.AllThings.Count} things.", "Success");
+                    var things = GetThingSaveDataList(worldData);
+                    output_textBox.Text += $"Deserialized {things.Count} things.\n";
 
-                        // Transform using objects (with adjustments)
-                        TransformToNewSchema(world);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Error");
+                    TransformToNewSchema(things, xmlSpawnPath, output_textBox);
                 }
             }
-                        
+            catch (Exception ex)
+            {
+                output_textBox.Text += $"Error: {ex.Message}\nInner: {ex.InnerException?.Message}";
+            }
         }
 
-        private void TransformToNewSchema(World world)
+        // Helper: Get list of ThingSaveDataBase from WorldData.Items
+        // Fixed: Extract ThingSaveDataBase from WorldData.Items (direct Items access)
+        private List<ThingSaveDataBase> GetThingSaveDataList(WorldData worldData)
         {
-            // New Spawn object from Drive XSD
+            var things = new List<ThingSaveDataBase>();
+            if (worldData.Items == null || worldData.ItemsElementName == null || worldData.Items.Length != worldData.ItemsElementName.Length)
+                return things;
+
+            var log = "ItemsElementName values: ";
+            for (int i = 0; i < worldData.ItemsElementName.Length; i++)
+            {
+                log += $"{worldData.ItemsElementName[i]} ({(int)worldData.ItemsElementName[i]}) ";
+            }
+            MessageBox.Show(log, "Debug: Enum Values");  // Run once to see, then remove
+
+            for (int i = 0; i < worldData.Items.Length; i++)
+            {
+                if ((int)worldData.ItemsElementName[i] == 25)  // AllThings = 25
+                {
+                    var allThings = worldData.Items[i] as WorldDataThings;
+                    if (allThings != null)
+                    {
+                        var listProperty = allThings.GetType().GetProperty("ThingSaveData") ?? allThings.GetType().GetProperty("Things");
+                        if (listProperty != null)
+                        {
+                            var listValue = listProperty.GetValue(allThings);
+                            if (listValue != null)
+                            {
+                                if (listValue is System.Collections.IEnumerable enumerable)
+                                {
+                                    foreach (var item in enumerable)
+                                    {
+                                        if (item is ThingSaveDataBase thing)
+                                        {
+                                            things.Add(thing);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            return things;
+        }
+
+        private void TransformToNewSchema(List<ThingSaveDataBase> things, string outputPath, WinFormsTextBox logTextBox)  // Alias for parameter, no ambiguity
+        {
             var spawn = new Spawn();
 
-            // Map <AllThings> to <item><Item />
-            foreach (var thing in world.AllThings)
+            logTextBox.Text += "Starting transformation...\n";
+
+            for (int k = 0; k < things.Count; k++)
             {
+                var thing = things[k];
                 var item = new Item
                 {
-                    Category = MapCategory(thing.Type),  // e.g., map "Gas" to "AtmosphereItem"
-                    Id = thing.Id
+                    Category = MapCategory(GetPrefabName(thing.Items, thing.ItemsElementName) ?? "Unknown"),
+                    Id = GetReferenceId(thing.Items, thing.ItemsElementName).ToString()
                 };
 
-                // Example adjustments
                 item.Properties = new ItemProperties
                 {
-                    Color = ConvertColorIndex(thing.Properties.ColorIndex),  // Int to string, e.g., 1 -> "Red"
-                    Mass = thing.Properties.Mass * 1.1,  // Adjust number (e.g., scale by 10%)
-                    Pressure = (thing.Properties.Pressure > 0) ? thing.Properties.Pressure : 101.3  // Default if null
+                    Color = ConvertColorIndex(GetCustomColorIndex(thing.Items, thing.ItemsElementName)),
+                    Mass = GetMass(thing.Items) * 1.1,
+                    Pressure = GetPressure(thing.Items) > 0 ? GetPressure(thing.Items) : 101.3
                 };
 
-                // Discard unneeded data (e.g., skip thing.SomeUnusedField)
-
                 spawn.Items.Add(item);
+
+                logTextBox.Text += $"Mapped thing {k + 1}: {item.Category} ID {item.Id} (Color: {item.Properties.Color}, Mass: {item.Properties.Mass:F1})\n";
             }
 
-            // Serialize to new XML (use new schema when defined)
             var newSerializer = new XmlSerializer(typeof(Spawn));
-            using (var writer = new StreamWriter("output-spawn.xml"))
+            using (var writer = new StreamWriter(outputPath))
             {
                 newSerializer.Serialize(writer, spawn);
             }
 
-            MessageBox.Show("Transformation complete: output-spawn.xml", "Transformation");
+            logTextBox.Text += $"Transformation complete: {outputPath}\n";
         }
 
-        // Helper: Map category from Drive enums
-        private string MapCategory(string sourceType)
+        // Fixed: Get PrefabName from Items (element in choice, pass ItemsElementName)
+        private string GetPrefabName(object[] items, ItemsChoiceType[] itemsElementName)
         {
-            // From Drive source files (expand with decompile if needed)
-            if (sourceType.Contains("Gas")) return "AtmosphereItem";
-            // Add more mappings
+            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return null;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] is string prefabName && itemsElementName[i] == ItemsChoiceType.PrefabName)
+                {
+                    return prefabName;
+                }
+            }
+            return null;
+        }
+
+        // Fixed: Get ReferenceId from Items (int element in choice, pass ItemsElementName)
+        private int GetReferenceId(object[] items, ItemsChoiceType[] itemsElementName)
+        {
+            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] is int referenceId && itemsElementName[i] == ItemsChoiceType.ReferenceId)
+                {
+                    return referenceId;
+                }
+            }
+            return 0;
+        }
+
+
+        private int GetCustomColorIndex(object[] items, ItemsChoiceType[] itemsElementName)
+        {
+            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (itemsElementName[i] == ItemsChoiceType.CustomColorIndex)  
+                {
+                    var tempItem = items[i];
+                    if (tempItem is int colorInt)
+                    {
+                        return colorInt;
+                    }
+                    else
+                    {
+                        int? colorNullable = tempItem as int?;
+                        if (colorNullable.HasValue)
+                        {
+                            return colorNullable.Value;
+                        }
+                    }
+                }
+            }
+            return 0;
+        }
+
+        private double GetMass(object[] items)
+        {
+            if (items == null) return 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] is double mass)
+                {
+                    return mass;
+                }
+            }
+            return 0;
+        }
+
+        private double GetPressure(object[] items)
+        {
+            if (items == null) return 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] is double pressure)
+                {
+                    return pressure;
+                }
+            }
+            return 0;
+        }
+
+        private string MapCategory(string type)
+        {
+            // From your subtypes
+            if (type.Contains("Atmosphere")) return "AtmosphereItem";
+            if (type.Contains("Ore")) return "ResourceItem";
+            if (type.Contains("Grenade")) return "WeaponItem";
+            if (type.Contains("Jetpack")) return "EquipmentItem";
+            if (type.Contains("Plant")) return "PlantItem";
+            if (type.Contains("DynamicGasCanister")) return "GasItem";
+            if (type.Contains("Battery")) return "PowerItem";
+            if (type.Contains("Pipe")) return "PipeItem";
+            if (type.Contains("DeviceAtmospheric")) return "AtmosphericDeviceItem";
+            if (type.Contains("Transformer")) return "PowerItem";
+            if (type.Contains("Chute")) return "ChuteItem";
+            if (type.Contains("DeviceImportExport")) return "ImportExportItem";
+            if (type.Contains("Stackable")) return "StackableItem";
+            if (type.Contains("SimpleFabricator")) return "MachineItem";
+            if (type.Contains("Cable")) return "CableItem";
+            if (type.Contains("Machine")) return "MachineItem";
+            if (type.Contains("Door")) return "StructureItem";
+            if (type.Contains("Consumable")) return "ConsumableItem";
+            if (type.Contains("BatteryCell")) return "PowerItem";
+            if (type.Contains("DynamicThing")) return "DynamicItem";
+            if (type.Contains("Structure")) return "StructureItem";
             return "Unknown";
         }
 
-        // Helper: Convert color index to name
         private string ConvertColorIndex(int index)
         {
             switch (index)
             {
+                case 0: return "Default";
                 case 1: return "Red";
                 case 2: return "Blue";
-                // Add from Stationeers decompile
+                case 3: return "Green";
                 default: return "Default";
             }
         }
-        private void output_textBox_TextChanged(object sender, EventArgs e)
-        {
+        //private void output_textBox_TextChanged(object sender, EventArgs e)
+        //{
 
-        }
+        //}
     }
 }
