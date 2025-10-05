@@ -134,9 +134,9 @@ namespace StationeersStructureXMLConverter
 
         private void Convert_Click(object sender, EventArgs e)
         {
-            sourceFile_TextBox.Text = "U:\\SteamLibrary2\\steamapps\\common\\Stationeers\\rocketstation_Data\\StreamingAssets\\Scenario\\EscapeFromMars\\Things.xml";
+            sourceFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template";
             //sourceFile_TextBox.Text = "U:\\Repos\\StationeersStructureXMLConverter\\ThingsTest.xml";
-            destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\EscapeFromMars\\Things.xml";
+            destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.json";
             //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
             if (sourceFile_TextBox.Text != null)
             {
