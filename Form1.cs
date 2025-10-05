@@ -13,12 +13,11 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using static StationeersStructureXMLConverter.SaveFileClass;
-
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace StationeersStructureXMLConverter
 {
-    
-    
+
     public partial class Form1 : Form
     {
 
@@ -117,8 +116,7 @@ namespace StationeersStructureXMLConverter
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                sourceFile_TextBox.Text = openFileDialog1.InitialDirectory += openFileDialog1.FileName;
-                
+                sourceFile_TextBox.Text = openFileDialog1.InitialDirectory += openFileDialog1.FileName;                
             }
         }
 
@@ -134,66 +132,108 @@ namespace StationeersStructureXMLConverter
 
         private void Convert_Click(object sender, EventArgs e)
         {
-            sourceFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template";
-            //sourceFile_TextBox.Text = "U:\\Repos\\StationeersStructureXMLConverter\\ThingsTest.xml";
-            destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.json";
-            //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
+            if (string.IsNullOrEmpty(sourceFile_TextBox.Text))
+            {
+                sourceFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\10-25-World.xml";
+                //sourceFile_TextBox.Text = "U:\\Repos\\StationeersStructureXMLConverter\\ThingsTest.xml";
+            }
+
+            if (string.IsNullOrEmpty(destinationFile_TextBox.Text))
+            {
+                destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.json";
+                //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
+            }
+
+
             if (sourceFile_TextBox.Text != null)
             {
-                string path = sourceFile_TextBox.Text;
-                List<SaveFileClass.ThingSaveDataBase> thingsObject = new List<ThingSaveDataBase>();
-                
+                string xmlPath = sourceFile_TextBox.Text.Trim();  // Use textBox value (your form's default)
+
+                if (string.IsNullOrEmpty(xmlPath) || !File.Exists(xmlPath))
+                {
+                    MessageBox.Show($"Invalid XML path: {xmlPath}", "Error");
+                    return;
+                }
 
                 try
                 {
-                    if (File.Exists(path))
+                    var serializer = new XmlSerializer(typeof(World));
+                    using (var reader = new StreamReader(xmlPath))
                     {
-                        
-                        serialObject  = DeserializeXMLFileToObject(path);
+                        var worldObj = serializer.Deserialize(reader);
+                        var world = worldObj as World ?? new World();  // Deserialized data in objects
 
-                        List <ThingSaveDataBase> thingsList = new List<ThingSaveDataBase>();
+                        MessageBox.Show($"Deserialized {world.AllThings.Count} things.", "Success");
 
-                        try
-                        {
-                            foreach (ThingSaveDataBase thingData in serialObject.Things)
-                            {
-                                thingsList.Add(thingData);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            parsingErrors += "/n " + ex.Message + " , " + ex.InnerException;
-                        }
-
-
+                        // Transform using objects (with adjustments)
+                        TransformToNewSchema(world);
                     }
-
-                    
                 }
                 catch (Exception ex)
                 {
-
-                    Console.WriteLine("The process failed: {0}", ex.ToString());
+                    MessageBox.Show($"Error: {ex.Message}", "Error");
                 }
             }
-            
-            //if (!convertComplete) 
-            //{
-            //    string message = "You did not enter a server name. Cancel this operation?";
-            //    string caption = "Error Detected in Input";
-            //    MessageBoxButtons buttons = MessageBoxButtons.YesNo;
-            //    DialogResult result;
-
-            //    // Displays the MessageBox.
-            //    result = MessageBox.Show(message, caption, buttons);
-            //    if (result == System.Windows.Forms.DialogResult.Yes)
-            //    {
-            //        // Closes the parent form.
-            //        this.Close();
-            //    }
-            //}
+                        
         }
 
+        private void TransformToNewSchema(World world)
+        {
+            // New Spawn object from Drive XSD
+            var spawn = new Spawn();
+
+            // Map <AllThings> to <item><Item />
+            foreach (var thing in world.AllThings)
+            {
+                var item = new Item
+                {
+                    Category = MapCategory(thing.Type),  // e.g., map "Gas" to "AtmosphereItem"
+                    Id = thing.Id
+                };
+
+                // Example adjustments
+                item.Properties = new ItemProperties
+                {
+                    Color = ConvertColorIndex(thing.Properties.ColorIndex),  // Int to string, e.g., 1 -> "Red"
+                    Mass = thing.Properties.Mass * 1.1,  // Adjust number (e.g., scale by 10%)
+                    Pressure = (thing.Properties.Pressure > 0) ? thing.Properties.Pressure : 101.3  // Default if null
+                };
+
+                // Discard unneeded data (e.g., skip thing.SomeUnusedField)
+
+                spawn.Items.Add(item);
+            }
+
+            // Serialize to new XML (use new schema when defined)
+            var newSerializer = new XmlSerializer(typeof(Spawn));
+            using (var writer = new StreamWriter("output-spawn.xml"))
+            {
+                newSerializer.Serialize(writer, spawn);
+            }
+
+            MessageBox.Show("Transformation complete: output-spawn.xml", "Transformation");
+        }
+
+        // Helper: Map category from Drive enums
+        private string MapCategory(string sourceType)
+        {
+            // From Drive source files (expand with decompile if needed)
+            if (sourceType.Contains("Gas")) return "AtmosphereItem";
+            // Add more mappings
+            return "Unknown";
+        }
+
+        // Helper: Convert color index to name
+        private string ConvertColorIndex(int index)
+        {
+            switch (index)
+            {
+                case 1: return "Red";
+                case 2: return "Blue";
+                // Add from Stationeers decompile
+                default: return "Default";
+            }
+        }
         private void output_textBox_TextChanged(object sender, EventArgs e)
         {
 
