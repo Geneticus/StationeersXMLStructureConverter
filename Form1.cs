@@ -1,24 +1,18 @@
-﻿using StationeersXMLStructureConverter;
+﻿using StationeersStructureXMLConverter;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using static StationeersStructureXMLConverter.SaveFileClass;
-using static System.Windows.Forms.LinkLabel;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using WinFormsTextBox = System.Windows.Forms.TextBox;
 
 namespace StationeersStructureXMLConverter
@@ -26,12 +20,9 @@ namespace StationeersStructureXMLConverter
 
     public partial class Form1 : Form
     {
-
-        private bool convertComplete = false;
-        private string results;
+     
         public static string parsingErrors;
         private WorldData serialObject = new WorldData();
-
 
         //public static parseWorldData DeserializeXMLFileToObject<parseWorldData>(string XmlFilename)
         //{
@@ -136,270 +127,237 @@ namespace StationeersStructureXMLConverter
                 sourceFile_TextBox.Text = openFileDialog1.InitialDirectory += openFileDialog1.FileName;                
             }
         }
+        //private void browseButton_Click(object sender, EventArgs e)
+        //{
+        //    OpenFileDialog openFileDialog = new OpenFileDialog();
+        //    openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+        //    openFileDialog.Title = "Select World.xml";
 
+        //    if (openFileDialog.ShowDialog() == DialogResult.OK)
+        //    {
+        //        sourceFile_TextBox.Text = openFileDialog.FileName;
+        //    }
+        //}
         private void DestinationButton_Click(object sender, EventArgs e)
         {
-            if(saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                destinationFile_TextBox.Text = saveFileDialog1.InitialDirectory += saveFileDialog1.FileName;
+            //if(saveFileDialog1.ShowDialog() == DialogResult.OK)
+            //{
+            //    destinationFile_TextBox.Text = saveFileDialog1.InitialDirectory += saveFileDialog1.FileName;
 
+            //}
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.Description = "Select Destination Folder";
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                destinationFile_TextBox.Text = folderBrowserDialog.SelectedPath;
             }
 
         }
-
         private void Convert_Click(object sender, EventArgs e)
         {
             string xmlPath = sourceFile_TextBox.Text.Trim();
-            string xmlSpawnPath = destinationFile_TextBox.Text.Trim();
-            string progressLog = output_textBox.Text.Trim();
+            string destPath = destinationFile_TextBox.Text.Trim();
+            string reportPath = output_textBox.Text.Trim();
 
             if (string.IsNullOrEmpty(xmlPath) || !File.Exists(xmlPath))
             {
-                output_textBox.Text = $"Invalid XML path: {xmlPath}";
+                output_textBox.Text = $"Invalid source XML path: {xmlPath}";
                 return;
             }
-
-            if (string.IsNullOrEmpty(xmlSpawnPath))
+            if (string.IsNullOrEmpty(destPath))
             {
-                output_textBox.Text = "Invalid output path.";
+                output_textBox.Text = "Invalid destination path.";
                 return;
             }
 
-            output_textBox.Text = "Starting deserialization...\n";  // Start logging
+            Directory.CreateDirectory(destPath);
 
+            output_textBox.Text = "Starting XML traversal...\n";
             try
             {
-                var rootAttr = new XmlRootAttribute("WorldData");
-                rootAttr.Namespace = "";
-                var serializer = new XmlSerializer(typeof(WorldData), rootAttr);
-
-                var settings = new XmlReaderSettings
+                var doc = XDocument.Load(xmlPath);
+                var root = doc.Root;
+                if (root == null)
                 {
-                    IgnoreWhitespace = true,
-                    ValidationType = ValidationType.None
-                };
+                    output_textBox.Text += "No root <WorldData> found.\n";
+                    return;
+                }
+                output_textBox.Text += $"Root <WorldData> found (line 1, depth 0).\n";
 
-                using (var streamReader = new StreamReader(xmlPath))
-                using (var xmlReader = XmlReader.Create(streamReader, settings))
+                // Step 1: Traverse to <AllThings> (top level)
+                var allThingsNode = root.Element("AllThings");
+                if (allThingsNode == null)
                 {
-                    var worldData = (WorldData)serializer.Deserialize(xmlReader);
+                    output_textBox.Text += "No <AllThings> at depth 1.\n";
+                    return;
+                }
+                output_textBox.Text += $"<AllThings> found (line ~100, depth 1, attributes: {allThingsNode.Attributes().Count()}).\n";
 
-                    var things = GetThingSaveDataList(worldData);
-                    output_textBox.Text += $"Deserialized {things.Count} things.\n";
+                // Step 2: Verify/extract <ThingSaveData> children (depth 2)
+                var thingElements = allThingsNode.Elements("ThingSaveData").ToList();
+                int thingCount = thingElements.Count;
+                output_textBox.Text += $"Found {thingCount} <ThingSaveData> at depth 2.\n";
 
-                    TransformToNewSchema(things, xmlSpawnPath, output_textBox);
+                if (thingCount > 0)
+                {
+                    // Log sample nodes (first 3, with xsi:type and sample attr like Position)
+                    var sampleLog = "Sample ThingSaveData:\n";
+                    for (int i = 0; i < Math.Min(3, thingCount); i++)
+                    {
+                        var thing = thingElements[i];
+                        var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
+                        var xsiType = thing.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
+                        var position = thing.Element("Position")?.Value ?? "N/A";
+                        sampleLog += $"[{i}] xsi:type='{xsiType}' (Position: {position}, line ~{thing.Elements().Count() * i + 100}, depth 3).\n";
+                    }
+                    output_textBox.Text += sampleLog;
+
+                    var things = new List<object>();
+                    for (int i = 0; i < thingCount; i++)
+                    {
+                        things.Add(thingElements[i]);  // Raw XElement for processing
+                    }
+                    output_textBox.Text += $"Extracted {things.Count} ThingSaveData nodes.\n";
+
+                    TransformToNewSchema(things, destPath, output_textBox);
+                    output_textBox.Text += "Transformation complete.\n";
+
+                    // Optional: Dump log to report file
+                    if (!string.IsNullOrEmpty(reportPath))
+                    {
+                        File.WriteAllText(reportPath, output_textBox.Text);
+                    }
+                }
+                else
+                {
+                    output_textBox.Text += "0 <ThingSaveData> in <AllThings>.\n";
                 }
             }
             catch (Exception ex)
             {
-                output_textBox.Text += $"Error: {ex.Message}\nInner: {ex.InnerException?.Message}";
+                output_textBox.Text += $"Error: {ex.Message}\nInner: {ex.InnerException?.Message ?? "N/A"}\nStack: {ex.StackTrace}\n";
             }
         }
-
-        // Helper: Get list of ThingSaveDataBase from WorldData.Items
-        // Fixed: Extract ThingSaveDataBase from WorldData.Items (direct Items access)
-        private List<ThingSaveDataBase> GetThingSaveDataList(WorldData worldData)
+        // Direct extraction for WorldData (matches log properties; robust to nulls)
+        private List<object> GetThingSaveDataList(WorldData worldData)
         {
-            var things = new List<ThingSaveDataBase>();
-            if (worldData.Items == null || worldData.ItemsElementName == null || worldData.Items.Length != worldData.ItemsElementName.Length)
+            var things = new List<object>();
+            var output = output_textBox;  // For logging
+
+            // Find AllThings or Things array (prioritize AllThings from populated XML)
+            var thingsProp = worldData.GetType().GetProperty("AllThings") ?? worldData.GetType().GetProperty("Things");
+            if (thingsProp == null)
+            {
+                output_textBox.Text += "No AllThings/Things array found on WorldData.\n";
                 return things;
-
-            var log = "ItemsElementName values: ";
-            for (int i = 0; i < worldData.ItemsElementName.Length; i++)
-            {
-                log += $"{worldData.ItemsElementName[i]} ({(int)worldData.ItemsElementName[i]}) ";
             }
-            MessageBox.Show(log, "Debug: Enum Values");  // Run once to see, then remove
-
-            for (int i = 0; i < worldData.Items.Length; i++)
+            var thingArray = (Array)thingsProp.GetValue(worldData);
+            if (thingArray == null)
             {
-                if ((int)worldData.ItemsElementName[i] == 25)  // AllThings = 25
+                output_textBox.Text += $"{thingsProp.Name} array is null (blank template?).\n";
+                return things;
+            }
+            output_textBox.Text += $"Found {thingsProp.Name} array on WorldData (length: {thingArray.Length}, type: {thingArray.GetType().GetElementType().Name}).\n";
+
+            if (thingArray.Length == 0)
+            {
+                output_textBox.Text += "{thingsProp.Name} array is empty—no structures in save.\n";
+                return things;
+            }
+
+            // Log first few items for debug (types like SolarPanelSaveData, CableSaveData from populated XML)
+            var itemLog = "Sample items:\n";
+            for (int i = 0; i < Math.Min(5, thingArray.Length); i++)  // Show 5 for populated file
+            {
+                var item = thingArray.GetValue(i);
+                itemLog += $"[{i}] {item?.GetType().Name} (Type: {GetItemProperty(item, "xsi:type")} , Position: {GetItemProperty(item, "Position")})\n";
+            }
+            if (thingArray.Length > 5) itemLog += $"... (total {thingArray.Length} items)\n";
+            output_textBox.Text += itemLog;
+
+            // Add all items (filter polymorphs by SaveData name)
+            int itemCount = 0;
+            for (int i = 0; i < thingArray.Length; i++)
+            {
+                var item = thingArray.GetValue(i);
+                if (item != null && item.GetType().Name.Contains("SaveData"))  // Matches ThingSaveData, SolarPanelSaveData, etc.
                 {
-                    var allThings = worldData.Items[i] as WorldDataThings;
-                    if (allThings != null)
-                    {
-                        var listProperty = allThings.GetType().GetProperty("ThingSaveData") ?? allThings.GetType().GetProperty("Things");
-                        if (listProperty != null)
-                        {
-                            var listValue = listProperty.GetValue(allThings);
-                            if (listValue != null)
-                            {
-                                if (listValue is System.Collections.IEnumerable enumerable)
-                                {
-                                    foreach (var item in enumerable)
-                                    {
-                                        if (item is ThingSaveDataBase thing)
-                                        {
-                                            things.Add(thing);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
+                    things.Add(item);
+                    itemCount++;
+                }
+                else
+                {
+                    output_textBox.Text += $"Skipped non-SaveData item [{i}]: {item?.GetType().Name}\n";
                 }
             }
+            output_textBox.Text += $"Added {itemCount} valid SaveData items.\n";
+
             return things;
         }
 
-        private void TransformToNewSchema(List<ThingSaveDataBase> things, string outputPath, WinFormsTextBox logTextBox)  // Alias for parameter, no ambiguity
+        // Helper for logging item props (e.g., Position or xsi:type) - class-level method
+        private string GetItemProperty(object item, string propName)
         {
-            var spawn = new Spawn();
-
-            logTextBox.Text += "Starting transformation...\n";
-
-            for (int k = 0; k < things.Count; k++)
-            {
-                var thing = things[k];
-                var item = new Item
-                {
-                    Category = MapCategory(GetPrefabName(thing.Items, thing.ItemsElementName) ?? "Unknown"),
-                    Id = GetReferenceId(thing.Items, thing.ItemsElementName).ToString()
-                };
-
-                item.Properties = new ItemProperties
-                {
-                    Color = ConvertColorIndex(GetCustomColorIndex(thing.Items, thing.ItemsElementName)),
-                    Mass = GetMass(thing.Items) * 1.1,
-                    Pressure = GetPressure(thing.Items) > 0 ? GetPressure(thing.Items) : 101.3
-                };
-
-                spawn.Items.Add(item);
-
-                logTextBox.Text += $"Mapped thing {k + 1}: {item.Category} ID {item.Id} (Color: {item.Properties.Color}, Mass: {item.Properties.Mass:F1})\n";
-            }
-
-            var newSerializer = new XmlSerializer(typeof(Spawn));
-            using (var writer = new StreamWriter(outputPath))
-            {
-                newSerializer.Serialize(writer, spawn);
-            }
-
-            logTextBox.Text += $"Transformation complete: {outputPath}\n";
+            if (item == null) return "N/A";
+            var prop = item.GetType().GetProperty(propName);
+            var value = prop?.GetValue(item);
+            return value?.ToString() ?? "N/A";
         }
 
-        // Fixed: Get PrefabName from Items (element in choice, pass ItemsElementName)
-        private string GetPrefabName(object[] items, ItemsChoiceType[] itemsElementName)
+        // Export to new schema: Standalone <Thing> XML files for each ThingSaveData (prefab style)
+        private void TransformToBatch(List<object> things, string destPath, TextBox output)
         {
-            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return null;
-            for (int i = 0; i < items.Length; i++)
+            int exportedCount = 0;
+            foreach (var thingObj in things)
             {
-                if (items[i] is string prefabName && itemsElementName[i] == ItemsChoiceType.PrefabName)
+                if (thingObj is XElement thingElement)
                 {
-                    return prefabName;
+                    var xsiType = thingElement.Attribute(XName.Get("type", "http://www.w3.org/2001/XMLSchema-instance"))?.Value ?? "Unknown";
+                    var exportDoc = new XDocument(
+                        new XElement("Thing",  // New schema root for prefab
+                            new XAttribute("type", xsiType),
+                            thingElement.Elements()  // Copy child elements (Position, Reagents, etc.)
+                        )
+                    );
+                    string fileName = $"Thing_{exportedCount + 1}_{xsiType}.xml";
+                    string exportPath = Path.Combine(destPath, fileName);
+                    exportDoc.Save(exportPath);
+                    exportedCount++;
                 }
             }
-            return null;
+            output.AppendText($"Exported {exportedCount} things as standalone XML files to {destPath}.\n");
         }
-
-        // Fixed: Get ReferenceId from Items (int element in choice, pass ItemsElementName)
-        private int GetReferenceId(object[] items, ItemsChoiceType[] itemsElementName)
+        // Export to new schema: Single XML file with all ThingSaveData as <Things><Thing>...</Thing></Things>
+        private void TransformToNewSchema(List<object> things, string destPath, TextBox output)
         {
-            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return 0;
-            for (int i = 0; i < items.Length; i++)
+            if (things.Count == 0)
             {
-                if (items[i] is int referenceId && itemsElementName[i] == ItemsChoiceType.ReferenceId)
-                {
-                    return referenceId;
-                }
+                output.AppendText("No things to export.\n");
+                return;
             }
-            return 0;
-        }
 
-
-        private int GetCustomColorIndex(object[] items, ItemsChoiceType[] itemsElementName)
-        {
-            if (items == null || itemsElementName == null || items.Length != itemsElementName.Length) return 0;
-            for (int i = 0; i < items.Length; i++)
-            {
-                if (itemsElementName[i] == ItemsChoiceType.CustomColorIndex)  
-                {
-                    var tempItem = items[i];
-                    if (tempItem is int colorInt)
+            var exportDoc = new XDocument(
+                new XElement("Things",  // New schema root for collection
+                    things.Select((thingObj, i) =>
                     {
-                        return colorInt;
-                    }
-                    else
-                    {
-                        int? colorNullable = tempItem as int?;
-                        if (colorNullable.HasValue)
+                        if (thingObj is XElement thingElement)
                         {
-                            return colorNullable.Value;
+                            var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
+                            var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
+                            return new XElement("Thing",
+                                new XAttribute("type", xsiType),
+                                thingElement.Elements()  // Copy child elements (Position, Reagents, etc.)
+                            );
                         }
-                    }
-                }
-            }
-            return 0;
-        }
+                        return null;
+                    }).Where(x => x != null)
+                )
+            );
 
-        private double GetMass(object[] items)
-        {
-            if (items == null) return 0;
-            for (int i = 0; i < items.Length; i++)
-            {
-                if (items[i] is double mass)
-                {
-                    return mass;
-                }
-            }
-            return 0;
+            string exportPath = Path.Combine(destPath, "ExportedThings.xml");  // Single file default
+            exportDoc.Save(exportPath);
+            output.AppendText($"Exported {things.Count} things to single XML file: {exportPath}.\n");
         }
-
-        private double GetPressure(object[] items)
-        {
-            if (items == null) return 0;
-            for (int i = 0; i < items.Length; i++)
-            {
-                if (items[i] is double pressure)
-                {
-                    return pressure;
-                }
-            }
-            return 0;
-        }
-
-        private string MapCategory(string type)
-        {
-            // From your subtypes
-            if (type.Contains("Atmosphere")) return "AtmosphereItem";
-            if (type.Contains("Ore")) return "ResourceItem";
-            if (type.Contains("Grenade")) return "WeaponItem";
-            if (type.Contains("Jetpack")) return "EquipmentItem";
-            if (type.Contains("Plant")) return "PlantItem";
-            if (type.Contains("DynamicGasCanister")) return "GasItem";
-            if (type.Contains("Battery")) return "PowerItem";
-            if (type.Contains("Pipe")) return "PipeItem";
-            if (type.Contains("DeviceAtmospheric")) return "AtmosphericDeviceItem";
-            if (type.Contains("Transformer")) return "PowerItem";
-            if (type.Contains("Chute")) return "ChuteItem";
-            if (type.Contains("DeviceImportExport")) return "ImportExportItem";
-            if (type.Contains("Stackable")) return "StackableItem";
-            if (type.Contains("SimpleFabricator")) return "MachineItem";
-            if (type.Contains("Cable")) return "CableItem";
-            if (type.Contains("Machine")) return "MachineItem";
-            if (type.Contains("Door")) return "StructureItem";
-            if (type.Contains("Consumable")) return "ConsumableItem";
-            if (type.Contains("BatteryCell")) return "PowerItem";
-            if (type.Contains("DynamicThing")) return "DynamicItem";
-            if (type.Contains("Structure")) return "StructureItem";
-            return "Unknown";
-        }
-
-        private string ConvertColorIndex(int index)
-        {
-            switch (index)
-            {
-                case 0: return "Default";
-                case 1: return "Red";
-                case 2: return "Blue";
-                case 3: return "Green";
-                default: return "Default";
-            }
-        }
-        //private void output_textBox_TextChanged(object sender, EventArgs e)
-        //{
-
-        //}
     }
 }

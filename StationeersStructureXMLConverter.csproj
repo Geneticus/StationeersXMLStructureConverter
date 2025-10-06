@@ -80,7 +80,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OldWorld.cs" />
     <Compile Include="World.cs">
       <DependentUpon>world.xsd</DependentUpon>
     </Compile>
@@ -106,9 +105,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="World Latest SCHEMA Snapshot.xsd">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="world.xsd">
       <SubType>Designer</SubType>
       <Generator>LxCodeGenerator</Generator>

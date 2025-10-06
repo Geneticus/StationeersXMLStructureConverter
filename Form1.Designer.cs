@@ -102,7 +102,7 @@ namespace StationeersStructureXMLConverter
             // 
             // Convert
             // 
-            this.Convert.Location = new System.Drawing.Point(1147, 546);
+            this.Convert.Location = new System.Drawing.Point(1147, 1079);
             this.Convert.Name = "Convert";
             this.Convert.Size = new System.Drawing.Size(183, 38);
             this.Convert.TabIndex = 7;
@@ -131,7 +131,7 @@ namespace StationeersStructureXMLConverter
             this.output_textBox.Multiline = true;
             this.output_textBox.Name = "output_textBox";
             this.output_textBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.output_textBox.Size = new System.Drawing.Size(1307, 383);
+            this.output_textBox.Size = new System.Drawing.Size(1307, 890);
             this.output_textBox.TabIndex = 9;
             this.output_textBox.WordWrap = false;
             // 
@@ -139,7 +139,7 @@ namespace StationeersStructureXMLConverter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2284, 1078);
+            this.ClientSize = new System.Drawing.Size(1362, 1141);
             this.Controls.Add(this.output_textBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.Convert);

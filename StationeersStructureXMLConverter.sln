@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StationeersStructureXMLConv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F7F193CF-16A9-437F-8766-5AF891DBC624}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StationeersXsdGenerator", "StationeersXsdGenerator\StationeersXsdGenerator.csproj", "{0BF68C3E-458B-4B1A-B07A-EBF85F8439CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{DFEE0987-34B4-43D4-A2ED-39F4698C40B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFEE0987-34B4-43D4-A2ED-39F4698C40B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFEE0987-34B4-43D4-A2ED-39F4698C40B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF68C3E-458B-4B1A-B07A-EBF85F8439CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF68C3E-458B-4B1A-B07A-EBF85F8439CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF68C3E-458B-4B1A-B07A-EBF85F8439CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF68C3E-458B-4B1A-B07A-EBF85F8439CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
