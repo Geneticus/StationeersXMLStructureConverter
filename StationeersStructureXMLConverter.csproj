@@ -71,6 +71,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DestinationExport.cs" />
+    <Compile Include="SourceExtraction.cs" />
     <Compile Include="Spawn.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
