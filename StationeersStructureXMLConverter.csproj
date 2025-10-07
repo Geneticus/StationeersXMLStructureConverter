@@ -83,6 +83,9 @@
     <Compile Include="World.cs">
       <DependentUpon>world.xsd</DependentUpon>
     </Compile>
+    <Compile Include="WorldSetting.cs">
+      <DependentUpon>WorldSetting.xsd</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -108,6 +111,9 @@
     <None Include="world.xsd">
       <SubType>Designer</SubType>
       <Generator>LxCodeGenerator</Generator>
+    </None>
+    <None Include="WorldSetting.xsd">
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>

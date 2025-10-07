@@ -1,4 +1,5 @@
-﻿using StationeersStructureXMLConverter;
+﻿using StationeersSpawnXML;
+using StationeersStructureXMLConverter;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -115,11 +116,24 @@ namespace StationeersStructureXMLConverter
 
             if (string.IsNullOrEmpty(destinationFile_TextBox.Text))
             {
-                destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\Things.xml";
+                destinationFile_TextBox.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\";
                 //if (saveFileDialog1.FileName != null && openFileDialog1.FileName != null)
             }
-        }
 
+            // Readability fixes for output_textBox
+            output_textBox.WordWrap = true;  // Wrap long lines
+            output_textBox.ReadOnly = true;  // Prevent edits
+            output_textBox.Font = new Font("Consolas", 9F);  // Monospace for alignment
+            output_textBox.AcceptsReturn = true;  // Allow \r\n breaks
+        }
+        // Helper for readable logging ( \r\n + refresh for line breaks)
+        private void AppendLog(string message)
+        {
+            output_textBox.AppendText(message + "\r\n");
+            output_textBox.Refresh();  // Force redraw for breaks
+            output_textBox.SelectionStart = output_textBox.Text.Length;
+            output_textBox.ScrollToCaret();  // Auto-scroll
+        }
         private void sourceButton_Click_1(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -158,46 +172,47 @@ namespace StationeersStructureXMLConverter
         {
             string xmlPath = sourceFile_TextBox.Text.Trim();
             string destPath = destinationFile_TextBox.Text.Trim();
-            string reportPath = output_textBox.Text.Trim();
+            string reportPath = Path.Combine(destPath, "ConversionLog.txt");  // Safe fixed name in destPath
 
             if (string.IsNullOrEmpty(xmlPath) || !File.Exists(xmlPath))
             {
-                output_textBox.Text = $"Invalid source XML path: {xmlPath}";
+                AppendLog($"Invalid source XML path: {xmlPath}");
                 return;
             }
             if (string.IsNullOrEmpty(destPath))
             {
-                output_textBox.Text = "Invalid destination path.";
+                AppendLog("Invalid destination path.");
                 return;
             }
 
             Directory.CreateDirectory(destPath);
+            output_textBox.Text = "";  // Clear for fresh run
+            AppendLog("Starting XML traversal...");
 
-            output_textBox.Text = "Starting XML traversal...\n";
             try
             {
                 var doc = XDocument.Load(xmlPath);
                 var root = doc.Root;
                 if (root == null)
                 {
-                    output_textBox.Text += "No root <WorldData> found.\n";
+                    AppendLog("No root <WorldData> found.");
                     return;
                 }
-                output_textBox.Text += $"Root <WorldData> found (line 1, depth 0).\n";
+                AppendLog($"Root <WorldData> found (line 1, depth 0).");
 
                 // Step 1: Traverse to <AllThings> (top level)
                 var allThingsNode = root.Element("AllThings");
                 if (allThingsNode == null)
                 {
-                    output_textBox.Text += "No <AllThings> at depth 1.\n";
+                    AppendLog("No <AllThings> at depth 1.");
                     return;
                 }
-                output_textBox.Text += $"<AllThings> found (line ~100, depth 1, attributes: {allThingsNode.Attributes().Count()}).\n";
+                AppendLog($"<AllThings> found (line ~100, depth 1, attributes: {allThingsNode.Attributes().Count()}).");
 
                 // Step 2: Verify/extract <ThingSaveData> children (depth 2)
                 var thingElements = allThingsNode.Elements("ThingSaveData").ToList();
                 int thingCount = thingElements.Count;
-                output_textBox.Text += $"Found {thingCount} <ThingSaveData> at depth 2.\n";
+                AppendLog($"Found {thingCount} <ThingSaveData> at depth 2.");
 
                 if (thingCount > 0)
                 {
@@ -211,17 +226,17 @@ namespace StationeersStructureXMLConverter
                         var position = thing.Element("Position")?.Value ?? "N/A";
                         sampleLog += $"[{i}] xsi:type='{xsiType}' (Position: {position}, line ~{thing.Elements().Count() * i + 100}, depth 3).\n";
                     }
-                    output_textBox.Text += sampleLog;
+                    AppendLog(sampleLog);
 
                     var things = new List<object>();
                     for (int i = 0; i < thingCount; i++)
                     {
                         things.Add(thingElements[i]);  // Raw XElement for processing
                     }
-                    output_textBox.Text += $"Extracted {things.Count} ThingSaveData nodes.\n";
+                    AppendLog($"Extracted {things.Count} ThingSaveData nodes.");
 
                     TransformToNewSchema(things, destPath, output_textBox);
-                    output_textBox.Text += "Transformation complete.\n";
+                    AppendLog("Transformation complete.");
 
                     // Optional: Dump log to report file
                     if (!string.IsNullOrEmpty(reportPath))
@@ -231,13 +246,22 @@ namespace StationeersStructureXMLConverter
                 }
                 else
                 {
-                    output_textBox.Text += "0 <ThingSaveData> in <AllThings>.\n";
+                    AppendLog("0 <ThingSaveData> in <AllThings>.");
                 }
             }
             catch (Exception ex)
             {
-                output_textBox.Text += $"Error: {ex.Message}\nInner: {ex.InnerException?.Message ?? "N/A"}\nStack: {ex.StackTrace}\n";
+                AppendLog($"Error: {ex.Message}");
+                AppendLog($"Inner: {ex.InnerException?.Message ?? "N/A"}");
+                AppendLog($"Stack: {ex.StackTrace}");
             }
+        }
+
+        // Helper for auto-scroll to bottom after AppendText
+        private void ScrollToBottom()
+        {
+            output_textBox.SelectionStart = output_textBox.Text.Length;
+            output_textBox.ScrollToCaret();
         }
         // Direct extraction for WorldData (matches log properties; robust to nulls)
         private List<object> GetThingSaveDataList(WorldData worldData)
@@ -326,9 +350,12 @@ namespace StationeersStructureXMLConverter
                     exportedCount++;
                 }
             }
-            output.AppendText($"Exported {exportedCount} things as standalone XML files to {destPath}.\n");
+            output.AppendText($"Exported {exportedCount} things as standalone XML files to {destPath}.\r\n");
         }
-        // Export to new schema: Single XML file with all ThingSaveData as <Things><Thing>...</Thing></Things>
+
+
+        
+        // Export to new schema: worldsettings.xml with <GameData><WorldSettings Id="My_Scenario"/><Spawn Id="My_ScenarioThings"><Structure Id="..." HideInStartScreen="true"><CustomName /><IsCustomName>false</IsCustomName><CustomColorIndex>4</CustomColorIndex><Indestructable>false</Indestructable><DamageState><Brute>0</Brute>...</DamageState><CurrentBuildState>1</CurrentBuildState><MothershipReferenceId>0</MothershipReferenceId><HasSpawnedWreckage>false</HasSpawnedWreckage><RegisteredWorldPosition><x>-75</x><y>148</y><z>-25</z></RegisteredWorldPosition><RegisteredWorldRotation><x>-1.02910758E-06</x><y>0.707106769</y><z>0.7071068</z><w>1.059845E-06</w></RegisteredWorldRotation><SpawnPosition Rule="Explicit"><Offset x="-75" y="148" z="-25"/><Rotation x="-1.02910758E-06" y="0.707106769" z="0.7071068" w="1.059845E-06"/></SpawnPosition><Reagents>...</Reagents></Structure></Spawn></GameData>
         private void TransformToNewSchema(List<object> things, string destPath, TextBox output)
         {
             if (things.Count == 0)
@@ -337,27 +364,360 @@ namespace StationeersStructureXMLConverter
                 return;
             }
 
-            var exportDoc = new XDocument(
-                new XElement("Things",  // New schema root for collection
-                    things.Select((thingObj, i) =>
+            string scenarioName = "My_Scenario";  // From textbox or user input
+            string spawnId = scenarioName + "Things";
+
+            var spawnEntries = new List<XElement>();
+            int exportedCount = 0;
+            foreach (var thingObj in things)
+            {
+                if (thingObj is XElement thingElement)
+                {
+                    var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
+                    var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
+                    var cleanId = xsiType.Replace("SaveData", "");  // "SolarPanelSaveData" → "SolarPanel"
+                    var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;  // Prefer PrefabName
+
+                    // Classify tag by type
+                    string tagName = "Item";  // Default
+                    if (xsiType.StartsWith("Structure")) tagName = "Structure";
+                    else if (xsiType.StartsWith("DynamicThing")) tagName = "DynamicThing";
+
+                    var spawnEntry = new XElement(tagName,
+                        new XAttribute("Id", prefabName),
+                        new XAttribute("HideInStartScreen", "true")
+                    );
+
+                    // Add CustomName (even if empty)
+                    var customName = thingElement.Element("CustomName");
+                    if (customName != null)
                     {
-                        if (thingObj is XElement thingElement)
-                        {
-                            var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
-                            var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
-                            return new XElement("Thing",
-                                new XAttribute("type", xsiType),
-                                thingElement.Elements()  // Copy child elements (Position, Reagents, etc.)
-                            );
-                        }
-                        return null;
-                    }).Where(x => x != null)
+                        spawnEntry.Add(new XElement("CustomName", customName.Value ?? ""));
+                    }
+
+                    // Add IsCustomName (bool)
+                    var isCustomName = thingElement.Element("IsCustomName")?.Value;
+                    if (isCustomName != null)
+                    {
+                        spawnEntry.Add(new XElement("IsCustomName", isCustomName));
+                    }
+
+                    // Add CustomColorIndex (int)
+                    var customColorIndex = thingElement.Element("CustomColorIndex")?.Value;
+                    if (customColorIndex != null)
+                    {
+                        spawnEntry.Add(new XElement("CustomColorIndex", customColorIndex));
+                    }
+
+                    // Add Indestructable (bool)
+                    var indestructable = thingElement.Element("Indestructable")?.Value;
+                    if (indestructable != null)
+                    {
+                        spawnEntry.Add(new XElement("Indestructable", indestructable));
+                    }
+
+                    // Add DamageState (nested, copy if present)
+                    var damageState = thingElement.Element("DamageState");
+                    if (damageState != null)
+                    {
+                        var damageEntry = new XElement("DamageState");
+                        damageEntry.Add(damageState.Elements());  // Copy <Brute>0</Brute><Burn>0</Burn>...
+                        spawnEntry.Add(damageEntry);
+                    }
+
+                    // Add CurrentBuildState (int)
+                    var currentBuildState = thingElement.Element("CurrentBuildState")?.Value;
+                    if (currentBuildState != null)
+                    {
+                        spawnEntry.Add(new XElement("CurrentBuildState", currentBuildState));
+                    }
+
+                    // Add MothershipReferenceId (long)
+                    var mothershipReferenceId = thingElement.Element("MothershipReferenceId")?.Value;
+                    if (mothershipReferenceId != null)
+                    {
+                        spawnEntry.Add(new XElement("MothershipReferenceId", mothershipReferenceId));
+                    }
+
+                    // Add HasSpawnedWreckage (bool)
+                    var hasSpawnedWreckage = thingElement.Element("HasSpawnedWreckage")?.Value;
+                    if (hasSpawnedWreckage != null)
+                    {
+                        spawnEntry.Add(new XElement("HasSpawnedWreckage", hasSpawnedWreckage));
+                    }
+
+                    // Add RegisteredWorldPosition (nested <x/y/z>)
+                    var registeredPos = thingElement.Element("RegisteredWorldPosition");
+                    if (registeredPos != null)
+                    {
+                        var regX = registeredPos.Element("x")?.Value ?? "0";
+                        var regY = registeredPos.Element("y")?.Value ?? "0";
+                        var regZ = registeredPos.Element("z")?.Value ?? "0";
+                        spawnEntry.Add(new XElement("RegisteredWorldPosition",
+                            new XElement("x", regX),
+                            new XElement("y", regY),
+                            new XElement("z", regZ)
+                        ));
+                    }
+
+                    // Add RegisteredWorldRotation (nested <x/y/z/w>)
+                    var registeredRot = thingElement.Element("RegisteredWorldRotation");
+                    if (registeredRot != null)
+                    {
+                        var regRotX = registeredRot.Element("x")?.Value ?? "0";
+                        var regRotY = registeredRot.Element("y")?.Value ?? "0";
+                        var regRotZ = registeredRot.Element("z")?.Value ?? "0";
+                        var regRotW = registeredRot.Element("w")?.Value ?? "1";
+                        spawnEntry.Add(new XElement("RegisteredWorldRotation",
+                            new XElement("x", regRotX),
+                            new XElement("y", regRotY),
+                            new XElement("z", regRotZ),
+                            new XElement("w", regRotW)
+                        ));
+                    }
+
+                    // Add NetworkId (specific to type, e.g., CableNetworkId)
+                    var networkId = thingElement.Element("CableNetworkId")?.Value ?? thingElement.Element("PipeNetworkId")?.Value ?? "0";
+                    if (networkId != "0")
+                    {
+                        spawnEntry.Add(new XElement("NetworkId", networkId));
+                    }
+
+                    // Add SpawnPosition
+                    var spawnPosition = BuildSpawnPosition(thingElement);  // Sub-method
+                    spawnEntry.Add(spawnPosition);
+
+                    // Add Reagents if present
+                    var reagents = thingElement.Element("Reagents");
+                    if (reagents != null)
+                    {
+                        spawnEntry.Add(reagents.Elements());
+                    }
+
+                    spawnEntries.Add(spawnEntry);
+                    exportedCount++;
+                }
+            }
+            output_textBox.Text += $"Extracted {exportedCount} spawn entries.\n";
+            return;
+        }
+
+        // Sub-method: Extract <Structure>/<Item> from ThingSaveData
+        private List<XElement> ExtractSpawnEntries(List<object> things, TextBox output)
+        {
+            var spawnEntries = new List<XElement>();
+            int exportedCount = 0;
+            int debugCount = 0;
+            int maxDebug = 5;  // Limit debug to first 5
+            foreach (var thingObj in things)
+            {
+                if (thingObj is XElement thingElement)
+                {
+                    var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
+                    var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
+                    var cleanId = xsiType.Replace("SaveData", "");  // "SolarPanelSaveData" → "SolarPanel"
+                    var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;  // Prefer PrefabName
+
+                    // Classify tag by type (use prefabName for "Structure..." or "DynamicThing...")
+                    string tagName = "Item";  // Default
+                    if (prefabName.StartsWith("Structure")) tagName = "Structure";
+                    else if (prefabName.StartsWith("DynamicThing")) tagName = "DynamicThing";
+
+                    // Temp debug for first 5
+                    if (debugCount < maxDebug)
+                    {
+                        output_textBox.Text += $"Debug: xsiType='{xsiType}' → tagName='{tagName}', prefabName='{prefabName}'.\n";
+                        debugCount++;
+                    }
+
+                    var spawnEntry = new XElement(tagName,
+                        new XAttribute("Id", prefabName),
+                        new XAttribute("HideInStartScreen", "true")
+                    );
+
+                    AddBasicProps(thingElement, spawnEntry);  // Sub-method
+                    AddDamageState(thingElement, spawnEntry);  // Sub-method
+                    AddBuildState(thingElement, spawnEntry);  // Sub-method
+                    AddRegisteredProps(thingElement, spawnEntry);  // Sub-method
+                    AddNetworkProps(thingElement, spawnEntry);  // Sub-method
+                    AddSpawnPositionAndReagents(thingElement, spawnEntry);  // Sub-method
+
+                    spawnEntries.Add(spawnEntry);
+                    exportedCount++;
+                }
+            }
+            output_textBox.Text += $"Extracted {exportedCount} spawn entries.\n";
+            return spawnEntries;
+        }
+
+        // Sub-method: Add basic props (CustomName, IsCustomName, CustomColorIndex, Indestructable)
+        private void AddBasicProps(XElement thingElement, XElement spawnEntry)
+        {
+            var customName = thingElement.Element("CustomName");
+            if (customName != null)
+            {
+                spawnEntry.Add(new XElement("CustomName", customName.Value ?? ""));
+            }
+
+            var isCustomName = thingElement.Element("IsCustomName")?.Value;
+            if (isCustomName != null)
+            {
+                spawnEntry.Add(new XElement("IsCustomName", isCustomName));
+            }
+
+            var customColorIndex = thingElement.Element("CustomColorIndex")?.Value;
+            if (customColorIndex != null)
+            {
+                spawnEntry.Add(new XElement("CustomColorIndex", customColorIndex));
+            }
+
+            var indestructable = thingElement.Element("Indestructable")?.Value;
+            if (indestructable != null)
+            {
+                spawnEntry.Add(new XElement("Indestructable", indestructable));
+            }
+        }
+
+        // Sub-method: Add DamageState (nested copy)
+        private void AddDamageState(XElement thingElement, XElement spawnEntry)
+        {
+            var damageState = thingElement.Element("DamageState");
+            if (damageState != null)
+            {
+                var damageEntry = new XElement("DamageState");
+                damageEntry.Add(damageState.Elements());  // Copy <Brute>0</Brute><Burn>0</Burn>...
+                spawnEntry.Add(damageEntry);
+            }
+        }
+
+        // Sub-method: Add build state props (CurrentBuildState, MothershipReferenceId, HasSpawnedWreckage)
+        private void AddBuildState(XElement thingElement, XElement spawnEntry)
+        {
+            var currentBuildState = thingElement.Element("CurrentBuildState")?.Value;
+            if (currentBuildState != null)
+            {
+                spawnEntry.Add(new XElement("CurrentBuildState", currentBuildState));
+            }
+
+            var mothershipReferenceId = thingElement.Element("MothershipReferenceId")?.Value;
+            if (mothershipReferenceId != null)
+            {
+                spawnEntry.Add(new XElement("MothershipReferenceId", mothershipReferenceId));
+            }
+
+            var hasSpawnedWreckage = thingElement.Element("HasSpawnedWreckage")?.Value;
+            if (hasSpawnedWreckage != null)
+            {
+                spawnEntry.Add(new XElement("HasSpawnedWreckage", hasSpawnedWreckage));
+            }
+        }
+
+        // Sub-method: Add registered props (RegisteredWorldPosition/Rotation)
+        private void AddRegisteredProps(XElement thingElement, XElement spawnEntry)
+        {
+            var registeredPos = thingElement.Element("RegisteredWorldPosition");
+            if (registeredPos != null)
+            {
+                var regX = registeredPos.Element("x")?.Value ?? "0";
+                var regY = registeredPos.Element("y")?.Value ?? "0";
+                var regZ = registeredPos.Element("z")?.Value ?? "0";
+                spawnEntry.Add(new XElement("RegisteredWorldPosition",
+                    new XElement("x", regX),
+                    new XElement("y", regY),
+                    new XElement("z", regZ)
+                ));
+            }
+
+            var registeredRot = thingElement.Element("RegisteredWorldRotation");
+            if (registeredRot != null)
+            {
+                var regRotX = registeredRot.Element("x")?.Value ?? "0";
+                var regRotY = registeredRot.Element("y")?.Value ?? "0";
+                var regRotZ = registeredRot.Element("z")?.Value ?? "0";
+                var regRotW = registeredRot.Element("w")?.Value ?? "1";
+                spawnEntry.Add(new XElement("RegisteredWorldRotation",
+                    new XElement("x", regRotX),
+                    new XElement("y", regRotY),
+                    new XElement("z", regRotZ),
+                    new XElement("w", regRotW)
+                ));
+            }
+        }
+
+        // Sub-method: Add network props (NetworkId)
+        private void AddNetworkProps(XElement thingElement, XElement spawnEntry)
+        {
+            var networkId = thingElement.Element("CableNetworkId")?.Value ?? thingElement.Element("PipeNetworkId")?.Value ?? "0";
+            if (networkId != "0")
+            {
+                spawnEntry.Add(new XElement("NetworkId", networkId));
+            }
+        }
+
+        // Sub-method: Add SpawnPosition and Reagents
+        private void AddSpawnPositionAndReagents(XElement thingElement, XElement spawnEntry)
+        {
+            // Add SpawnPosition
+            var spawnPosition = BuildSpawnPosition(thingElement);  // Sub-method
+            spawnEntry.Add(spawnPosition);
+
+            // Add Reagents if present
+            var reagents = thingElement.Element("Reagents");
+            if (reagents != null)
+            {
+                spawnEntry.Add(reagents.Elements());
+            }
+        }
+
+        // Sub-method: Build <SpawnPosition Rule="Explicit"><Offset x="121" y="88" z="-80"/><Rotation x="2.10734363E-08" y="0.7071066" z="-2.10734132E-08" w="0.707106948"/></SpawnPosition>
+        private XElement BuildSpawnPosition(XElement thingElement)
+        {
+            // Parse WorldPosition <x> <y> <z>
+            var worldPos = thingElement.Element("WorldPosition");
+            var offsetX = worldPos?.Element("x")?.Value ?? "0";
+            var offsetY = worldPos?.Element("y")?.Value ?? "0";
+            var offsetZ = worldPos?.Element("z")?.Value ?? "0";
+
+            // Parse WorldRotation <x> <y> <z> <w> (quaternion)
+            var worldRot = thingElement.Element("WorldRotation");
+            var rotX = worldRot?.Element("x")?.Value ?? "0";
+            var rotY = worldRot?.Element("y")?.Value ?? "0";
+            var rotZ = worldRot?.Element("z")?.Value ?? "0";
+            var rotW = worldRot?.Element("w")?.Value ?? "1";
+
+            return new XElement("SpawnPosition",
+                new XAttribute("Rule", "Explicit"),
+                new XElement("Offset",
+                    new XAttribute("x", offsetX),
+                    new XAttribute("y", offsetY),
+                    new XAttribute("z", offsetZ)
+                ),
+                new XElement("Rotation",
+                    new XAttribute("x", rotX),
+                    new XAttribute("y", rotY),
+                    new XAttribute("z", rotZ),
+                    new XAttribute("w", rotW)
                 )
             );
+        }
 
-            string exportPath = Path.Combine(destPath, "ExportedThings.xml");  // Single file default
-            exportDoc.Save(exportPath);
-            output.AppendText($"Exported {things.Count} things to single XML file: {exportPath}.\n");
+        // Sub-method: Build full export XDocument
+        private XDocument BuildExportDoc(List<XElement> spawnEntries, string scenarioName, string spawnId)
+        {
+            return new XDocument(
+                new XDeclaration("1.0", "utf-8", null),
+                new XElement("GameData",
+                    new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
+                    new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
+                    new XElement("WorldSettings",
+                        new XAttribute("Id", scenarioName)
+                    ),
+                    new XElement("Spawn",
+                        new XAttribute("Id", spawnId),
+                        spawnEntries  // All entries as siblings under <Spawn>
+                    )
+                )
+            );
         }
     }
 }
