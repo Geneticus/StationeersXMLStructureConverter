@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms; // For TextBox
-using System.Xml.Linq; // For XElement
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.IdentityModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms; // For TextBox
 using System.Xml;
+using System.Xml.Linq; // For XElement
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace StationeersStructureXMLConverter
 {
@@ -16,23 +23,26 @@ namespace StationeersStructureXMLConverter
             var spawnEntries = new List<XElement>();
             int exportedCount = 0;
             int debugCount = 0;
-            int maxDebug = 5;  // Limit debug to first 5
+            int maxDebug = 5;
+
             foreach (var thingObj in things)
             {
-                if (thingObj is XElement)
+                if (thingObj is XElement thingElement)
                 {
-                    var thingElement = (XElement)thingObj;
+                    var referenceId = int.Parse(thingElement.Element("ReferenceId")?.Value ?? "0");
+                    var parentReferenceId = int.Parse(thingElement.Element("ParentReferenceId")?.Value ?? "0");
+                    var parentSlotId = int.Parse(thingElement.Element("ParentSlotId")?.Value ?? "0");
+
                     var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
                     var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
-                    var cleanId = xsiType.Replace("SaveData", "");  // "SolarPanelSaveData" → "SolarPanel"
-                    var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;  // Prefer PrefabName
-
-                    // Classify tag by type (use prefabName for "Structure..." or "DynamicThing...")
-                    string tagName = "Item";  // Default
+                    var cleanId = xsiType.Replace("SaveData", "");
+                    var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;
+                    string tagName = "Item"; // Default
                     if (prefabName.StartsWith("Structure")) tagName = "Structure";
-                    else if (prefabName.StartsWith("DynamicThing")) tagName = "DynamicThing";
+                    else if (prefabName.StartsWith("DynamicThing") || prefabName.Contains("PortableSolarPanel")) tagName = "DynamicThing";
+                    else if (prefabName.Contains("LanderCapsule")) tagName = "Item";
+                    else if (prefabName.Contains("Wreckage")) tagName = "Item";
 
-                    // Temp debug for first 5
                     if (debugCount < maxDebug)
                     {
                         output.Text += $"Debug: xsiType='{xsiType}' → tagName='{tagName}', prefabName='{prefabName}'.\r\n";
@@ -41,19 +51,24 @@ namespace StationeersStructureXMLConverter
 
                     var spawnEntry = new XElement(tagName,
                         new XAttribute("Id", prefabName),
-                        new XAttribute("HideInStartScreen", "true")
+                        new XAttribute("HideInStartScreen", "true"),
+                        new XElement("ReferenceId", referenceId),
+                        new XElement("ParentReferenceId", parentReferenceId),
+                        new XElement("ParentSlotId", parentSlotId)
                     );
 
-                    AddBasicProps(thingElement, spawnEntry);  // Sub-method
-                    AddDamageState(thingElement, spawnEntry);  // Sub-method
-                    AddBuildState(thingElement, spawnEntry);  // Sub-method
-                    AddNetworkProps(thingElement, spawnEntry);  // Sub-method
-                    AddSpawnPositionAndReagents(thingElement, spawnEntry);  // Sub-method
+                    AddBasicProps(thingElement, spawnEntry);
+                    AddDamageState(thingElement, spawnEntry);
+                    AddBuildState(thingElement, spawnEntry);
+                    AddNetworkProps(thingElement, spawnEntry);
+                    AddSpawnPositionAndReagents(thingElement, spawnEntry);
+                    AddStates(thingElement, spawnEntry);
 
                     spawnEntries.Add(spawnEntry);
                     exportedCount++;
                 }
             }
+
             output.Text += $"Extracted {exportedCount} spawn entries, {spawnEntries.Count(tag => tag.Name.LocalName == "Structure")} Structures, {spawnEntries.Count(tag => tag.Name.LocalName == "Item")} Items.\r\n";
             return spawnEntries;
         }
@@ -186,5 +201,21 @@ namespace StationeersStructureXMLConverter
                 )
             );
         }
+
+        private static void AddStates(XElement thingElement, XElement spawnEntry)
+        {
+            var states = thingElement.Element("States");
+            if (states != null)
+            {
+                var statesEntry = new XElement("States");
+                foreach (var state in states.Elements())
+                {
+                    statesEntry.Add(new XElement(state.Name, state.Element("State")?.Value ?? "0"));
+                }
+                spawnEntry.Add(statesEntry);
+            }
+        }
+
+
     }
 }

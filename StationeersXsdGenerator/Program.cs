@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable // Enable nullable reference types
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,8 +20,8 @@ namespace XsdGenerator
                 Console.WriteLine($"Game DLL not found at {dllPath}. Adjust path and retry.");
                 return;
             }
-
-            Assembly gameAsm = null;
+            Assembly? gameAsm = null; // Nullable Assembly
+#pragma warning disable CS8601 // Possible null reference assignment
             try
             {
                 gameAsm = Assembly.LoadFrom(dllPath);
@@ -30,36 +32,34 @@ namespace XsdGenerator
                 Console.WriteLine($"Failed to load assembly: {loadEx.Message}");
                 return;
             }
+#pragma warning restore CS8601 // Re-enable the warning
 
             // Types to process (exact from decompile/output)
             var typeNames = new[]
             {
-                "Assets.Scripts.Serialization.XmlSaveLoad+WorldData",  // For World.xml
-                "WorldSettingData"  // No prefix, as per match for worldsettings.xml
+                "Assets.Scripts.Serialization.XmlSaveLoad+WorldData", // For World.xml
+                "WorldSettingData" // No prefix, as per match for worldsettings.xml
             };
-
             foreach (var typeName in typeNames)
             {
-                Type type = gameAsm.GetType(typeName);
+                Type? type = gameAsm?.GetType(typeName); // Nullable Type
                 if (type != null)
                 {
                     Console.WriteLine($"Processing type: {type.FullName}");
-
                     try
                     {
                         // Generate XSD for this type
                         var importer = new XmlReflectionImporter();
-                        var mapping = importer.ImportTypeMapping(type, "http://stationeers.com/data");  // Shared namespace
-                        var schemas = new XmlSchemas();  // Create empty schemas first
-                        var exporter = new XmlSchemaExporter(schemas);  // Pass schemas to exporter
-                        exporter.ExportTypeMapping(mapping);  // Exports full graph (e.g., WorldData -> Things, WorldSettingData -> SpawnDatas)
-
+                        var mapping = importer.ImportTypeMapping(type, "http://stationeers.com/data"); // Shared namespace
+                        var schemas = new XmlSchemas(); // Create empty schemas first
+                        var exporter = new XmlSchemaExporter(schemas); // Pass schemas to exporter
+                        exporter.ExportTypeMapping(mapping); // Exports full graph
                         string xsdName = type.Name.Contains("WorldData") ? "World.xsd" : "WorldSetting.xsd";
                         using (var writer = XmlWriter.Create(xsdName))
                         {
                             if (schemas.Count > 0)
                             {
-                                schemas[0].Write(writer);  // Write the primary schema
+                                schemas[0].Write(writer); // Write the primary schema
                             }
                         }
                         Console.WriteLine($"XSD generated: {xsdName} (size: {new FileInfo(xsdName).Length} bytes)");
@@ -73,13 +73,13 @@ namespace XsdGenerator
                 {
                     Console.WriteLine($"Type not found: {typeName}");
                     // Fallback: Search for similar names
-                    var matchingTypes = gameAsm.GetTypes().Where(t => t.Name.Contains("WorldSettingData")).ToList();
-                    if (matchingTypes.Any())
+                    var matchingTypes = gameAsm?.GetTypes().Where(t => t.Name.Contains("WorldSettingData")).ToList();
+                    if (matchingTypes?.Any() ?? false)
                     {
                         Console.WriteLine("Matching types found:");
                         foreach (var match in matchingTypes)
                         {
-                            Console.WriteLine($"  - {match.FullName}");
+                            Console.WriteLine($" - {match.FullName}");
                         }
                     }
                     else
@@ -88,7 +88,6 @@ namespace XsdGenerator
                     }
                 }
             }
-
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }

@@ -77,35 +77,89 @@ namespace StationeersStructureXMLConverter
                     var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
                     var cleanId = xsiType.Replace("SaveData", "");
                     var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;
-
                     // Classify tag by type (use prefabName for "Structure..." or "DynamicThing...", specials for edge cases)
-                    string tagName = "Item";  // Default
+                    string tagName = "Item"; // Default
                     if (prefabName.StartsWith("Structure")) tagName = "Structure";
-                    else if (prefabName.StartsWith("DynamicThing") || prefabName.Contains("PortableSolarPanel")) tagName = "DynamicThing";  // Special for free floating solar
-                    else if (prefabName.Contains("LanderCapsule")) tagName = "Item";  // Capsule as Item
-                    else if (prefabName.Contains("Wreckage")) tagName = "Item";  // Wreckage as Item with variant
-
+                    else if (prefabName.StartsWith("DynamicThing") || prefabName.Contains("PortableSolarPanel")) tagName = "DynamicThing"; // Special for free floating solar
+                    else if (prefabName.Contains("LanderCapsule")) tagName = "Item"; // Capsule as Item
+                    else if (prefabName.Contains("Wreckage")) tagName = "Item"; // Wreckage as Item with variant
                     var spawnEntry = new XElement(tagName,
                         new XAttribute("Id", prefabName),
                         new XAttribute("HideInStartScreen", "true")
                     );
-
                     // Add all child elements from ThingSaveData (as per previous full mapping)
-                    AddAllProps(thingElement, spawnEntry);  // Sub-method for all props
+                    AddAllProps(thingElement, spawnEntry); // Sub-method for all props
+
+                    // Add temporary elements for nesting
+                    var referenceId = thingElement.Element("ReferenceId")?.Value ?? "0";
+                    var parentReferenceId = thingElement.Element("ParentReferenceId")?.Value ?? "0";
+                    var parentSlotId = thingElement.Element("ParentSlotId")?.Value ?? "0";
+                    spawnEntry.Add(new XElement("TempReferenceId", referenceId));
+                    spawnEntry.Add(new XElement("TempParentReferenceId", parentReferenceId));
+                    spawnEntry.Add(new XElement("TempParentSlotId", parentSlotId));
 
                     spawnEntries.Add(spawnEntry);
                 }
             }
 
+            // New: Add nesting logic after creating spawnEntries
+            var idToSpawn = new Dictionary<string, XElement>();
+            foreach (var spawnEntry in spawnEntries)
+            {
+                var referenceId = spawnEntry.Element("TempReferenceId")?.Value ?? "0";
+                idToSpawn[referenceId] = spawnEntry;
+            }
+            var visited = new HashSet<string>();
+            foreach (var spawnEntry in spawnEntries.ToList())
+            {
+                var parentId = spawnEntry.Element("TempReferenceId")?.Value ?? "0";
+                var children = spawnEntries.Where(e => e.Element("TempParentReferenceId")?.Value == parentId).ToList();
+                if (children.Any())
+                {
+                    AddInventory(spawnEntry, children, visited, spawnEntries);
+                }
+            }
+
+            // Use original spawnEntries for BuildSpawn to ensure all items are included
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", null),
                 new XElement("GameData",
                     new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
                     new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
-                    BuildWorldSettings(scenarioName),  // Sub-method
-                    BuildSpawn(spawnEntries, spawnId)  // Sub-method
+                    BuildWorldSettings(scenarioName), // Sub-method
+                    BuildSpawn(spawnEntries, spawnId) // Use full spawnEntries list
                 )
             );
+        }
+
+        private static void AddInventory(XElement parent, List<XElement> children, HashSet<string> visited, List<XElement> spawnEntries)
+        {
+            foreach (var childSpawn in children)
+            {
+                var referenceId = childSpawn.Element("TempReferenceId")?.Value ?? "0";
+                if (visited.Contains(referenceId))
+                {
+                    continue; // Skip to prevent cycles
+                }
+                visited.Add(referenceId);
+
+                var slotId = childSpawn.Element("TempParentSlotId")?.Value ?? "0";
+                childSpawn.SetAttributeValue("SlotIndex", slotId);
+                // Remove temporary elements if not needed in output
+                childSpawn.Element("TempParentReferenceId")?.Remove();
+                childSpawn.Element("TempParentSlotId")?.Remove();
+                childSpawn.Element("TempReferenceId")?.Remove();
+
+                // Recurse for grandchildren
+                var childId = referenceId;
+                var grandChildren = spawnEntries.Where(e => e.Element("TempParentReferenceId")?.Value == childId).ToList();
+                if (grandChildren.Any())
+                {
+                    AddInventory(childSpawn, grandChildren, visited, spawnEntries);
+                }
+
+                parent.Add(childSpawn);
+            }
         }
 
         // Sub-method: Build self-closing <WorldSettings Id="..."/>
