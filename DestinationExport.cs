@@ -69,6 +69,8 @@ namespace StationeersStructureXMLConverter
         private static XDocument BuildGameData(List<object> things, string scenarioName, string spawnId)
         {
             var spawnEntries = new List<XElement>();
+            var childEntries = new List<XElement>(); // Temporary collection for items with ParentReferenceId != 0
+
             foreach (var thingObj in things)
             {
                 if (thingObj is XElement thingElement)
@@ -98,41 +100,56 @@ namespace StationeersStructureXMLConverter
                     spawnEntry.Add(new XElement("TempParentReferenceId", parentReferenceId));
                     spawnEntry.Add(new XElement("TempParentSlotId", parentSlotId));
 
-                    spawnEntries.Add(spawnEntry);
+                    // Sort into top-level or child collection
+                    if (parentReferenceId == "0")
+                    {
+                        spawnEntries.Add(spawnEntry);
+                    }
+                    else
+                    {
+                        childEntries.Add(spawnEntry);
+                    }
                 }
             }
 
-            // New: Add nesting logic after creating spawnEntries
+            // New: Add nesting logic using childEntries
             var idToSpawn = new Dictionary<string, XElement>();
-            foreach (var spawnEntry in spawnEntries)
+            foreach (var spawnEntry in spawnEntries.Concat(childEntries))
             {
                 var referenceId = spawnEntry.Element("TempReferenceId")?.Value ?? "0";
                 idToSpawn[referenceId] = spawnEntry;
             }
             var visited = new HashSet<string>();
-            foreach (var spawnEntry in spawnEntries.ToList())
+            foreach (var spawnEntry in spawnEntries.ToList()) // Only iterate top-level
             {
                 var parentId = spawnEntry.Element("TempReferenceId")?.Value ?? "0";
-                var children = spawnEntries.Where(e => e.Element("TempParentReferenceId")?.Value == parentId).ToList();
+                var children = childEntries.Where(e => e.Element("TempParentReferenceId")?.Value == parentId).ToList();
                 if (children.Any())
                 {
-                    AddInventory(spawnEntry, children, visited, spawnEntries);
+                    AddInventory(spawnEntry, children, visited, childEntries);
                 }
             }
 
-            // Use original spawnEntries for BuildSpawn to ensure all items are included
+            // Clean up temporary elements before return
+            foreach (var entry in spawnEntries.Concat(childEntries))
+            {
+                entry.Element("TempReferenceId")?.Remove();
+                entry.Element("TempParentReferenceId")?.Remove();
+                entry.Element("TempParentSlotId")?.Remove();
+            }
+
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", null),
                 new XElement("GameData",
                     new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
                     new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
                     BuildWorldSettings(scenarioName), // Sub-method
-                    BuildSpawn(spawnEntries, spawnId) // Use full spawnEntries list
+                    BuildSpawn(spawnEntries, spawnId) // Sub-method with top-level only
                 )
             );
         }
 
-        private static void AddInventory(XElement parent, List<XElement> children, HashSet<string> visited, List<XElement> spawnEntries)
+        private static void AddInventory(XElement parent, List<XElement> children, HashSet<string> visited, List<XElement> childEntries)
         {
             foreach (var childSpawn in children)
             {
@@ -152,13 +169,14 @@ namespace StationeersStructureXMLConverter
 
                 // Recurse for grandchildren
                 var childId = referenceId;
-                var grandChildren = spawnEntries.Where(e => e.Element("TempParentReferenceId")?.Value == childId).ToList();
+                var grandChildren = childEntries.Where(e => e.Element("TempParentReferenceId")?.Value == childId).ToList();
                 if (grandChildren.Any())
                 {
-                    AddInventory(childSpawn, grandChildren, visited, spawnEntries);
+                    AddInventory(childSpawn, grandChildren, visited, childEntries);
                 }
 
                 parent.Add(childSpawn);
+                childEntries.Remove(childSpawn); // Remove from childEntries to avoid duplication if needed
             }
         }
 
