@@ -23,66 +23,6 @@ namespace StationeersStructureXMLConverter
     {
      
         public static string parsingErrors;
-        private WorldData serialObject = new WorldData();
-        public static WorldData DeserializeXMLFileToObject(string XmlFilename)
-        {
-            WorldData returnObject = default(WorldData);
-            if (!File.Exists(XmlFilename))
-            {
-                throw new FileNotFoundException($"The file {XmlFilename} was not found.");
-            }
-
-            
-                using (StreamReader xmlStream = new StreamReader(XmlFilename))
-                {
-                    // Create an XmlReader to manually step through the XML
-                    XmlReaderSettings settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse };
-                    using (XmlReader reader = XmlReader.Create(xmlStream, settings))
-                    {
-                        using (StreamReader sr = new StreamReader(XmlFilename))
-                        {
-                            string xmlContent = sr.ReadToEnd();
-                            Console.WriteLine("XML Content:");
-                            Console.WriteLine(xmlContent);
-                        }
-                        while (reader.Read())
-                        {
-                            Console.WriteLine(value: $"Node Type: {reader.NodeType}, Name: {reader.Name}, Value: {reader.Value} , Line: {((IXmlLineInfo)reader).LineNumber}");
-                            // Manually step through and break if needed
-                        }
-                    try
-                    {
-                        // Set a breakpoint here to monitor deserialization progress
-                        XmlSerializer serializer = new XmlSerializer(typeof(WorldData));
-                        serializer.UnknownElement += (sender, e) =>
-                        {
-                            Console.WriteLine($"Unknown element: {e.Element.Name}");
-                        };
-                        WorldData result = null;
-                        using (StreamReader file = new StreamReader(XmlFilename))
-                        {
-                            result = (WorldData)serializer.Deserialize(file);
-                        }  // Step into this to see the details
-                        Console.WriteLine($"Deserialized result: {result}");
-                        if (result != null)
-                        {
-                            Console.WriteLine("Deserialization successful.");
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        Console.WriteLine($"Deserialization failed: {ex.Message}");
-                        if (ex.InnerException != null)
-                        {
-                            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                        }
-                    }
-                }
-                }
-            
-            
-            return returnObject;
-        }
 
         public Form1()
         {
@@ -119,17 +59,7 @@ namespace StationeersStructureXMLConverter
                 sourceFile_TextBox.Text = openFileDialog1.InitialDirectory += openFileDialog1.FileName;                
             }
         }
-        //private void browseButton_Click(object sender, EventArgs e)
-        //{
-        //    OpenFileDialog openFileDialog = new OpenFileDialog();
-        //    openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
-        //    openFileDialog.Title = "Select World.xml";
 
-        //    if (openFileDialog.ShowDialog() == DialogResult.OK)
-        //    {
-        //        sourceFile_TextBox.Text = openFileDialog.FileName;
-        //    }
-        //}
         private void DestinationButton_Click(object sender, EventArgs e)
         {
             //if(saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -236,7 +166,6 @@ namespace StationeersStructureXMLConverter
                 AppendLog($"Stack: {ex.StackTrace}");
             }
         }
-
         // Helper for auto-scroll to bottom after AppendText
         private void ScrollToBottom()
         {
@@ -270,16 +199,6 @@ namespace StationeersStructureXMLConverter
                 return things;
             }
 
-            // Log first few items for debug (types like SolarPanelSaveData, CableSaveData from populated XML)
-            //var itemLog = "Sample items:\n";
-            //for (int i = 0; i < Math.Min(5, thingArray.Length); i++)  // Show 5 for populated file
-            //{
-            //    var item = thingArray.GetValue(i);
-            //    itemLog += $"[{i}] {item?.GetType().Name} (Type: {GetItemProperty(item, "xsi:type")} , Position: {GetItemProperty(item, "Position")})\n";
-            //}
-            //if (thingArray.Length > 5) itemLog += $"... (total {thingArray.Length} items)\n";
-            //output_textBox.Text += itemLog;
-
             // Add all items (filter polymorphs by SaveData name)
             int itemCount = 0;
             for (int i = 0; i < thingArray.Length; i++)
@@ -299,22 +218,6 @@ namespace StationeersStructureXMLConverter
 
             return things;
         }
-
-        // Helper for logging item props (e.g., Position or xsi:type) - class-level method
-        //private string GetItemProperty(object item, string propName)
-        //{
-        //    if (item == null) return "N/A";
-        //    var prop = item.GetType().GetProperty(propName);
-        //    var value = prop?.GetValue(item);
-        //    return value?.ToString() ?? "N/A";
-        //}
-
-
-
-
-
-
-
         // Sub-method: Build full export XDocument
         private XDocument BuildExportDoc(List<XElement> spawnEntries, string scenarioName, string spawnId)
         {
