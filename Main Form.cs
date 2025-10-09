@@ -7,7 +7,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
+
 
 namespace StationeersStructureXMLConverter
 {
@@ -20,9 +22,8 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.GroupBox groupBox1;
+        //private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TextBox textBox3;
@@ -34,8 +35,18 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelPaths;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelButtons;
-        private System.Windows.Forms.Panel progressBarOutline;
-        private System.Windows.Forms.Label labelProgressBar;
+        private System.Windows.Forms.GroupBox ItemFilters_GroupBox; // Moved to Center_GroupBox
+        private System.Windows.Forms.TableLayoutPanel ItemFilters_TableLayout;
+        private System.Windows.Forms.GroupBox Center_GroupBox; // Now contains ItemFilters_GroupBox
+        // Removed: private System.Windows.Forms.TableLayoutPanel Center_TableLayout;
+        private System.Windows.Forms.GroupBox Right_GroupBox;
+        // Removed: private System.Windows.Forms.TableLayoutPanel Right_TableLayout;
+        private System.Windows.Forms.GroupBox WorldTypeOptions_GroupBox; // Moved to leftmost
+        private System.Windows.Forms.CheckBox VanillaWorld_CheckBox;
+        private System.Windows.Forms.CheckBox LocalMod_CheckBox;
+        private System.Windows.Forms.CheckBox None_CheckBox;
+        private System.Windows.Forms.ComboBox WorldSelection_ComboBox;
+        private string stationeersPath = null;
 
         public Main_Form()
         {
@@ -46,6 +57,15 @@ namespace StationeersStructureXMLConverter
             textBox3.ReadOnly = true; // Prevent edits
             textBox3.Font = new Font("Consolas", 9F); // Monospace for alignment
             textBox3.AcceptsReturn = true; // Allow \r\n breaks
+            VanillaWorld_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
+            LocalMod_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
+            None_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
+            WorldSelection_ComboBox.SelectedIndexChanged += WorldSelection_ComboBox_SelectedIndexChanged;
+            // Set default state
+            None_CheckBox.Checked = true;
+            WorldSelection_ComboBox.Enabled = false;
+            SetStationeersPath();
+
 
             // Set default paths based on debug/release mode
             bool isDebug = System.Diagnostics.Debugger.IsAttached;
@@ -320,5 +340,164 @@ namespace StationeersStructureXMLConverter
             this.Close();
             Application.Exit();
         }
+        private void CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (((CheckBox)sender).Checked)
+            {
+                if (sender == VanillaWorld_CheckBox) { LocalMod_CheckBox.Checked = false; None_CheckBox.Checked = false; }
+                else if (sender == LocalMod_CheckBox) { VanillaWorld_CheckBox.Checked = false; None_CheckBox.Checked = false; }
+                else if (sender == None_CheckBox) { VanillaWorld_CheckBox.Checked = false; LocalMod_CheckBox.Checked = false; }
+                // Update ComboBox state
+                if (VanillaWorld_CheckBox.Checked || LocalMod_CheckBox.Checked)
+                {
+                    WorldSelection_ComboBox.Enabled = true;
+                    PopulateWorldDropdown();
+                }
+                else if (None_CheckBox.Checked)
+                {
+                    WorldSelection_ComboBox.Items.Clear();
+                    WorldSelection_ComboBox.Enabled = false;
+                }
+                VerifySelectedWorld();
+            }
+        }
+
+        private void PopulateWorldDropdown()
+        {
+            WorldSelection_ComboBox.Items.Clear();
+            if (VanillaWorld_CheckBox.Checked && stationeersPath != null)
+            {
+                string worldsPath = Path.Combine(stationeersPath, "rocketstation_Data", "StreamingAssets", "Worlds");
+                if (Directory.Exists(worldsPath))
+                {
+                    var worldFolders = Directory.GetDirectories(worldsPath)
+                        .Select(Path.GetFileName)
+                        .ToArray();
+                    WorldSelection_ComboBox.Items.AddRange(worldFolders);
+                }
+                else
+                {
+                    AppendLog($"Warning: Worlds directory not found at {worldsPath}.");
+                }
+            }
+            else if (LocalMod_CheckBox.Checked)
+            {
+                string basePath = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+                string modsPath = Path.Combine(basePath, "mods");
+                if (Directory.Exists(modsPath))
+                {
+                    var modFolders = Directory.GetDirectories(modsPath)
+                        .Where(d => !d.Contains("Tutorial") && !d.Contains("SharedTextures"))
+                        .Select(Path.GetFileName)
+                        .ToArray();
+                    WorldSelection_ComboBox.Items.AddRange(modFolders);
+                }
+                else
+                {
+                    AppendLog("Warning: 'mods' directory not found at " + modsPath + ". No local mod worlds available.");
+                }
+            }
+            // None_CheckBox.Checked leaves it empty
+            WorldSelection_ComboBox.SelectedIndex = -1; // Clear selection
+        }
+
+        private void VerifySelectedWorld()
+        {
+            if (WorldSelection_ComboBox.SelectedIndex != -1 && !None_CheckBox.Checked)
+            {
+                string selectedFolder = WorldSelection_ComboBox.SelectedItem.ToString();
+                string fullPath = "";
+
+                if (VanillaWorld_CheckBox.Checked && stationeersPath != null)
+                {
+                    string worldsPath = Path.Combine(stationeersPath, "rocketstation_Data", "StreamingAssets", "Worlds", selectedFolder);
+                    fullPath = Path.Combine(worldsPath, "world.xml");
+                    if (!File.Exists(fullPath))
+                    {
+                        AppendLog($"Warning: 'world.xml' not found in {selectedFolder}.");
+                        WorldSelection_ComboBox.SelectedIndex = -1;
+                    }
+                }
+                else if (LocalMod_CheckBox.Checked)
+                {
+                    string basePath = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+                    string modsPath = Path.Combine(basePath, "mods", selectedFolder);
+                    if (Directory.Exists(modsPath))
+                    {
+                        string[] subFolders = Directory.GetDirectories(modsPath, "*", SearchOption.AllDirectories);
+                        bool worldFound = false;
+                        foreach (string folder in subFolders)
+                        {
+                            string[] xmlFiles = Directory.GetFiles(folder, "*.xml");
+                            foreach (string xmlFile in xmlFiles)
+                            {
+                                try
+                                {
+                                    XDocument doc = XDocument.Load(xmlFile);
+                                    if (doc.Root != null && doc.Root.Name.LocalName == "WorldSettings")
+                                    {
+                                        fullPath = xmlFile;
+                                        worldFound = true;
+                                        break;
+                                    }
+                                }
+                                catch (XmlException)
+                                {
+                                    // Skip invalid XML files
+                                    continue;
+                                }
+                            }
+                            if (worldFound) break;
+                        }
+                        if (!worldFound)
+                        {
+                            AppendLog($"Warning: No WorldSettings XML file found in {selectedFolder} or its subfolders.");
+                            WorldSelection_ComboBox.SelectedIndex = -1;
+                        }
+                    }
+                    else
+                    {
+                        AppendLog($"Warning: Mod folder {selectedFolder} not found at {modsPath}.");
+                        WorldSelection_ComboBox.SelectedIndex = -1;
+                    }
+                }
+            }
+        }
+
+        private void WorldSelection_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!None_CheckBox.Checked) VerifySelectedWorld();
+        }
+
+        private void SetStationeersPath()
+        {
+            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+            {
+                folderBrowser.Description = "Please select the Stationeers installation folder (e.g., containing rocketstation_Data).";
+                folderBrowser.RootFolder = Environment.SpecialFolder.MyComputer;
+                folderBrowser.ShowNewFolderButton = false;
+                if (folderBrowser.ShowDialog() == DialogResult.OK)
+                {
+                    string selectedPath = folderBrowser.SelectedPath;
+                    if (Directory.Exists(Path.Combine(selectedPath, "rocketstation_Data", "StreamingAssets", "Worlds")))
+                    {
+                        stationeersPath = selectedPath;
+                        AppendLog($"Stationeers path set to: {stationeersPath}");
+                    }
+                    else
+                    {
+                        MessageBox.Show("The selected folder does not contain a valid Stationeers installation. Please select the folder containing 'rocketstation_Data'.", "Invalid Path", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        SetStationeersPath(); // Recursive call to prompt again
+                    }
+                }
+                else
+                {
+                    stationeersPath = null;
+                    AppendLog("No Stationeers path selected. Vanilla world selection will be disabled.");
+                    VanillaWorld_CheckBox.Enabled = false;
+                }
+            }
+        }
+
     }
 }
