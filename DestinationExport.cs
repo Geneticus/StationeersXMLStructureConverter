@@ -12,7 +12,7 @@ namespace StationeersStructureXMLConverter
 {
     public static class DestinationExport
     {
-        // Export to new schema: Standalone <Thing> XML files for each ThingSaveData (prefab style)
+        // Method preserved in case I want to export individual items per file.
         private static void TransformToBatch(List<object> things, string destPath, TextBox output)
         {
             int exportedCount = 0;
@@ -38,7 +38,6 @@ namespace StationeersStructureXMLConverter
 
 
 
-        // Export to new schema: SpawnGroup.xml with <GameData><WorldSettings Id="My_Scenario"/><Spawn Id="My_ScenarioThings"><Structure Id="..." HideInStartScreen="true">...</Structure></Spawn></GameData>
         public static void TransformToNewSchema(List<object> things, string destPath, TextBox output)
         {
             if (things.Count == 0)
@@ -46,23 +45,51 @@ namespace StationeersStructureXMLConverter
                 output.AppendText("No things to export.\r\n");
                 return;
             }
-
-            string scenarioName = "My_Scenario";  // From textbox or user input
+            output.AppendText($"Processing {things.Count} input things.\r\n"); // Debug log
+            string scenarioName = "My_Scenario"; // From textbox or user input
             string spawnId = scenarioName + "Things";
+            var gameData = BuildGameData(things, scenarioName, spawnId); // Sub-method for root
 
-            var gameData = BuildGameData(things, scenarioName, spawnId);  // Sub-method for root
-            string exportPath = Path.Combine(destPath, "SpawnGroup.xml");
-            if (File.Exists(exportPath))
+            output.AppendText($"Attempting to write to: {destPath}\r\n"); // Diagnostic log
+            try
             {
-                var result = MessageBox.Show("SpawnGroup.xml already exists. Overwrite?", "Overwrite File?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.No)
+                // Normalize and validate destPath as a file
+                string fullPath = Path.GetFullPath(destPath.TrimEnd('\\')); // Remove trailing backslash
+                if (Path.GetExtension(fullPath).Length == 0)
                 {
-                    output.AppendText("Export cancelled—file not overwritten.\r\n");
+                    output.AppendText($"Error: '{fullPath}' requires a file extension (e.g., .xml).\r\n");
                     return;
                 }
+                string directory = Path.GetDirectoryName(fullPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Create or overwrite the file
+                using (var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
+                {
+                    gameData.Save(fs);
+                }
+                output.AppendText($"Exported {things.Count} spawn entries to {Path.GetDirectoryName(fullPath)}\r\n");
+                return; // Exit on success to prevent further execution
             }
-            gameData.Save(exportPath);
-            output.AppendText($"Exported {things.Count} spawn entries to SpawnGroup.xml: {exportPath}.\r\n");
+            catch (UnauthorizedAccessException ex)
+            {
+                output.AppendText($"Error: Access denied to '{destPath}'. Please run as administrator or choose a writable directory.\r\n");
+                return; // Halt process on error
+            }
+            catch (IOException ex)
+            {
+                output.AppendText($"Error: Unable to write to '{destPath}'. The file may be in use or the directory is read-only. Try a different location.\r\n");
+                return; // Halt process on error
+            }
+            catch (Exception ex)
+            {
+                output.AppendText($"Error: An unexpected issue occurred while saving '{destPath}': {ex.Message}\r\n");
+                return; // Halt process on error
+            }
+            // Ensure process stops if an error occurs
         }
 
         private static XElement DeepCopyXElement(XElement element)

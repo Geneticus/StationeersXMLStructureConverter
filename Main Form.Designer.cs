@@ -155,6 +155,7 @@ namespace StationeersStructureXMLConverter
             this.button2.Size = new System.Drawing.Size(140, 34); // Fixed width
             this.button2.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
             this.button2.Text = "Browse Input";
+            this.button2.Click += new System.EventHandler(this.BrowseInput_Click);
             this.toolTip1.SetToolTip(this.button2, "Select the input XML file to convert.");
             // 
             // button3
@@ -164,6 +165,7 @@ namespace StationeersStructureXMLConverter
             this.button3.Size = new System.Drawing.Size(140, 34); // Fixed width
             this.button3.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
             this.button3.Text = "Browse Output";
+            this.button3.Click += new System.EventHandler(this.BrowseOutput_Click);
             this.toolTip1.SetToolTip(this.button3, "Select the output path for the converted XML file.");
             // 
             // label2
@@ -326,6 +328,7 @@ namespace StationeersStructureXMLConverter
             this.button1.Size = new System.Drawing.Size(75, 4);
             this.button1.TabIndex = 7;
             this.button1.Text = "Convert";
+            this.button1.Click += new System.EventHandler(this.Convert_Click);
             this.toolTip1.SetToolTip(this.button1, "Convert the input XML to the output format.");
             // 
             // button4

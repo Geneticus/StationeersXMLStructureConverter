@@ -22,8 +22,7 @@ namespace StationeersStructureXMLConverter
         {
             var spawnEntries = new List<XElement>();
             int exportedCount = 0;
-            int debugCount = 0;
-            int maxDebug = 5;
+
 
             foreach (var thingObj in things)
             {
@@ -43,11 +42,16 @@ namespace StationeersStructureXMLConverter
                     else if (prefabName.Contains("LanderCapsule")) tagName = "Item";
                     else if (prefabName.Contains("Wreckage")) tagName = "Item";
 
-                    if (debugCount < maxDebug)
+                    if (string.IsNullOrEmpty(prefabName) || string.IsNullOrEmpty(xsiType))
                     {
-                        output.Text += $"Debug: xsiType='{xsiType}' → tagName='{tagName}', prefabName='{prefabName}'.\r\n";
-                        debugCount++;
+                        output.AppendText($"Warning: Skipping element with missing PrefabName or xsi:type: {thingElement}\r\n");
+                        continue;
                     }
+                    //if (debugCount < maxDebug)
+                    //{
+                    //    output.Text += $"Debug: xsiType='{xsiType}' → tagName='{tagName}', prefabName='{prefabName}'.\r\n";
+                    //    debugCount++;
+                    //}
 
                     var spawnEntry = new XElement(tagName,
                         new XAttribute("Id", prefabName),
@@ -63,7 +67,6 @@ namespace StationeersStructureXMLConverter
                     AddNetworkProps(thingElement, spawnEntry);
                     AddSpawnPositionAndReagents(thingElement, spawnEntry);
                     AddStates(thingElement, spawnEntry);
-
                     spawnEntries.Add(spawnEntry);
                     exportedCount++;
                 }
