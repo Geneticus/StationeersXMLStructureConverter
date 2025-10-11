@@ -300,9 +300,9 @@ namespace StationeersStructureXMLConverter
             this.Filter5_CheckBox.Location = new System.Drawing.Point(12, 132);
             this.Filter5_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Filter5_CheckBox.Name = "Filter5_CheckBox";
-            this.Filter5_CheckBox.Size = new System.Drawing.Size(80, 24);
+            this.Filter5_CheckBox.Size = new System.Drawing.Size(114, 24);
             this.Filter5_CheckBox.TabIndex = 3;
-            this.Filter5_CheckBox.Text = "Filter 5";
+            this.Filter5_CheckBox.Text = "Exclude loose Ore Items";
             this.Filter5_CheckBox.UseVisualStyleBackColor = true;
             //
             // Filter6_CheckBox
@@ -311,9 +311,9 @@ namespace StationeersStructureXMLConverter
             this.Filter6_CheckBox.Location = new System.Drawing.Point(12, 167);
             this.Filter6_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Filter6_CheckBox.Name = "Filter6_CheckBox";
-            this.Filter6_CheckBox.Size = new System.Drawing.Size(80, 24);
+            this.Filter6_CheckBox.Size = new System.Drawing.Size(117, 24);
             this.Filter6_CheckBox.TabIndex = 4;
-            this.Filter6_CheckBox.Text = "Filter 6";
+            this.Filter6_CheckBox.Text = "Exclude loose ItemKits";
             this.Filter6_CheckBox.UseVisualStyleBackColor = true;
             //
             // Right_GroupBox
