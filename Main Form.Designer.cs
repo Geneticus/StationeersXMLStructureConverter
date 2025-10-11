@@ -1,20 +1,33 @@
-﻿using System;
-using System.Windows.Forms;
+﻿using StationeersSpawnXML;
+using StationeersStructureXMLConverter.Properties;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Numerics;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Security.AccessControl;
+using System.Security.Cryptography;
+using System.Security.Policy;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
+using static System.Collections.Specialized.BitVector32;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace StationeersStructureXMLConverter
 {
     partial class Main_Form
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -24,12 +37,6 @@ namespace StationeersStructureXMLConverter
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
@@ -40,9 +47,6 @@ namespace StationeersStructureXMLConverter
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
             this.ItemFilters_TableLayout = new System.Windows.Forms.TableLayoutPanel();
             this.WorldTypeOptions_GroupBox = new System.Windows.Forms.GroupBox();
             this.VanillaWorld_CheckBox = new System.Windows.Forms.CheckBox();
@@ -53,6 +57,8 @@ namespace StationeersStructureXMLConverter
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkBox3 = new System.Windows.Forms.CheckBox();
+            this.Filter5_CheckBox = new System.Windows.Forms.CheckBox();
+            this.Filter6_CheckBox = new System.Windows.Forms.CheckBox();
             this.Right_GroupBox = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -93,7 +99,7 @@ namespace StationeersStructureXMLConverter
             this.tableLayoutPanel1.RowCount = 6;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 210F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -122,15 +128,11 @@ namespace StationeersStructureXMLConverter
             this.tableLayoutPanelPaths.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanelPaths.Controls.Add(this.textBox1, 1, 0);
             this.tableLayoutPanelPaths.Controls.Add(this.button2, 2, 0);
-            this.tableLayoutPanelPaths.Controls.Add(this.label2, 0, 1);
-            this.tableLayoutPanelPaths.Controls.Add(this.textBox2, 1, 1);
-            this.tableLayoutPanelPaths.Controls.Add(this.button3, 2, 1);
             this.tableLayoutPanelPaths.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanelPaths.Location = new System.Drawing.Point(3, 63);
             this.tableLayoutPanelPaths.Name = "tableLayoutPanelPaths";
-            this.tableLayoutPanelPaths.RowCount = 2;
-            this.tableLayoutPanelPaths.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelPaths.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelPaths.RowCount = 1;
+            this.tableLayoutPanelPaths.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanelPaths.Size = new System.Drawing.Size(1494, 100);
             this.tableLayoutPanelPaths.TabIndex = 1;
             //
@@ -163,38 +165,7 @@ namespace StationeersStructureXMLConverter
             this.button2.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
             this.button2.Text = "Browse Input";
             this.button2.Click += new System.EventHandler(this.BrowseInput_Click);
-            this.toolTip1.SetToolTip(this.button2, "Select the input XML file to convert.");
-            //
-            // button3
-            //
-            this.button3.AutoSize = false;
-            this.button3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left;
-            this.button3.Size = new System.Drawing.Size(314, 34);
-            this.button3.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
-            this.button3.Text = "Browse Output";
-            this.button3.Click += new System.EventHandler(this.BrowseOutput_Click);
-            this.toolTip1.SetToolTip(this.button3, "Select the output path for the converted XML file.");
-            //
-            // label2
-            //
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 45);
-            this.label2.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(99, 20);
-            this.label2.TabIndex = 3;
-            this.label2.Text = "Output Path:";
-            //
-            // textBox2
-            //
-            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox2.Location = new System.Drawing.Point(150, 45);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(0, 5, 4, 5);
-            this.textBox2.MinimumSize = new System.Drawing.Size(300, 4);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(1026, 26);
-            this.textBox2.TabIndex = 4;
+            this.toolTip1.SetToolTip(this.button2, "Select the .save file to convert.");
             //
             // ItemFilters_TableLayout
             //
@@ -211,7 +182,7 @@ namespace StationeersStructureXMLConverter
             this.ItemFilters_TableLayout.Name = "ItemFilters_TableLayout";
             this.ItemFilters_TableLayout.RowCount = 1;
             this.ItemFilters_TableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ItemFilters_TableLayout.Size = new System.Drawing.Size(1492, 140);
+            this.ItemFilters_TableLayout.Size = new System.Drawing.Size(1492, 200);
             this.ItemFilters_TableLayout.TabIndex = 2;
             //
             // WorldTypeOptions_GroupBox
@@ -225,7 +196,7 @@ namespace StationeersStructureXMLConverter
             this.WorldTypeOptions_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.WorldTypeOptions_GroupBox.Name = "WorldTypeOptions_GroupBox";
             this.WorldTypeOptions_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.WorldTypeOptions_GroupBox.Size = new System.Drawing.Size(492, 130);
+            this.WorldTypeOptions_GroupBox.Size = new System.Drawing.Size(492, 190);
             this.WorldTypeOptions_GroupBox.TabIndex = 4;
             this.WorldTypeOptions_GroupBox.TabStop = false;
             this.WorldTypeOptions_GroupBox.Text = "World Type Options";
@@ -271,18 +242,21 @@ namespace StationeersStructureXMLConverter
             this.WorldSelection_ComboBox.Name = "WorldSelection_ComboBox";
             this.WorldSelection_ComboBox.Size = new System.Drawing.Size(200, 23);
             this.WorldSelection_ComboBox.TabIndex = 3;
+            this.toolTip1.SetToolTip(this.WorldSelection_ComboBox, "Select a world folder to copy for the new world linked to SpawnGroup.xml.");
             //
             // ItemFilters_GroupBox
             //
             this.ItemFilters_GroupBox.Controls.Add(this.checkBox2);
             this.ItemFilters_GroupBox.Controls.Add(this.checkBox1);
             this.ItemFilters_GroupBox.Controls.Add(this.checkBox3);
+            this.ItemFilters_GroupBox.Controls.Add(this.Filter5_CheckBox);
+            this.ItemFilters_GroupBox.Controls.Add(this.Filter6_CheckBox);
             this.ItemFilters_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ItemFilters_GroupBox.Location = new System.Drawing.Point(500, 5);
             this.ItemFilters_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.ItemFilters_GroupBox.Name = "ItemFilters_GroupBox";
             this.ItemFilters_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.ItemFilters_GroupBox.Size = new System.Drawing.Size(492, 130);
+            this.ItemFilters_GroupBox.Size = new System.Drawing.Size(492, 190);
             this.ItemFilters_GroupBox.TabIndex = 5;
             this.ItemFilters_GroupBox.TabStop = false;
             this.ItemFilters_GroupBox.Text = "Item Filters";
@@ -320,6 +294,28 @@ namespace StationeersStructureXMLConverter
             this.checkBox3.Text = "Exclude Supply Landers";
             this.checkBox3.UseVisualStyleBackColor = true;
             //
+            // Filter5_CheckBox
+            //
+            this.Filter5_CheckBox.AutoSize = true;
+            this.Filter5_CheckBox.Location = new System.Drawing.Point(12, 132);
+            this.Filter5_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Filter5_CheckBox.Name = "Filter5_CheckBox";
+            this.Filter5_CheckBox.Size = new System.Drawing.Size(80, 24);
+            this.Filter5_CheckBox.TabIndex = 3;
+            this.Filter5_CheckBox.Text = "Filter 5";
+            this.Filter5_CheckBox.UseVisualStyleBackColor = true;
+            //
+            // Filter6_CheckBox
+            //
+            this.Filter6_CheckBox.AutoSize = true;
+            this.Filter6_CheckBox.Location = new System.Drawing.Point(12, 167);
+            this.Filter6_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.Filter6_CheckBox.Name = "Filter6_CheckBox";
+            this.Filter6_CheckBox.Size = new System.Drawing.Size(80, 24);
+            this.Filter6_CheckBox.TabIndex = 4;
+            this.Filter6_CheckBox.Text = "Filter 6";
+            this.Filter6_CheckBox.UseVisualStyleBackColor = true;
+            //
             // Right_GroupBox
             //
             this.Right_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -327,7 +323,7 @@ namespace StationeersStructureXMLConverter
             this.Right_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Right_GroupBox.Name = "Right_GroupBox";
             this.Right_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Right_GroupBox.Size = new System.Drawing.Size(492, 130);
+            this.Right_GroupBox.Size = new System.Drawing.Size(492, 190);
             this.Right_GroupBox.TabIndex = 6;
             this.Right_GroupBox.TabStop = false;
             this.Right_GroupBox.Text = "Right Options";
@@ -386,7 +382,7 @@ namespace StationeersStructureXMLConverter
             this.button1.Location = new System.Drawing.Point(4, 5);
             this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 4);
+            this.button1.Size = new System.Drawing.Size(150, 35);
             this.button1.TabIndex = 7;
             this.button1.Text = "Convert";
             this.button1.Click += new System.EventHandler(this.Convert_Click);
@@ -395,10 +391,10 @@ namespace StationeersStructureXMLConverter
             // button4
             //
             this.button4.AutoSize = true;
-            this.button4.Location = new System.Drawing.Point(155, 5);
+            this.button4.Location = new System.Drawing.Point(158, 5);
             this.button4.Margin = new System.Windows.Forms.Padding(4, 5, 10, 5);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 4);
+            this.button4.Size = new System.Drawing.Size(150, 35);
             this.button4.TabIndex = 12;
             this.button4.Text = "Close";
             this.toolTip1.SetToolTip(this.button4, "Close the application.");
@@ -422,19 +418,13 @@ namespace StationeersStructureXMLConverter
             this.Name = "Main_Form";
             this.Text = "Stationeers Scenario Toolbox";
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanelPaths.ResumeLayout(false);
-            this.tableLayoutPanelPaths.PerformLayout();
             this.ItemFilters_TableLayout.ResumeLayout(false);
             this.WorldTypeOptions_GroupBox.ResumeLayout(false);
-            this.WorldTypeOptions_GroupBox.PerformLayout();
             this.ItemFilters_GroupBox.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.tableLayoutPanelButtons.ResumeLayout(false);
-            this.tableLayoutPanelButtons.PerformLayout();
             this.ResumeLayout(false);
         }
-        #endregion
     }
 }

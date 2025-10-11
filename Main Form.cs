@@ -17,12 +17,8 @@ namespace StationeersStructureXMLConverter
     {
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox textBox1;       
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button3;
-        //private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.GroupBox groupBox2;
@@ -30,6 +26,8 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox checkBox2;
         private System.Windows.Forms.CheckBox checkBox3;
+        private System.Windows.Forms.CheckBox Filter5_CheckBox; // New
+        private System.Windows.Forms.CheckBox Filter6_CheckBox; // New
         private System.Windows.Forms.Label labelInstructions;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.ToolTip toolTip1;
@@ -38,47 +36,38 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.GroupBox ItemFilters_GroupBox; // Moved to Center_GroupBox
         private System.Windows.Forms.TableLayoutPanel ItemFilters_TableLayout;
         private System.Windows.Forms.GroupBox Center_GroupBox; // Now contains ItemFilters_GroupBox
-        // Removed: private System.Windows.Forms.TableLayoutPanel Center_TableLayout;
         private System.Windows.Forms.GroupBox Right_GroupBox;
-        // Removed: private System.Windows.Forms.TableLayoutPanel Right_TableLayout;
         private System.Windows.Forms.GroupBox WorldTypeOptions_GroupBox; // Moved to leftmost
         private System.Windows.Forms.CheckBox VanillaWorld_CheckBox;
         private System.Windows.Forms.CheckBox LocalMod_CheckBox;
         private System.Windows.Forms.CheckBox None_CheckBox;
         private System.Windows.Forms.ComboBox WorldSelection_ComboBox;
         private string stationeersPath = null;
+        private string outputPath;
 
         public Main_Form()
         {
             InitializeComponent();
-
-            // Transfer output textbox configuration
-            textBox3.WordWrap = true; // Wrap long lines
-            textBox3.ReadOnly = true; // Prevent edits
-            textBox3.Font = new Font("Consolas", 9F); // Monospace for alignment
-            textBox3.AcceptsReturn = true; // Allow \r\n breaks
+            textBox3.WordWrap = true;
+            textBox3.ReadOnly = true;
+            textBox3.Font = new Font("Consolas", 9F);
+            textBox3.AcceptsReturn = true;
             VanillaWorld_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
             LocalMod_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
             None_CheckBox.CheckedChanged += CheckBox_CheckedChanged;
             WorldSelection_ComboBox.SelectedIndexChanged += WorldSelection_ComboBox_SelectedIndexChanged;
-            // Set default state
-            None_CheckBox.Checked = true;
+            WorldSelection_ComboBox.Items.Add("Select a world..."); // Placeholder
+            WorldSelection_ComboBox.SelectedIndex = 0; // Set default
             WorldSelection_ComboBox.Enabled = false;
-            SetStationeersPath();
-
-
-            // Set default paths based on debug/release mode
             bool isDebug = System.Diagnostics.Debugger.IsAttached;
-            string defaultRoot = Environment.ExpandEnvironmentVariables("%userprofile%\\documents\\My Games\\Stationeers");
+            string defaultRoot = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
             if (isDebug)
             {
                 textBox1.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\10-25-World.xml";
-                textBox2.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template\\SpawnGroup.xml";
             }
             else
             {
                 textBox1.Text = Path.Combine(defaultRoot, "saves\\default\\world.xml");
-                textBox2.Text = Path.Combine(defaultRoot, "saves\\default\\SpawnGroup.xml");
             }
         }
 
@@ -145,54 +134,64 @@ namespace StationeersStructureXMLConverter
             }
         }
 
-        private void BrowseOutput_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\documents\\My Games\\Stationeers");
-                openFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
-                openFileDialog.FileName = "SpawnGroup.xml"; // Default filename
-                openFileDialog.CheckFileExists = false; // Allow non-existent files
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string selectedPath = openFileDialog.FileName;
-                    AppendLog($"Setting output path to: {selectedPath}"); // Diagnostic log
-                    textBox2.Text = selectedPath; // Use full path including filename
-                }
-            }
-        }
 
         private void Convert_Click(object sender, EventArgs e)
         {
-            // Header with separators
             AppendLog("----------------");
             AppendLog($"Save File: {textBox1.Text}");
-            AppendLog($"Destination File: {textBox2.Text}");
-            AppendLog("Output options: None"); // To be updated with checkbox options later
+            string destPath = None_CheckBox.Checked ? Path.Combine(outputPath ?? "", "SpawnGroup.xml") : null;
+            AppendLog($"Destination File: {destPath ?? "To be determined from world selection"}");
+            AppendLog($"Output options: {(None_CheckBox.Checked ? "None" : VanillaWorld_CheckBox.Checked ? "Vanilla" : LocalMod_CheckBox.Checked ? "LocalMod" : "None")}");
             AppendLog("----------------");
-            // Step-by-step logging
-            textBox3.Text = ""; // Clear for fresh run
+            textBox3.Text = "";
             AppendLog("Reading Save File... (Step 1 of 6)");
             if (string.IsNullOrEmpty(textBox1.Text) || !File.Exists(textBox1.Text))
             {
                 AppendLog("Invalid source .save file path: " + textBox1.Text);
                 return;
             }
-            if (string.IsNullOrEmpty(textBox2.Text))
+            if (None_CheckBox.Checked && string.IsNullOrEmpty(outputPath))
             {
-                AppendLog("Invalid destination path.");
+                AppendLog("No output folder selected for SpawnGroup.xml.");
                 return;
             }
-            string directory = Path.GetDirectoryName(textBox2.Text);
-            AppendLog($"Creating directory: {directory}"); // Diagnostic log
+            if ((VanillaWorld_CheckBox.Checked || LocalMod_CheckBox.Checked) && WorldSelection_ComboBox.SelectedIndex <= 0)
+            {
+                AppendLog("No world selected in WorldSelection_ComboBox. Please select a world.");
+                return;
+            }
+            if (VanillaWorld_CheckBox.Checked || LocalMod_CheckBox.Checked)
+            {
+                string selectedWorld = WorldSelection_ComboBox.SelectedItem?.ToString();
+                if (string.IsNullOrEmpty(selectedWorld) || selectedWorld == "Select a world...")
+                {
+                    AppendLog("Invalid world selection. Please select a valid world.");
+                    return;
+                }
+                if (VanillaWorld_CheckBox.Checked && stationeersPath != null)
+                {
+                    destPath = Path.Combine(stationeersPath, "rocketstation_Data", "StreamingAssets", "Worlds", selectedWorld, "SpawnGroup.xml");
+                }
+                else if (LocalMod_CheckBox.Checked)
+                {
+                    string basePath = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+                    destPath = Path.Combine(basePath, "mods", selectedWorld, "SpawnGroup.xml");
+                }
+                if (!Directory.Exists(Path.GetDirectoryName(destPath)))
+                {
+                    AppendLog($"Selected world folder not found: {Path.GetDirectoryName(destPath)}");
+                    return;
+                }
+            }
+            string directory = Path.GetDirectoryName(destPath);
+            AppendLog($"Creating directory: {directory}");
             if (!string.IsNullOrEmpty(directory))
             {
-                Directory.CreateDirectory(directory); // Create only the parent directory
+                Directory.CreateDirectory(directory);
             }
             AppendLog("Examining Data... (Step 2 of 6)");
             try
             {
-                // Extract world.xml from the .save zip archive in memory
                 XDocument doc;
                 using (ZipArchive archive = ZipFile.OpenRead(textBox1.Text))
                 {
@@ -232,7 +231,7 @@ namespace StationeersStructureXMLConverter
                 }
                 int thingCount = thingElements.Count;
                 AppendLog($"Found {thingCount} of Things to extract... (Step 3 of 6)");
-                if (System.Diagnostics.Debugger.IsAttached) // Debug mode
+                if (System.Diagnostics.Debugger.IsAttached)
                 {
                     var uniquePrefabNames = thingElements
                         .Select(t => t.Element("PrefabName")?.Value ?? "Unknown")
@@ -243,18 +242,17 @@ namespace StationeersStructureXMLConverter
                     {
                         AppendLog(prefab);
                     }
-                    AppendLog(""); // Blank line after unique object
+                    AppendLog("");
                 }
                 AppendLog($"Extracted {things.Count} Things... (Step 4 of 6)");
                 AppendLog("Transforming Things to Spawn Items... (Step 5 of 6)");
                 var spawnEntries = SourceExtraction.ExtractSpawnEntries(things, textBox3);
-                DestinationExport.TransformToNewSchema(things, textBox2.Text, textBox3);
-                // Prune LanderCapsuleSmall and Characters if excluded
+                DestinationExport.TransformToNewSchema(things, destPath, textBox3);
                 int landerRemovedCount = 0;
                 int characterRemovedCount = 0;
                 if (checkBox1.Checked || checkBox2.Checked)
                 {
-                    var outputDoc = XDocument.Load(textBox2.Text);
+                    var outputDoc = XDocument.Load(destPath);
                     var nodesToPrune = new List<XElement>();
                     if (checkBox1.Checked)
                     {
@@ -278,8 +276,7 @@ namespace StationeersStructureXMLConverter
                         {
                             node.Remove();
                         }
-                        outputDoc.Save(textBox2.Text);
-                        // Debug: Log children removed, counting only Structure/Item/DynamicThing
+                        outputDoc.Save(destPath);
                         int totalChildrenRemoved = nodesToPrune.Sum(n => n.Descendants().Count());
                         int landerSpawnableChildrenRemoved = checkBox1.Checked ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall").Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
                         int characterSpawnableChildrenRemoved = checkBox2.Checked ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Character").Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
@@ -294,15 +291,14 @@ namespace StationeersStructureXMLConverter
                         AppendLog($"Debug: Removed {totalChildrenRemoved} total child nodes.");
                     }
                 }
-                if (!File.Exists(textBox2.Text)) // Check if the file was created
+                if (!File.Exists(destPath))
                 {
-                    AppendLog($"Error: Failed to create '{textBox2.Text}'. Check permissions or path.");
+                    AppendLog($"Error: Failed to create '{destPath}'. Check permissions or path.");
                     return;
                 }
-                // Recalculate remaining spawn items after pruning
-                var prunedDoc = XDocument.Load(textBox2.Text);
+                var prunedDoc = XDocument.Load(destPath);
                 int initialSpawnCount = prunedDoc.Descendants().Count(n => n.Name.LocalName == "Structure" || n.Name.LocalName == "Item" || n.Name.LocalName == "DynamicThing");
-                int expectedInitialCount = thingCount; // Use the actual extracted count
+                int expectedInitialCount = thingCount;
                 if (initialSpawnCount == expectedInitialCount - 1 && !checkBox1.Checked && !checkBox2.Checked)
                 {
                     AppendLog($"Note: Initial count ({initialSpawnCount}) is 1 less than extracted count ({expectedInitialCount}) without pruning. Transformation may deduplicate 1 item.");
@@ -321,7 +317,7 @@ namespace StationeersStructureXMLConverter
                     AppendLog($"Note: Adjusted count ({initialSpawnCount - (landerRemovedCount + characterRemovedCount)}) reflects removal of {landerRemovedCount + characterRemovedCount} node(s) (LanderCapsuleSmall or Character).");
                 }
                 int remainingSpawnItems = initialSpawnCount - (checkBox1.Checked || checkBox2.Checked ? (landerRemovedCount + characterRemovedCount) : 0);
-                if (remainingSpawnItems < 0) remainingSpawnItems = 0; // Prevent negative count
+                if (remainingSpawnItems < 0) remainingSpawnItems = 0;
                 AppendLog($"Debug: Initial <Spawn> nodes (Structure/Item/DynamicThing): {initialSpawnCount}");
                 AppendLog($"Debug: Adjusted remaining spawn items: {remainingSpawnItems}");
                 AppendLog($"Writing {remainingSpawnItems} Spawn Items... (Step 6 of 6)");
@@ -342,24 +338,78 @@ namespace StationeersStructureXMLConverter
         }
         private void CheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (((CheckBox)sender).Checked)
+            CheckBox changedBox = (CheckBox)sender;
+            if (changedBox == VanillaWorld_CheckBox)
             {
-                if (sender == VanillaWorld_CheckBox) { LocalMod_CheckBox.Checked = false; None_CheckBox.Checked = false; }
-                else if (sender == LocalMod_CheckBox) { VanillaWorld_CheckBox.Checked = false; None_CheckBox.Checked = false; }
-                else if (sender == None_CheckBox) { VanillaWorld_CheckBox.Checked = false; LocalMod_CheckBox.Checked = false; }
-                // Update ComboBox state
-                if (VanillaWorld_CheckBox.Checked || LocalMod_CheckBox.Checked)
+                LocalMod_CheckBox.Checked = false;
+                None_CheckBox.Checked = false;
+                if (changedBox.Checked && stationeersPath == null)
                 {
-                    WorldSelection_ComboBox.Enabled = true;
-                    PopulateWorldDropdown();
+                    SetStationeersPath();
+                    if (stationeersPath == null)
+                    {
+                        VanillaWorld_CheckBox.Checked = false;
+                        VanillaWorld_CheckBox.Enabled = true;
+                        return;
+                    }
                 }
-                else if (None_CheckBox.Checked)
+            }
+            else if (changedBox == LocalMod_CheckBox)
+            {
+                VanillaWorld_CheckBox.Checked = false;
+                None_CheckBox.Checked = false;
+            }
+            else if (changedBox == None_CheckBox)
+            {
+                VanillaWorld_CheckBox.Checked = false;
+                LocalMod_CheckBox.Checked = false;
+                if (changedBox.Checked)
                 {
-                    WorldSelection_ComboBox.Items.Clear();
-                    WorldSelection_ComboBox.Enabled = false;
+                    using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+                    {
+                        folderBrowser.Description = "Select folder for the transformed SpawnGroup.xml";
+                        folderBrowser.RootFolder = Environment.SpecialFolder.MyComputer;
+                        folderBrowser.ShowNewFolderButton = true;
+                        if (folderBrowser.ShowDialog() == DialogResult.OK)
+                        {
+                            outputPath = folderBrowser.SelectedPath;
+                            AppendLog($"Output folder for SpawnGroup.xml set to: {outputPath}");
+                        }
+                        else
+                        {
+                            outputPath = null;
+                            AppendLog("No output folder selected for SpawnGroup.xml.");
+                        }
+                    }
                 }
+                else
+                {
+                    outputPath = null;
+                }
+            }
+
+            if (VanillaWorld_CheckBox.Checked || LocalMod_CheckBox.Checked)
+            {
+                if (!WorldSelection_ComboBox.Items.Contains("Select a world..."))
+                {
+                    WorldSelection_ComboBox.Items.Insert(0, "Select a world...");
+                }
+                WorldSelection_ComboBox.SelectedIndex = 0;
+                WorldSelection_ComboBox.Enabled = true;
+                PopulateWorldDropdown();
                 VerifySelectedWorld();
             }
+            else
+            {
+                WorldSelection_ComboBox.Items.Clear();
+                WorldSelection_ComboBox.Items.Add("Select a world...");
+                WorldSelection_ComboBox.SelectedIndex = 0;
+                WorldSelection_ComboBox.Enabled = false;
+            }
+
+            VanillaWorld_CheckBox.Enabled = true;
+            label1.Enabled = true;
+            textBox1.Enabled = true;
         }
 
         private void PopulateWorldDropdown()
@@ -372,6 +422,7 @@ namespace StationeersStructureXMLConverter
                 {
                     var worldFolders = Directory.GetDirectories(worldsPath)
                         .Select(Path.GetFileName)
+                        .Where(f => !f.Contains("Tutorial") && !f.Equals("SharedTextures", StringComparison.OrdinalIgnoreCase))
                         .ToArray();
                     WorldSelection_ComboBox.Items.AddRange(worldFolders);
                 }
@@ -387,8 +438,50 @@ namespace StationeersStructureXMLConverter
                 if (Directory.Exists(modsPath))
                 {
                     var modFolders = Directory.GetDirectories(modsPath)
-                        .Where(d => !d.Contains("Tutorial") && !d.Contains("SharedTextures"))
                         .Select(Path.GetFileName)
+                        .Where(modName =>
+                        {
+                            string modRootPath = Path.Combine(modsPath, modName);
+                            // Search recursively for any "GameData\Worlds" path
+                            string[] allSubFolders = Directory.GetDirectories(modRootPath, "*", SearchOption.AllDirectories);
+                            bool worldFound = false;
+                            foreach (string folder in allSubFolders)
+                            {
+                                if (folder.EndsWith("\\GameData\\Worlds", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string[] subWorldFolders = Directory.GetDirectories(folder, "*", SearchOption.AllDirectories)
+                                        .Concat(new[] { folder }) // Include the Worlds folder itself
+                                        .ToArray();
+                                    foreach (string subFolder in subWorldFolders)
+                                    {
+                                        string[] xmlFiles = Directory.GetFiles(subFolder, "*.xml");
+                                        foreach (string xmlFile in xmlFiles)
+                                        {
+                                            try
+                                            {
+                                                XDocument doc = XDocument.Load(xmlFile);
+                                                if (doc.Root != null && doc.Root.Name.LocalName == "GameData")
+                                                {
+                                                    var worldSettings = doc.Descendants("WorldSettings").FirstOrDefault();
+                                                    if (worldSettings != null)
+                                                    {
+                                                        worldFound = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            catch (XmlException)
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        if (worldFound) break;
+                                    }
+                                    if (worldFound) break;
+                                }
+                            }
+                            return worldFound;
+                        })
                         .ToArray();
                     WorldSelection_ComboBox.Items.AddRange(modFolders);
                 }
@@ -403,11 +496,10 @@ namespace StationeersStructureXMLConverter
 
         private void VerifySelectedWorld()
         {
-            if (WorldSelection_ComboBox.SelectedIndex != -1 && !None_CheckBox.Checked)
+            if (WorldSelection_ComboBox.SelectedIndex > 0 && !None_CheckBox.Checked)
             {
                 string selectedFolder = WorldSelection_ComboBox.SelectedItem.ToString();
                 string fullPath = "";
-
                 if (VanillaWorld_CheckBox.Checked && stationeersPath != null)
                 {
                     string worldsPath = Path.Combine(stationeersPath, "rocketstation_Data", "StreamingAssets", "Worlds", selectedFolder);
@@ -415,7 +507,7 @@ namespace StationeersStructureXMLConverter
                     if (!File.Exists(fullPath))
                     {
                         AppendLog($"Warning: 'world.xml' not found in {selectedFolder}.");
-                        WorldSelection_ComboBox.SelectedIndex = -1;
+                        WorldSelection_ComboBox.SelectedIndex = 0;
                     }
                 }
                 else if (LocalMod_CheckBox.Checked)
@@ -424,41 +516,35 @@ namespace StationeersStructureXMLConverter
                     string modsPath = Path.Combine(basePath, "mods", selectedFolder);
                     if (Directory.Exists(modsPath))
                     {
-                        string[] subFolders = Directory.GetDirectories(modsPath, "*", SearchOption.AllDirectories);
+                        string[] subFolders = Directory.GetFiles(modsPath, "*.xml", SearchOption.AllDirectories);
                         bool worldFound = false;
-                        foreach (string folder in subFolders)
+                        foreach (string xmlFile in subFolders)
                         {
-                            string[] xmlFiles = Directory.GetFiles(folder, "*.xml");
-                            foreach (string xmlFile in xmlFiles)
+                            try
                             {
-                                try
+                                XDocument doc = XDocument.Load(xmlFile);
+                                if (doc.Root != null && doc.Root.Name.LocalName == "WorldSettings")
                                 {
-                                    XDocument doc = XDocument.Load(xmlFile);
-                                    if (doc.Root != null && doc.Root.Name.LocalName == "WorldSettings")
-                                    {
-                                        fullPath = xmlFile;
-                                        worldFound = true;
-                                        break;
-                                    }
-                                }
-                                catch (XmlException)
-                                {
-                                    // Skip invalid XML files
-                                    continue;
+                                    fullPath = xmlFile;
+                                    worldFound = true;
+                                    break;
                                 }
                             }
-                            if (worldFound) break;
+                            catch (XmlException)
+                            {
+                                continue;
+                            }
                         }
                         if (!worldFound)
                         {
                             AppendLog($"Warning: No WorldSettings XML file found in {selectedFolder} or its subfolders.");
-                            WorldSelection_ComboBox.SelectedIndex = -1;
+                            WorldSelection_ComboBox.SelectedIndex = 0;
                         }
                     }
                     else
                     {
                         AppendLog($"Warning: Mod folder {selectedFolder} not found at {modsPath}.");
-                        WorldSelection_ComboBox.SelectedIndex = -1;
+                        WorldSelection_ComboBox.SelectedIndex = 0;
                     }
                 }
             }
@@ -473,7 +559,7 @@ namespace StationeersStructureXMLConverter
         {
             using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
             {
-                folderBrowser.Description = "Please select the Stationeers installation folder (e.g., containing rocketstation_Data).";
+                folderBrowser.Description = "Please select the Stationeers installation folder...";
                 folderBrowser.RootFolder = Environment.SpecialFolder.MyComputer;
                 folderBrowser.ShowNewFolderButton = false;
                 if (folderBrowser.ShowDialog() == DialogResult.OK)
@@ -486,15 +572,14 @@ namespace StationeersStructureXMLConverter
                     }
                     else
                     {
-                        MessageBox.Show("The selected folder does not contain a valid Stationeers installation. Please select the folder containing 'rocketstation_Data'.", "Invalid Path", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        SetStationeersPath(); // Recursive call to prompt again
+                        MessageBox.Show("The selected folder does not contain a valid Stationeers installation...", "Invalid Path", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        stationeersPath = null;
+                        AppendLog("Invalid Stationeers path selected. Please try again.");
                     }
                 }
                 else
                 {
-                    stationeersPath = null;
-                    AppendLog("No Stationeers path selected. Vanilla world selection will be disabled.");
-                    VanillaWorld_CheckBox.Enabled = false;
+                    AppendLog("No Stationeers path selected. Vanilla world selection remains available.");
                 }
             }
         }
