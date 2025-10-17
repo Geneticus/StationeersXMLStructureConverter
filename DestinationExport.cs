@@ -360,15 +360,15 @@ namespace StationeersStructureXMLConverter
                 }
 
                 // Log untransformed tags
-                var untransformedTags = thingElement.Elements()
-                    .Where(e => !new[] { "CustomName", "IsCustomName", "CustomColorIndex", "Indestructable", "DamageState", "CurrentBuildState", "WorldPosition", "WorldRotation", "Reagents", "States" }.Contains(e.Name.LocalName))
-                    .Select(e => e.Name.LocalName)
-                    .Distinct()
-                    .ToList();
-                if (untransformedTags.Any() && output != null)
-                {
-                    output.AppendText($"Untransformed tags for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}: {string.Join(", ", untransformedTags)}\n");
-                }
+                //var untransformedTags = thingElement.Elements()
+                //    .Where(e => !new[] { "CustomName", "IsCustomName", "CustomColorIndex", "Indestructable", "DamageState", "CurrentBuildState", "WorldPosition", "WorldRotation", "Reagents", "States" }.Contains(e.Name.LocalName))
+                //    .Select(e => e.Name.LocalName)
+                //    .Distinct()
+                //    .ToList();
+                //if (untransformedTags.Any() && output != null)
+                //{
+                //    output.AppendText($"Untransformed tags for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}: {string.Join(", ", untransformedTags)}\n");
+                //}
 
                 // Add HealthCurrent (conditional for dynamic items)
                 var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
@@ -853,14 +853,6 @@ namespace StationeersStructureXMLConverter
             var worldRot = thingElement.Element("WorldRotation");
             var euler = worldRot?.Element("eulerAngles");
 
-            // Log source rotation data
-            if (output != null)
-            {
-                output.AppendText($"Processing rotation for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}:\n");
-                output.AppendText($"  Source WorldRotation: x={worldRot?.Element("x")?.Value ?? "0"}, y={worldRot?.Element("y")?.Value ?? "0"}, z={worldRot?.Element("z")?.Value ?? "0"}, w={worldRot?.Element("w")?.Value ?? "1"}\n");
-                output.AppendText($"  Source eulerAngles: x={euler?.Element("x")?.Value ?? "N/A"}, y={euler?.Element("y")?.Value ?? "N/A"}, z={euler?.Element("z")?.Value ?? "N/A"}\n");
-            }
-
             if (euler != null)
             {
                 // Use eulerAngles directly (x=pitch, y=yaw, z=roll)
@@ -907,7 +899,7 @@ namespace StationeersStructureXMLConverter
 
                 if (output != null)
                 {
-                    output.AppendText($"  Fallback quaternion used, potential flip risk\n");
+                    output.AppendText($"Warning: No eulerAngles for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}, using default rotation (0,0,0)\r\n");
                 }
             }
 
@@ -924,11 +916,6 @@ namespace StationeersStructureXMLConverter
                 roll = Math.Round(roll / 90) * 90 % 360;
             }
 
-            // Log computed rotations
-            if (output != null)
-            {
-                output.AppendText($"  Computed Euler: pitch={pitch:F4}, yaw={yaw:F4}, roll={roll:F4}\n");
-            }
 
             return new XElement("SpawnPosition",
                 new XAttribute("Rule", "Explicit"),
