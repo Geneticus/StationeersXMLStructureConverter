@@ -73,6 +73,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConversionUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ConversionUserControl.Designer.cs">
+      <DependentUpon>ConversionUserControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="DestinationExport.cs" />
     <Compile Include="ModConfigForm.cs">
       <SubType>Form</SubType>
@@ -95,12 +101,27 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToolsUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ToolsUserControl.Designer.cs">
+      <DependentUpon>ToolsUserControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="World.cs">
       <DependentUpon>world.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="WorldEditorUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="WorldEditorUserControl.Designer.cs">
+      <DependentUpon>WorldEditorUserControl.cs</DependentUpon>
     </Compile>
     <Compile Include="WorldSetting.cs">
       <DependentUpon>WorldSetting.xsd</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ConversionUserControl.resx">
+      <DependentUpon>ConversionUserControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -119,6 +140,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="ToolsUserControl.resx">
+      <DependentUpon>ToolsUserControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WorldEditorUserControl.resx">
+      <DependentUpon>WorldEditorUserControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
