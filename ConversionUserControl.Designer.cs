@@ -1,9 +1,10 @@
-﻿namespace StationeersStructureXMLConverter
+﻿using System.Drawing;
+using System.Windows.Forms;
+namespace StationeersStructureXMLConverter
 {
     partial class ConversionUserControl
     {
         private System.ComponentModel.IContainer components = null;
-
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -12,7 +13,6 @@
             }
             base.Dispose(disposing);
         }
-
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
@@ -69,6 +69,7 @@
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.tableLayoutPanel1.MaximumSize = new System.Drawing.Size(1920, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 6;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -77,18 +78,17 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(2238, 1345);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1920, 1345);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // labelInstructions
             // 
-            this.labelInstructions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelInstructions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.labelInstructions.AutoSize = true;
             this.labelInstructions.Location = new System.Drawing.Point(0, 15);
             this.labelInstructions.Margin = new System.Windows.Forms.Padding(0, 15, 0, 15);
             this.labelInstructions.Name = "labelInstructions";
-            this.labelInstructions.Size = new System.Drawing.Size(2238, 20);
+            this.labelInstructions.Size = new System.Drawing.Size(1920, 20);
             this.labelInstructions.TabIndex = 0;
             this.labelInstructions.Text = resources.GetString("labelInstructions.Text");
             this.labelInstructions.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -97,7 +97,7 @@
             // 
             this.tableLayoutPanelPaths.ColumnCount = 3;
             this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 225F));
-            this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 55F));
             this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.tableLayoutPanelPaths.Controls.Add(this.label1, 0, 0);
             this.tableLayoutPanelPaths.Controls.Add(this.textBox1, 1, 0);
@@ -108,7 +108,7 @@
             this.tableLayoutPanelPaths.Name = "tableLayoutPanelPaths";
             this.tableLayoutPanelPaths.RowCount = 1;
             this.tableLayoutPanelPaths.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelPaths.Size = new System.Drawing.Size(2230, 77);
+            this.tableLayoutPanelPaths.Size = new System.Drawing.Size(1912, 77);
             this.tableLayoutPanelPaths.TabIndex = 1;
             // 
             // label1
@@ -123,19 +123,18 @@
             // 
             // textBox1
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox1.Location = new System.Drawing.Point(225, 8);
             this.textBox1.Margin = new System.Windows.Forms.Padding(0, 8, 6, 8);
             this.textBox1.MinimumSize = new System.Drawing.Size(448, 4);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(1397, 26);
+            this.textBox1.Size = new System.Drawing.Size(1085, 26);
             this.textBox1.TabIndex = 1;
             // 
             // button2
             // 
             this.button2.AutoSize = true;
-            this.button2.Location = new System.Drawing.Point(1643, 8);
+            this.button2.Location = new System.Drawing.Point(1331, 8);
             this.button2.Margin = new System.Windows.Forms.Padding(15, 8, 0, 8);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(180, 30);
@@ -148,17 +147,17 @@
             // 
             this.ItemFilters_TableLayout.ColumnCount = 3;
             this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 746F));
-            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 746F));
-            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 747F));
+            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 474F));
+            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 700F));
             this.ItemFilters_TableLayout.Controls.Add(this.WorldTypeOptions_GroupBox, 0, 0);
             this.ItemFilters_TableLayout.Controls.Add(this.ItemFilters_GroupBox, 1, 0);
             this.ItemFilters_TableLayout.Controls.Add(this.Right_GroupBox, 2, 0);
-            this.ItemFilters_TableLayout.Location = new System.Drawing.Point(4, 142);
-            this.ItemFilters_TableLayout.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.ItemFilters_TableLayout.Location = new System.Drawing.Point(0, 142); // Adjusted to align at 1920px
+            this.ItemFilters_TableLayout.Margin = new System.Windows.Forms.Padding(0, 5, 4, 5); // Adjusted to remove left margin
             this.ItemFilters_TableLayout.Name = "ItemFilters_TableLayout";
             this.ItemFilters_TableLayout.RowCount = 1;
-            this.ItemFilters_TableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 308F));
-            this.ItemFilters_TableLayout.Size = new System.Drawing.Size(2229, 308);
+            this.ItemFilters_TableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.ItemFilters_TableLayout.Size = new System.Drawing.Size(1920, 308); // Ensured to match 1920px
             this.ItemFilters_TableLayout.TabIndex = 6;
             // 
             // WorldTypeOptions_GroupBox
@@ -239,11 +238,11 @@
             this.ItemFilters_GroupBox.Controls.Add(this.Filter5_CheckBox);
             this.ItemFilters_GroupBox.Controls.Add(this.Filter6_CheckBox);
             this.ItemFilters_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ItemFilters_GroupBox.Location = new System.Drawing.Point(752, 8);
+            this.ItemFilters_GroupBox.Location = new System.Drawing.Point(754, 8); // Adjusted due to location change
             this.ItemFilters_GroupBox.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.ItemFilters_GroupBox.Name = "ItemFilters_GroupBox";
             this.ItemFilters_GroupBox.Padding = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.ItemFilters_GroupBox.Size = new System.Drawing.Size(734, 292);
+            this.ItemFilters_GroupBox.Size = new System.Drawing.Size(462, 292);
             this.ItemFilters_GroupBox.TabIndex = 5;
             this.ItemFilters_GroupBox.TabStop = false;
             this.ItemFilters_GroupBox.Text = "Item Filters";
@@ -307,12 +306,13 @@
             // 
             this.Right_GroupBox.Controls.Add(this.configureOutputsButton);
             this.Right_GroupBox.Controls.Add(this.configureOutputsLabel);
-            this.Right_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Right_GroupBox.Location = new System.Drawing.Point(1498, 8);
-            this.Right_GroupBox.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.Right_GroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)); // Kept as Anchor
+            this.Right_GroupBox.Location = new System.Drawing.Point(1228, 8); // Adjusted due to location change
+            this.Right_GroupBox.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8); // Kept as is
+            this.Right_GroupBox.MinimumSize = new System.Drawing.Size(690, 292); // Reduced to fit within 700px
             this.Right_GroupBox.Name = "Right_GroupBox";
-            this.Right_GroupBox.Padding = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.Right_GroupBox.Size = new System.Drawing.Size(735, 292);
+            this.Right_GroupBox.Padding = new System.Windows.Forms.Padding(6, 8, 10, 8); // Increased right padding for buffer
+            this.Right_GroupBox.Size = new System.Drawing.Size(690, 292); // Reduced to 690px to fit within 700px column
             this.Right_GroupBox.TabIndex = 6;
             this.Right_GroupBox.TabStop = false;
             this.Right_GroupBox.Text = "Mod Creation Options";
@@ -321,8 +321,8 @@
             // 
             this.configureOutputsButton.AutoSize = true;
             this.configureOutputsButton.Enabled = false;
-            this.configureOutputsButton.Location = new System.Drawing.Point(18, 65);
-            this.configureOutputsButton.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.configureOutputsButton.Location = new System.Drawing.Point(18, 35); // Top position
+            this.configureOutputsButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4); // Reduced margin
             this.configureOutputsButton.Name = "configureOutputsButton";
             this.configureOutputsButton.Size = new System.Drawing.Size(267, 46);
             this.configureOutputsButton.TabIndex = 0;
@@ -334,8 +334,8 @@
             // configureOutputsLabel
             // 
             this.configureOutputsLabel.AutoSize = true;
-            this.configureOutputsLabel.Location = new System.Drawing.Point(14, 35);
-            this.configureOutputsLabel.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.configureOutputsLabel.Location = new System.Drawing.Point(18, 85); // Stacked below button
+            this.configureOutputsLabel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4); // Reduced margin
             this.configureOutputsLabel.Name = "configureOutputsLabel";
             this.configureOutputsLabel.Size = new System.Drawing.Size(390, 20);
             this.configureOutputsLabel.TabIndex = 1;
@@ -359,7 +359,7 @@
             this.groupBox2.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 8, 6, 8);
-            this.groupBox2.Size = new System.Drawing.Size(2226, 790);
+            this.groupBox2.Size = new System.Drawing.Size(1908, 790);
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Conversion Log";
@@ -372,9 +372,8 @@
             this.textBox3.Multiline = true;
             this.textBox3.Name = "textBox3";
             this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox3.Size = new System.Drawing.Size(2214, 755);
+            this.textBox3.Size = new System.Drawing.Size(1896, 755);
             this.textBox3.TabIndex = 0;
-            
             // 
             // tableLayoutPanelButtons
             // 
@@ -384,7 +383,7 @@
             this.tableLayoutPanelButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanelButtons.Controls.Add(this.button1, 0, 0);
             this.tableLayoutPanelButtons.Controls.Add(this.button4, 1, 0);
-            this.tableLayoutPanelButtons.Location = new System.Drawing.Point(1914, 1291);
+            this.tableLayoutPanelButtons.Location = new System.Drawing.Point(1596, 1291);
             this.tableLayoutPanelButtons.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             this.tableLayoutPanelButtons.RowCount = 1;
@@ -429,7 +428,7 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "ConversionUserControl";
-            this.Size = new System.Drawing.Size(2238, 1345);
+            this.Size = new System.Drawing.Size(1920, 1345);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanelPaths.ResumeLayout(false);
@@ -446,9 +445,7 @@
             this.tableLayoutPanelButtons.ResumeLayout(false);
             this.tableLayoutPanelButtons.PerformLayout();
             this.ResumeLayout(false);
-
         }
-
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label labelInstructions;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanelPaths;
