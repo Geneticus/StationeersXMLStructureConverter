@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
 
 namespace StationeersStructureXMLConverter
@@ -24,6 +26,80 @@ namespace StationeersStructureXMLConverter
         public WorldEditorUserControl()
         {
             InitializeComponent();
+            InitializeListViews();
+        }
+
+        private void InitializeListViews()
+        {
+            // Configure lvStartLocations
+            lvStartLocations.Items.Clear();
+            lvStartLocations.Columns.Clear();
+            lvStartLocations.Columns.Add("X", 200);
+            lvStartLocations.Columns.Add("Y", 200);
+            lvStartLocations.Columns.Add("Z", 200);
+            lvStartLocations.Columns.Add("Edit", 60);
+
+            // Configure lvObjectives
+            lvObjectives.Items.Clear();
+            lvObjectives.Columns.Clear();
+            lvObjectives.Columns.Add("Id", 250);
+            lvObjectives.Columns.Add("Description", 250);
+            lvObjectives.Columns.Add("Info Key", 250);
+            lvObjectives.Columns.Add("Edit", 60);
+
+            // Enable custom drawing for buttons
+            lvStartLocations.OwnerDraw = true;
+            lvObjectives.OwnerDraw = true;
+            lvStartLocations.DrawSubItem += new DrawListViewSubItemEventHandler(LvStartLocations_DrawSubItem);
+            lvObjectives.DrawSubItem += new DrawListViewSubItemEventHandler(LvObjectives_DrawSubItem);
+            lvStartLocations.MouseDown += new MouseEventHandler(LvStartLocations_MouseDown);
+            lvObjectives.MouseDown += new MouseEventHandler(LvObjectives_MouseDown);
+        }
+
+        private void LvStartLocations_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            if (e.ColumnIndex == 3) // Edit column
+            {
+                Rectangle bounds = e.SubItem.Bounds;
+                Rectangle buttonBounds = new Rectangle(bounds.X + 5, bounds.Y + 5, 50, 20);
+                ButtonRenderer.DrawButton(e.Graphics, buttonBounds, "Edit", SystemFonts.DefaultFont, false, PushButtonState.Normal);
+            }
+            else
+            {
+                e.DrawDefault = true;
+            }
+        }
+
+        private void LvObjectives_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            if (e.ColumnIndex == 3) // Edit column
+            {
+                Rectangle bounds = e.SubItem.Bounds;
+                Rectangle buttonBounds = new Rectangle(bounds.X + 5, bounds.Y + 5, 50, 20);
+                ButtonRenderer.DrawButton(e.Graphics, buttonBounds, "Edit", SystemFonts.DefaultFont, false, PushButtonState.Normal);
+            }
+            else
+            {
+                e.DrawDefault = true;
+            }
+        }
+
+        private void LvStartLocations_MouseDown(object sender, MouseEventArgs e)
+        {
+            var info = lvStartLocations.HitTest(e.Location);
+            if (info.SubItem != null && info.Item.SubItems.IndexOf(info.SubItem) == 3)
+            {
+                btnEditLocation_Click(sender, new EventArgs());
+            }
+        }
+
+        private void LvObjectives_MouseDown(object sender, MouseEventArgs e)
+        {
+            var info = lvObjectives.HitTest(e.Location);
+            if (info.SubItem != null && info.Item.SubItems.IndexOf(info.SubItem) == 3)
+            {
+                btnEditObjective_Click(sender, new EventArgs());
+            }
         }
 
         public XDocument WorldDoc
@@ -124,8 +200,7 @@ namespace StationeersStructureXMLConverter
                 worldDoc = XDocument.Load(worldXmlPath);
                 var settings = worldDoc.Root;
                 txtWorldId.Text = settings.Element("World")?.Attribute("Id")?.Value ?? (string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName);
-                txtPriority.Text = settings.Element("World")?.Attribute("Priority")?.Value ?? "2";
-                chkHidden.Checked = bool.TryParse(settings.Element("World")?.Attribute("Hidden")?.Value, out bool hidden) && hidden;
+                nudPriority.Value = int.TryParse(settings.Element("World")?.Attribute("Priority")?.Value, out int priority) ? priority : 2;
                 txtName.Text = settings.Element("Name")?.Value ?? (string.IsNullOrEmpty(worldName) ? modName : worldName);
                 txtDescription.Text = settings.Element("Description")?.Attribute("Key")?.Value ?? $"{modName}_Description";
                 txtShortDesc.Text = settings.Element("ShortDescription")?.Attribute("Key")?.Value ?? $"{modName}_ShortDesc";
@@ -158,6 +233,7 @@ namespace StationeersStructureXMLConverter
                     var item = new ListViewItem(pos?.Element("x")?.Value ?? "0");
                     item.SubItems.Add(pos?.Element("y")?.Value ?? "0");
                     item.SubItems.Add(pos?.Element("z")?.Value ?? "0");
+                    item.SubItems.Add("Edit");
                     item.Tag = loc;
                     lvStartLocations.Items.Add(item);
                 }
@@ -168,8 +244,7 @@ namespace StationeersStructureXMLConverter
                 worldDoc = new XDocument(new XElement("WorldSettingData"));
                 worldXmlPath = Path.Combine(worldFolder, "world.xml");
                 txtWorldId.Text = string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName;
-                txtPriority.Text = "2";
-                chkHidden.Checked = false;
+                nudPriority.Value = 2;
                 txtName.Text = string.IsNullOrEmpty(worldName) ? modName : worldName;
                 txtDescription.Text = $"{modName}_Description";
                 txtShortDesc.Text = $"{modName}_ShortDesc";
@@ -185,6 +260,7 @@ namespace StationeersStructureXMLConverter
                     var item = new ListViewItem(obj.Attribute("Id")?.Value ?? "Unknown");
                     item.SubItems.Add(obj.Element("Description")?.Value ?? "");
                     item.SubItems.Add(obj.Element("Info")?.Attribute("Key")?.Value ?? "");
+                    item.SubItems.Add("Edit");
                     item.Tag = obj;
                     lvObjectives.Items.Add(item);
                 }
@@ -195,26 +271,69 @@ namespace StationeersStructureXMLConverter
             }
         }
 
+
+
+        private void btnAddCondition_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new Form())
+            {
+                dialog.Text = "Add Start Condition";
+                dialog.AutoSize = true;
+                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var txtConditionId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = $"Condition{clbStartConditions.Items.Count + 1}" };
+                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 60), DialogResult = DialogResult.OK };
+                dialog.Controls.AddRange(new Control[] {
+                    new Label { Text = "Condition ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
+                    txtConditionId,
+                    btnOk
+                });
+                dialog.MinimumSize = new System.Drawing.Size(300, 120);
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    clbStartConditions.Items.Add(txtConditionId.Text, true);
+                }
+            }
+        }
+
+        private void btnDeleteCondition_Click(object sender, EventArgs e)
+        {
+            if (clbStartConditions.SelectedIndex >= 0)
+            {
+                clbStartConditions.Items.RemoveAt(clbStartConditions.SelectedIndex);
+            }
+        }
+
         private void btnAddLocation_Click(object sender, EventArgs e)
         {
             using (var dialog = new Form())
             {
                 dialog.Text = "Add/Edit Start Location";
-                var txtX = new TextBox { Location = new System.Drawing.Point(20, 20), Width = 100, Text = "0" };
-                var txtY = new TextBox { Location = new System.Drawing.Point(20, 50), Width = 100, Text = "0" };
-                var txtZ = new TextBox { Location = new System.Drawing.Point(20, 80), Width = 100, Text = "0" };
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(20, 110), DialogResult = DialogResult.OK };
+                dialog.AutoSize = true;
+                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var txtX = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 100, Text = "0" };
+                var txtY = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 100, Text = "0" };
+                var txtZ = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 100, Text = "0" };
+                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 110), DialogResult = DialogResult.OK };
                 dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "X:", Location = new System.Drawing.Point(0, 20) }, txtX,
-                    new Label { Text = "Y:", Location = new System.Drawing.Point(0, 50) }, txtY,
-                    new Label { Text = "Z:", Location = new System.Drawing.Point(0, 80) }, txtZ, btnOk });
+                    new Label { Text = "X:", Location = new System.Drawing.Point(20, 20), Width = 80 },
+                    txtX,
+                    new Label { Text = "Y:", Location = new System.Drawing.Point(20, 50), Width = 80 },
+                    txtY,
+                    new Label { Text = "Z:", Location = new System.Drawing.Point(20, 80), Width = 80 },
+                    txtZ,
+                    btnOk
+                });
+                dialog.MinimumSize = new System.Drawing.Size(300, 200);
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var item = new ListViewItem(txtX.Text);
                     item.SubItems.Add(txtY.Text);
                     item.SubItems.Add(txtZ.Text);
+                    item.SubItems.Add("Edit");
                     var locElement = new XElement("startlocation", new XElement("Position",
-                        new XElement("x", txtX.Text), new XElement("y", txtY.Text), new XElement("z", txtZ.Text)));
+                        new XElement("x", txtX.Text),
+                        new XElement("y", txtY.Text),
+                        new XElement("z", txtZ.Text)));
                     item.Tag = locElement;
                     lvStartLocations.Items.Add(item);
                 }
@@ -228,19 +347,28 @@ namespace StationeersStructureXMLConverter
             using (var dialog = new Form())
             {
                 dialog.Text = "Edit Start Location";
-                var txtX = new TextBox { Location = new System.Drawing.Point(20, 20), Width = 100, Text = item.Text };
-                var txtY = new TextBox { Location = new System.Drawing.Point(20, 50), Width = 100, Text = item.SubItems[1].Text };
-                var txtZ = new TextBox { Location = new System.Drawing.Point(20, 80), Width = 100, Text = item.SubItems[2].Text };
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(20, 110), DialogResult = DialogResult.OK };
+                dialog.AutoSize = true;
+                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var txtX = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 100, Text = item.Text };
+                var txtY = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 100, Text = item.SubItems[1].Text };
+                var txtZ = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 100, Text = item.SubItems[2].Text };
+                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 110), DialogResult = DialogResult.OK };
                 dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "X:", Location = new System.Drawing.Point(0, 20) }, txtX,
-                    new Label { Text = "Y:", Location = new System.Drawing.Point(0, 50) }, txtY,
-                    new Label { Text = "Z:", Location = new System.Drawing.Point(0, 80) }, txtZ, btnOk });
+                    new Label { Text = "X:", Location = new System.Drawing.Point(20, 20), Width = 80 },
+                    txtX,
+                    new Label { Text = "Y:", Location = new System.Drawing.Point(20, 50), Width = 80 },
+                    txtY,
+                    new Label { Text = "Z:", Location = new System.Drawing.Point(20, 80), Width = 80 },
+                    txtZ,
+                    btnOk
+                });
+                dialog.MinimumSize = new System.Drawing.Size(300, 200);
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     item.Text = txtX.Text;
                     item.SubItems[1].Text = txtY.Text;
                     item.SubItems[2].Text = txtZ.Text;
+                    item.SubItems[3].Text = "Edit";
                     var locElement = (XElement)item.Tag;
                     locElement.Element("Position").Element("x").Value = txtX.Text;
                     locElement.Element("Position").Element("y").Value = txtY.Text;
@@ -260,22 +388,32 @@ namespace StationeersStructureXMLConverter
             using (var dialog = new Form())
             {
                 dialog.Text = "Add/Edit Objective";
-                var txtId = new TextBox { Location = new System.Drawing.Point(20, 20), Width = 200, Text = "Objective" + (lvObjectives.Items.Count + 1) };
-                var txtDesc = new TextBox { Location = new System.Drawing.Point(20, 50), Width = 200, Text = "" };
-                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(20, 80), Width = 200, Text = $"{modName}_Objective{lvObjectives.Items.Count + 1}" };
-                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(20, 110), Width = 200, Height = 100 };
+                dialog.AutoSize = true;
+                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var txtId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = "Objective" + (lvObjectives.Items.Count + 1) };
+                var txtDesc = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 200, Text = "" };
+                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 200, Text = $"{modName}_Objective{lvObjectives.Items.Count + 1}" };
+                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(120, 110), Width = 200, Height = 100 };
                 clbConditions.Items.AddRange(new[] { "ThingPrefabCondition:StructureSolarPanel:1", "BuildStateCondition:StructureBase:Built" });
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(20, 220), DialogResult = DialogResult.OK };
+                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 220), DialogResult = DialogResult.OK };
                 dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(0, 20) }, txtId,
-                    new Label { Text = "Description:", Location = new System.Drawing.Point(0, 50) }, txtDesc,
-                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(0, 80) }, txtInfoKey,
-                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(0, 110) }, clbConditions, btnOk });
+                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
+                    txtId,
+                    new Label { Text = "Description:", Location = new System.Drawing.Point(20, 50), Width = 80 },
+                    txtDesc,
+                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(20, 80), Width = 80 },
+                    txtInfoKey,
+                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(20, 110), Width = 80 },
+                    clbConditions,
+                    btnOk
+                });
+                dialog.MinimumSize = new System.Drawing.Size(350, 300);
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var item = new ListViewItem(txtId.Text);
                     item.SubItems.Add(txtDesc.Text);
                     item.SubItems.Add(txtInfoKey.Text);
+                    item.SubItems.Add("Edit");
                     var objElement = new XElement("WorldObjective",
                         new XAttribute("Id", txtId.Text),
                         new XElement("Description", txtDesc.Text),
@@ -302,10 +440,12 @@ namespace StationeersStructureXMLConverter
             using (var dialog = new Form())
             {
                 dialog.Text = "Edit Objective";
-                var txtId = new TextBox { Location = new System.Drawing.Point(20, 20), Width = 200, Text = item.Text };
-                var txtDesc = new TextBox { Location = new System.Drawing.Point(20, 50), Width = 200, Text = item.SubItems[1].Text };
-                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(20, 80), Width = 200, Text = item.SubItems[2].Text };
-                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(20, 110), Width = 200, Height = 100 };
+                dialog.AutoSize = true;
+                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                var txtId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = item.Text };
+                var txtDesc = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 200, Text = item.SubItems[1].Text };
+                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 200, Text = item.SubItems[2].Text };
+                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(120, 110), Width = 200, Height = 100 };
                 clbConditions.Items.AddRange(new[] { "ThingPrefabCondition:StructureSolarPanel:1", "BuildStateCondition:StructureBase:Built" });
                 var currentConditions = objElement.Elements().Where(el => el.Name.LocalName != "Description" && el.Name.LocalName != "Info").Select(el => $"{el.Name.LocalName}:{el.Attribute("PrefabName")?.Value}:{el.Attribute("Count")?.Value ?? el.Attribute("State")?.Value}");
                 foreach (var cond in currentConditions)
@@ -313,17 +453,25 @@ namespace StationeersStructureXMLConverter
                     int index = clbConditions.Items.IndexOf(cond);
                     if (index >= 0) clbConditions.SetItemChecked(index, true);
                 }
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(20, 220), DialogResult = DialogResult.OK };
+                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 220), DialogResult = DialogResult.OK };
                 dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(0, 20) }, txtId,
-                    new Label { Text = "Description:", Location = new System.Drawing.Point(0, 50) }, txtDesc,
-                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(0, 80) }, txtInfoKey,
-                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(0, 110) }, clbConditions, btnOk });
+                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
+                    txtId,
+                    new Label { Text = "Description:", Location = new System.Drawing.Point(20, 50), Width = 80 },
+                    txtDesc,
+                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(20, 80), Width = 80 },
+                    txtInfoKey,
+                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(20, 110), Width = 80 },
+                    clbConditions,
+                    btnOk
+                });
+                dialog.MinimumSize = new System.Drawing.Size(350, 300);
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     item.Text = txtId.Text;
                     item.SubItems[1].Text = txtDesc.Text;
                     item.SubItems[2].Text = txtInfoKey.Text;
+                    item.SubItems[3].Text = "Edit";
                     objElement.SetAttributeValue("Id", txtId.Text);
                     objElement.Element("Description").Value = txtDesc.Text;
                     objElement.Element("Info")?.SetAttributeValue("Key", txtInfoKey.Text);
@@ -357,8 +505,8 @@ namespace StationeersStructureXMLConverter
             settings.Element("World")?.Remove();
             settings.Add(new XElement("World",
                 new XAttribute("Id", txtWorldId.Text),
-                new XAttribute("Priority", txtPriority.Text),
-                new XAttribute("Hidden", chkHidden.Checked.ToString().ToLower())
+                new XAttribute("Priority", nudPriority.Value.ToString()),
+                new XAttribute("Hidden", "false")
             ));
             if (settings.Element("Name") != null) settings.Element("Name").Remove();
             settings.Add(new XElement("Name", txtName.Text));
