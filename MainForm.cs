@@ -622,9 +622,14 @@ namespace StationeersStructureXMLConverter
                         folderDialog.ValidateNames = false;
                         folderDialog.CheckFileExists = false;
                         folderDialog.CheckPathExists = true;
-                        folderDialog.FileName = "Select Folder";
+                        folderDialog.FileName = "Select Folder";  // This tricks it into folder mode
                         folderDialog.Filter = "Folders|*.*";
-                        folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+
+                        // Tweak: Start in mods dir for "None" mode (standalone file export)
+                        string defaultRoot = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+                        string modsDir = Path.Combine(defaultRoot, "mods");
+                        folderDialog.InitialDirectory = modsDir;  // Defaults to mods; falls back if missing
+
                         folderDialog.Title = "Select folder for the transformed SpawnGroup.xml";
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {

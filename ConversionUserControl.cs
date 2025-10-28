@@ -29,15 +29,26 @@ namespace StationeersStructureXMLConverter
             textBox3.ReadOnly = true;
             textBox3.Font = new Font("Consolas", 9F);
             textBox3.AcceptsReturn = true;
+            // Wire Convert button to raise public event (pass 'this' or 's'—either works since MainForm doesn't cast for Convert_Click)
+            button1.Click += (s, e) => Convert_Click?.Invoke(this, e);
+
+            // Wire checkboxes to raise public event (pass original 's' to preserve CheckBox sender for MainForm cast)
+            VanillaWorld_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            LocalMod_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            None_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+
+            // Wire ComboBox to raise public event (pass original 's' for consistency, though MainForm may not cast it)
+            WorldSelection_ComboBox.SelectedIndexChanged += (s, e) => WorldSelection_ComboBox_SelectedIndexChanged?.Invoke(s, e);
+
             bool isDebug = System.Diagnostics.Debugger.IsAttached;
             string defaultRoot = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
             if (isDebug)
             {
-                textBox1.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\manualsave\\Loulan Scenario Template.save";
+                textBox1.Text = "C:\\Users\\Geneticus\\Documents\\My Games\\Stationeers\\saves\\Loulanish_8\\Loulanish_8.save";
             }
             else
             {
-                textBox1.Text = Path.Combine(defaultRoot, "saves\\default\\world.xml");
+                textBox1.Text = Path.Combine(defaultRoot, "saves");
             }
             Right_GroupBox.PerformLayout();
         }
