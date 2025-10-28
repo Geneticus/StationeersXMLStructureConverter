@@ -201,9 +201,9 @@ namespace StationeersStructureXMLConverter
                 var settings = worldDoc.Root;
                 txtWorldId.Text = settings.Element("World")?.Attribute("Id")?.Value ?? (string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName);
                 nudPriority.Value = int.TryParse(settings.Element("World")?.Attribute("Priority")?.Value, out int priority) ? priority : 2;
-                txtName.Text = settings.Element("Name")?.Value ?? (string.IsNullOrEmpty(worldName) ? modName : worldName);
-                txtDescription.Text = settings.Element("Description")?.Attribute("Key")?.Value ?? $"{modName}_Description";
-                txtShortDesc.Text = settings.Element("ShortDescription")?.Attribute("Key")?.Value ?? $"{modName}_ShortDesc";
+                txtNameValue.Text = settings.Element("Name")?.Value ?? (string.IsNullOrEmpty(worldName) ? modName : worldName);
+                txtDescValue.Text = settings.Element("Description")?.Attribute("Key")?.Value ?? $"{modName}_Description";
+                txtShortDescValue.Text = settings.Element("ShortDescription")?.Attribute("Key")?.Value ?? $"{modName}_ShortDesc";
                 txtSummary.Text = settings.Element("SummaryText")?.Attribute("Key")?.Value ?? $"{modName}_Summary";
                 clbStartConditions.Items.Clear();
                 List<string> conditionIds = new List<string>();
@@ -245,9 +245,9 @@ namespace StationeersStructureXMLConverter
                 worldXmlPath = Path.Combine(worldFolder, "world.xml");
                 txtWorldId.Text = string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName;
                 nudPriority.Value = 2;
-                txtName.Text = string.IsNullOrEmpty(worldName) ? modName : worldName;
-                txtDescription.Text = $"{modName}_Description";
-                txtShortDesc.Text = $"{modName}_ShortDesc";
+                txtNameValue.Text = string.IsNullOrEmpty(worldName) ? modName : worldName;
+                txtDescValue.Text = $"{modName}_Description";
+                txtShortDescValue.Text = $"{modName}_ShortDesc";
                 txtSummary.Text = $"{modName}_Summary";
             }
             objectivesPath = Path.Combine(newModPath, "GameData", "WorldObjectives.xml");
@@ -271,7 +271,29 @@ namespace StationeersStructureXMLConverter
             }
         }
 
+        private void btnBrowseMod_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog folderDialog = new OpenFileDialog())
+            {
+                folderDialog.ValidateNames = false;
+                folderDialog.CheckFileExists = false;
+                folderDialog.CheckPathExists = true;
+                folderDialog.FileName = "Select Folder";
+                folderDialog.Filter = "Folders|*.*";
+                folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers\\mods");
+                folderDialog.Title = "Select your world mod's top level Folder";
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtModPath.Text = folderDialog.FileName;
+                }
+            }
+        }
 
+        private void btnClearAll_Click(object sender, EventArgs e)
+        {
+            // Simple acknowledgment that button was pressed
+            MessageBox.Show("Clear All button pressed.", "Acknowledgment");
+        }
 
         private void btnAddCondition_Click(object sender, EventArgs e)
         {
@@ -509,11 +531,11 @@ namespace StationeersStructureXMLConverter
                 new XAttribute("Hidden", "false")
             ));
             if (settings.Element("Name") != null) settings.Element("Name").Remove();
-            settings.Add(new XElement("Name", txtName.Text));
+            settings.Add(new XElement("Name", txtNameValue.Text));
             if (settings.Element("Description") != null) settings.Element("Description").Remove();
-            settings.Add(new XElement("Description", new XAttribute("Key", txtDescription.Text)));
+            settings.Add(new XElement("Description", new XAttribute("Key", txtDescValue.Text)));
             if (settings.Element("ShortDescription") != null) settings.Element("ShortDescription").Remove();
-            settings.Add(new XElement("ShortDescription", new XAttribute("Key", txtShortDesc.Text)));
+            settings.Add(new XElement("ShortDescription", new XAttribute("Key", txtShortDescValue.Text)));
             if (settings.Element("SummaryText") != null) settings.Element("SummaryText").Remove();
             settings.Add(new XElement("SummaryText", new XAttribute("Key", txtSummary.Text)));
             settings.Element("StartConditions")?.Remove();
@@ -548,9 +570,9 @@ namespace StationeersStructureXMLConverter
                     {
                         var nameElement = modElement.Element("Name");
                         if (nameElement != null)
-                            nameElement.Value = txtName.Text;
+                            nameElement.Value = txtNameValue.Text;
                         else
-                            modElement.Add(new XElement("Name", txtName.Text));
+                            modElement.Add(new XElement("Name", txtNameValue.Text));
                         var descElement = modElement.Element("Description");
                         if (descElement != null && !string.IsNullOrEmpty(description))
                             descElement.Value = description;
@@ -590,26 +612,26 @@ namespace StationeersStructureXMLConverter
                         {
                             var worldNameEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtWorldId.Text);
                             if (worldNameEntry != null)
-                                worldNameEntry.SetElementValue("Value", txtName.Text);
+                                worldNameEntry.SetElementValue("Value", txtNameValue.Text);
                             else
                                 interfaceElement.Add(new XElement("Record",
                                     new XElement("Key", txtWorldId.Text),
-                                    new XElement("Value", txtName.Text)
+                                    new XElement("Value", txtNameValue.Text)
                                 ));
-                            var descEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtDescription.Text);
+                            var descEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtDescValue.Text);
                             if (descEntry != null)
                                 descEntry.SetElementValue("Value", description);
                             else if (!string.IsNullOrEmpty(description))
                                 interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtDescription.Text),
+                                    new XElement("Key", txtDescValue.Text),
                                     new XElement("Value", description)
                                 ));
-                            var shortDescEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtShortDesc.Text);
+                            var shortDescEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtShortDescValue.Text);
                             if (shortDescEntry != null)
                                 shortDescEntry.SetElementValue("Value", summary);
                             else if (!string.IsNullOrEmpty(summary))
                                 interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtShortDesc.Text),
+                                    new XElement("Key", txtShortDescValue.Text),
                                     new XElement("Value", summary)
                                 ));
                             var summaryEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtSummary.Text);
