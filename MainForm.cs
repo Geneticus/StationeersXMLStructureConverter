@@ -542,7 +542,7 @@ namespace StationeersStructureXMLConverter
                 {
                     destSpawnGroupPath = Path.Combine(conversionUserControl.OutputPath ?? "", "SpawnGroup.xml");
                     Directory.CreateDirectory(Path.GetDirectoryName(destSpawnGroupPath));
-                    DestinationExport.TransformToNewSchema(things, destSpawnGroupPath, conversionUserControl.LogTextBox);
+                    DestinationExport.TransformToNewSchema(spawnEntries.Cast<object>().ToList(), destSpawnGroupPath, conversionUserControl.LogTextBox);
                     conversionUserControl.AppendLog("Conversion completed successfully! (Step 6 of 6)");
                     tabControlMain.SelectedTab = tabConversion;
                 }
@@ -622,14 +622,9 @@ namespace StationeersStructureXMLConverter
                         folderDialog.ValidateNames = false;
                         folderDialog.CheckFileExists = false;
                         folderDialog.CheckPathExists = true;
-                        folderDialog.FileName = "Select Folder";  // This tricks it into folder mode
+                        folderDialog.FileName = "Select Folder";
                         folderDialog.Filter = "Folders|*.*";
-
-                        // Tweak: Start in mods dir for "None" mode (standalone file export)
-                        string defaultRoot = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
-                        string modsDir = Path.Combine(defaultRoot, "mods");
-                        folderDialog.InitialDirectory = modsDir;  // Defaults to mods; falls back if missing
-
+                        folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
                         folderDialog.Title = "Select folder for the transformed SpawnGroup.xml";
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {
@@ -795,6 +790,6 @@ namespace StationeersStructureXMLConverter
             }
         }
 
-        
+
     }
 }

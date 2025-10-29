@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms; // For TextBox
-using System.Xml.Linq; // For XElement
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace StationeersStructureXMLConverter
 {
     public static class DestinationExport
     {
-        // Method preserved in case I want to export individual items per file.
         private static void TransformToBatch(List<object> things, string destPath, TextBox output)
         {
             int exportedCount = 0;
@@ -22,9 +21,9 @@ namespace StationeersStructureXMLConverter
                 {
                     var xsiType = thingElement.Attribute(XName.Get("type", "http://www.w3.org/2001/XMLSchema-instance"))?.Value ?? "Unknown";
                     var exportDoc = new XDocument(
-                        new XElement("Thing", // New schema root for prefab
+                        new XElement("Thing",
                             new XAttribute("type", xsiType),
-                            thingElement.Elements() // Copy child elements (Position, Reagents, etc.)
+                            thingElement.Elements()
                         )
                     );
                     string fileName = $"Thing_{exportedCount + 1}_{xsiType}.xml";
@@ -43,54 +42,56 @@ namespace StationeersStructureXMLConverter
                 output.AppendText("No things to export.\r\n");
                 return;
             }
-            output.AppendText($"Processing {things.Count} input things.\r\n"); // Debug log
-            string scenarioName = "My_Scenario"; // From textbox or user input
+            output.AppendText($"Processing {things.Count} input things.\r\n");
+            string scenarioName = "My_Scenario";
             string spawnId = scenarioName + "Things";
-            var gameData = BuildGameData(things, scenarioName, spawnId, output); // Sub-method for root
-            output.AppendText($"Attempting to write to: {destPath}\r\n"); // Diagnostic log
+            var gameData = BuildGameData(things, scenarioName, spawnId, output);
+            output.AppendText($"Attempting to write to: {destPath}\r\n");
             try
             {
-                // Normalize and validate destPath as a file
                 var preparedPath = PrepareOutputPath(destPath, output);
-                if (preparedPath == null)
+                if (string.IsNullOrEmpty(preparedPath))
                 {
-                    return; // Halt on invalid path
+                    return;
                 }
                 string fullPath = preparedPath;
 
-                // Create or overwrite the file
                 using (var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
                 {
                     gameData.Save(fs);
                 }
                 output.AppendText($"Exported {things.Count} spawn entries to {Path.GetDirectoryName(fullPath)}\r\n");
-                return; // Exit on success to prevent further execution
+                return;
             }
             catch (UnauthorizedAccessException ex)
             {
                 output.AppendText($"Error: Access denied to '{destPath}'. Please run as administrator or choose a writable directory.\r\n");
-                return; // Halt process on error
+                return;
             }
             catch (IOException ex)
             {
                 output.AppendText($"Error: Unable to write to '{destPath}'. The file may be in use or the directory is read-only. Try a different location.\r\n");
-                return; // Halt process on error
+                return;
             }
             catch (Exception ex)
             {
                 output.AppendText($"Error: An unexpected issue occurred while saving '{destPath}': {ex.Message}\r\n");
-                return; // Halt process on error
+                return;
             }
-            // Ensure process stops if an error occurs
         }
 
         private static string PrepareOutputPath(string destPath, TextBox output)
         {
-            string fullPath = Path.GetFullPath(destPath.TrimEnd('\\')); // Remove trailing backslash
+            if (string.IsNullOrEmpty(destPath))
+            {
+                output.AppendText("Error: No destination path provided.\r\n");
+                return string.Empty;
+            }
+            string fullPath = Path.GetFullPath(destPath.TrimEnd('\\'));
             if (Path.GetExtension(fullPath).Length == 0)
             {
                 output.AppendText($"Error: '{fullPath}' requires a file extension (e.g., .xml).\r\n");
-                return null;
+                return string.Empty;
             }
             string directory = Path.GetDirectoryName(fullPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -109,8 +110,8 @@ namespace StationeersStructureXMLConverter
                 new XElement("GameData",
                     new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
                     new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
-                    BuildWorldSettings(scenarioName), // Sub-method
-                    BuildSpawn(nestedHierarchy, spawnId) // Sub-method
+                    BuildWorldSettings(scenarioName),
+                    BuildSpawn(nestedHierarchy, spawnId)
                 )
             );
         }
@@ -139,13 +140,12 @@ namespace StationeersStructureXMLConverter
             var cleanId = xsiType.Replace("SaveData", "");
             var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;
             Console.WriteLine($"Processing {prefabName}: ReferenceId={thingElement.Element("ReferenceId")?.Value}, ParentReferenceId={thingElement.Element("ParentReferenceId")?.Value}");
-            // Classify tag by type, targeting specific free-floating DynamicThings
-            string tagName = ClassifyTagName(prefabName);
+            // tagName already set in prepped entry; skip re-classify
+            string tagName = "Item"; // Fallback for raw inputs
             var spawnEntry = new XElement(tagName,
                 new XAttribute("Id", prefabName),
                 new XAttribute("HideInStartScreen", "true")
             );
-            // Add temporary elements for nesting
             var referenceId = thingElement.Element("ReferenceId")?.Value ?? "0";
             if (string.IsNullOrEmpty(referenceId)) Console.WriteLine($"Warning: Missing ReferenceId for {prefabName}");
             var parentReferenceId = thingElement.Element("ParentReferenceId")?.Value ?? "0";
@@ -154,8 +154,7 @@ namespace StationeersStructureXMLConverter
             spawnEntry.Add(new XElement("TempParentReferenceId", parentReferenceId));
             spawnEntry.Add(new XElement("TempParentSlotId", parentSlotId));
             Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
-            // Add all child elements from ThingSaveData
-            AddAllProps(thingElement, spawnEntry, output); // Sub-method for all props
+            AddAllProps(thingElement, spawnEntry, output); // Device-specific only
             return spawnEntry;
         }
 
@@ -166,8 +165,8 @@ namespace StationeersStructureXMLConverter
             else if (prefabName == "DynamicGasTankAdvanced" || prefabName == "DynamicMKIILiquidCanisterEmpty" ||
                      prefabName == "CrateMkII" || prefabName == "DynamicGasCanisterEmpty" ||
                      prefabName == "DynamicLiquidCanisterEmpty" || prefabName == "LanderCapsuleSmall") tagName = "DynamicThing";
-            else if (prefabName.Contains("LanderCapsule")) tagName = "Item"; // Capsule as Item
-            else if (prefabName.Contains("Wreckage")) tagName = "Item"; // Wreckage as Item with variant
+            else if (prefabName.Contains("LanderCapsule")) tagName = "Item";
+            else if (prefabName.Contains("Wreckage")) tagName = "Item";
             return tagName;
         }
 
@@ -191,10 +190,9 @@ namespace StationeersStructureXMLConverter
                     Console.WriteLine($"Parent {parentId} has {children.Count} children: {string.Join(", ", children.Select(c => c.Element("TempReferenceId")?.Value ?? "None"))}");
                     AddInventory(topLevelEntry, children, visited, spawnEntries, nestedIds);
                 }
-                nestedIds.Add(parentId); // Track top-level IDs to avoid reprocessing
+                nestedIds.Add(parentId);
             }
             Console.WriteLine($"Final nestedHierarchy count: {nestedHierarchy.Count}");
-            // Clean up temporary elements before return
             CleanupTemporaryElements(nestedHierarchy);
             return nestedHierarchy;
         }
@@ -240,29 +238,26 @@ namespace StationeersStructureXMLConverter
                 var referenceId = childSpawn.Element("TempReferenceId")?.Value ?? "0";
                 if (visited.Contains(referenceId))
                 {
-                    continue; // Skip to prevent cycles
+                    continue;
                 }
                 visited.Add(referenceId);
-                nestedIds.Add(referenceId); // Mark as nested
+                nestedIds.Add(referenceId);
                 var slotId = childSpawn.Element("TempParentSlotId")?.Value ?? "0";
                 childSpawn.SetAttributeValue("SlotIndex", slotId);
-                // Remove temporary elements if not needed in output
                 childSpawn.Element("TempParentReferenceId")?.Remove();
                 childSpawn.Element("TempParentSlotId")?.Remove();
                 childSpawn.Element("TempReferenceId")?.Remove();
-                // Recurse for grandchildren
                 var childId = referenceId;
                 var grandChildren = spawnEntries.Where(e => e.Element("TempParentReferenceId")?.Value == childId).ToList();
                 if (grandChildren.Any())
                 {
                     AddInventory(childSpawn, grandChildren, visited, spawnEntries, nestedIds);
                 }
-                parent.Add(DeepCopyXElement(childSpawn)); // Use deep copy to avoid reference issues
+                parent.Add(DeepCopyXElement(childSpawn));
                 Console.WriteLine($"Nested {childSpawn.Attribute("Id")?.Value} under {parent.Attribute("Id")?.Value} with SlotIndex={slotId}");
             }
         }
 
-        // Sub-method: Build self-closing <WorldSettings Id="..."/>
         private static XElement BuildWorldSettings(string scenarioName)
         {
             return new XElement("WorldSettings",
@@ -270,227 +265,46 @@ namespace StationeersStructureXMLConverter
             );
         }
 
-        // Sub-method: Build <Spawn Id="..." > with entries </Spawn>
         private static XElement BuildSpawn(List<XElement> spawnEntries, string spawnId)
         {
             return new XElement("Spawn",
                 new XAttribute("Id", spawnId),
-                spawnEntries // All entries as siblings under <Spawn>
+                spawnEntries
             );
         }
 
-        // Sub-method: Add all props (CustomName, DamageState, etc.) - call from main loop
         private static void AddAllProps(XElement thingElement, XElement spawnEntry, TextBox output)
         {
-            // CustomName (even if empty)
-            AddCustomNameProps(thingElement, spawnEntry);
+            // Basics now in SourceExtraction—skip here
 
-            // Add DamageState using sub-method
-            AddDamageState(thingElement, spawnEntry); // Call existing sub-method
-
-            // Transform CurrentBuildState to BuildState Index
-            AddBuildState(thingElement, spawnEntry);
-
-            // Add HasSpawnedWreckage (bool)
-            AddHasSpawnedWreckage(thingElement, spawnEntry);
-
-            // Add SpawnPosition
-            var spawnPosition = BuildSpawnPosition(thingElement, spawnEntry, output);
-            spawnEntry.Add(spawnPosition);
-
-            // Add Reagents if present
-            AddReagents(thingElement, spawnEntry);
-
-            // Add States transformation (aligned with WorldSettings.xsd)
-            AddStates(thingElement, spawnEntry);
-
-            // Log untransformed tags
-            //var untransformedTags = thingElement.Elements()
-            // .Where(e => !new[] { "CustomName", "IsCustomName", "CustomColorIndex", "Indestructable", "DamageState", "CurrentBuildState", "WorldPosition", "WorldRotation", "Reagents", "States" }.Contains(e.Name.LocalName))
-            // .Select(e => e.Name.LocalName)
-            // .Distinct()
-            // .ToList();
-            //if (untransformedTags.Any() && output != null)
-            //{
-            // output.AppendText($"Untransformed tags for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}: {string.Join(", ", untransformedTags)}\n");
-            //}
-
-            // Add HealthCurrent (conditional for dynamic items)
-            AddHealthCurrentForDynamicThings(thingElement, spawnEntry);
-
-            // Add Quantity and QuantitySmelted for OreSaveData
+            // Device-specific only
             AddOreSpecificProps(thingElement, spawnEntry);
-
-            // Add Horizontal and Vertical for SolarPanelSaveData
             AddSolarPanelSpecificProps(thingElement, spawnEntry);
-
-            // Add Setting for DoorSaveData
             AddDoorSpecificProps(thingElement, spawnEntry);
-
-            // Add Charge Amount for Batteries (Structural and Portable)
             AddBatterySpecificProps(thingElement, spawnEntry);
-
-            // Add Interaction Elements for Interactable Items
             AddInteractionProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for SimpleFabricatorSaveData
             AddSimpleFabricatorSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for DeviceImportExport2SaveData
             AddDeviceImportExport2SpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for SorterSaveData
             AddSorterSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for DynamicComposterSaveData
             AddDynamicComposterSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for DynamicGasCanisterSaveData, TransformerSaveData, StirlingEngineSaveData, StructurePortablesConnector
             AddOutputDeviceSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureHydroponicsTray
             AddHydroponicsTraySpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicWriterSwitch, StructureLogicBatchWriter, StructureLogicWriter
             AddLogicWriterSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicBatchSlotReader
             AddLogicBatchSlotReaderSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicReagentReader
             AddLogicReagentReaderSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicSlotReader
             AddLogicSlotReaderSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicMirror
             AddLogicMirrorSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicPidController
             AddLogicPidControllerSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StructureLogicGate
             AddLogicGateSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for CircuitHousingSaveData
             AddCircuitHousingSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for CircuitboardAirlockControl
             AddAirlockControlSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for SuitSaveData
             AddSuitSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for ItemDuctTape
             AddDuctTapeSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for ProximitySensorSaveData
             AddProximitySensorSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for StirlingEngineSaveData
             AddStirlingEngineSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for DynamicGasCanisterSaveData
             AddDynamicGasCanisterSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for SeedBag_Soybean
             AddSeedBagSpecificProps(thingElement, spawnEntry);
-
-            // Add Device-Specific Properties for ItemFertilizedEgg
             AddFertilizedEggSpecificProps(thingElement, spawnEntry);
-        }
-
-        private static void AddCustomNameProps(XElement thingElement, XElement spawnEntry)
-        {
-            // CustomName (even if empty)
-            var customName = thingElement.Element("CustomName");
-            if (customName != null)
-            {
-                spawnEntry.Add(new XElement("CustomName", customName.Value ?? ""));
-            }
-            // IsCustomName (bool)
-            var isCustomName = thingElement.Element("IsCustomName")?.Value;
-            if (isCustomName != null)
-            {
-                spawnEntry.Add(new XElement("IsCustomName", isCustomName));
-            }
-            // CustomColorIndex (int) -> <Color Id="ColorName" /> only if valid
-            var customColorIndex = thingElement.Element("CustomColorIndex")?.Value;
-            if (customColorIndex != null)
-            {
-                int ColorIndex;
-                if (int.TryParse(customColorIndex, out ColorIndex))
-                {
-                    string colorName = GetColorName(ColorIndex);
-                    if (colorName != null)
-                    {
-                        spawnEntry.Add(new XElement("Color",
-                            new XAttribute("Id", colorName)
-                        ));
-                    }
-                }
-                // If parsing fails or customColorIndex is null, no <Color> tag is added
-            }
-            // Indestructable (bool)
-            var indestructable = thingElement.Element("Indestructable")?.Value;
-            if (indestructable != null)
-            {
-                spawnEntry.Add(new XElement("Indestructable", indestructable));
-            }
-        }
-
-        private static string GetColorName(int index)
-        {
-            switch (index)
-            {
-                case 0: return "ColorBlue";
-                case 1: return "ColorGray";
-                case 2: return "ColorGreen";
-                case 3: return "ColorOrange";
-                case 4: return "ColorRed";
-                case 5: return "ColorYellow";
-                case 6: return "ColorWhite";
-                case 7: return "ColorBlack";
-                case 8: return "ColorBrown";
-                case 9: return "ColorKhaki";
-                case 10: return "ColorPink";
-                case 11: return "ColorPurple";
-                default: return null;
-            }
-        }
-
-        private static void AddBuildState(XElement thingElement, XElement spawnEntry)
-        {
-            // Transform CurrentBuildState to BuildState Index
-            var currentBuildState = thingElement.Element("CurrentBuildState")?.Value;
-            if (currentBuildState != null && int.TryParse(currentBuildState, out int index))
-            {
-                spawnEntry.Add(new XElement("BuildState", new XAttribute("Index", index.ToString())));
-            }
-        }
-
-        private static void AddHasSpawnedWreckage(XElement thingElement, XElement spawnEntry)
-        {
-            // Add HasSpawnedWreckage (bool)
-            var hasSpawnedWreckage = thingElement.Element("HasSpawnedWreckage")?.Value;
-            if (hasSpawnedWreckage != null)
-            {
-                spawnEntry.Add(new XElement("HasSpawnedWreckage", hasSpawnedWreckage));
-            }
-        }
-
-        private static void AddHealthCurrentForDynamicThings(XElement thingElement, XElement spawnEntry)
-        {
-            var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
-            var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value;
-            if (xsiType != null && xsiType.Contains("DynamicThing"))
-            {
-                var healthCurrent = thingElement.Element("HealthCurrent")?.Value;
-                if (healthCurrent != null && int.TryParse(healthCurrent, out _))
-                {
-                    spawnEntry.Add(new XElement("HealthCurrent", healthCurrent));
-                }
-            }
         }
 
         private static void AddOreSpecificProps(XElement thingElement, XElement spawnEntry)
@@ -564,8 +378,7 @@ namespace StationeersStructureXMLConverter
                 var powerStored = thingElement.Element("PowerStored")?.Value;
                 if (powerStored != null && float.TryParse(powerStored, out float chargeValue))
                 {
-                    // Optional State attribute; default to numeric value unless context suggests "Full"
-                    bool isFull = chargeValue >= 0; // Placeholder logic; adjust based on max charge or source state
+                    bool isFull = chargeValue >= 0; // Placeholder; adjust
                     if (isFull)
                     {
                         spawnEntry.Add(new XElement("Charge",
@@ -585,7 +398,7 @@ namespace StationeersStructureXMLConverter
         {
             var interactXsiNs = "http://www.w3.org/2001/XMLSchema-instance";
             var interactXsiTypeValue = thingElement.Attribute(XName.Get("type", interactXsiNs))?.Value;
-            if (interactXsiTypeValue != null && interactXsiTypeValue.Contains("SaveData")) // Broad check for interactables
+            if (interactXsiTypeValue != null && interactXsiTypeValue.Contains("SaveData"))
             {
                 var interactions = thingElement.Elements("Interaction");
                 if (interactions.Any())
@@ -651,7 +464,7 @@ namespace StationeersStructureXMLConverter
                 var export2State = thingElement.Element("Export2State")?.Value;
                 if (export2State != null && int.TryParse(export2State, out _)) spawnEntry.Add(new XElement("Export2State", export2State));
                 var logicStack = thingElement.Element("LogicStack");
-                if (logicStack != null) spawnEntry.Add(logicStack); // Handle as XML structure if needed
+                if (logicStack != null) spawnEntry.Add(logicStack);
             }
         }
 
@@ -672,7 +485,7 @@ namespace StationeersStructureXMLConverter
                 var currentOutput = thingElement.Element("CurrentOutput")?.Value;
                 if (currentOutput != null && int.TryParse(currentOutput, out _)) spawnEntry.Add(new XElement("CurrentOutput", currentOutput));
                 var filters = thingElement.Element("Filters");
-                if (filters != null) spawnEntry.Add(filters); // Handle as XML structure if needed
+                if (filters != null) spawnEntry.Add(filters);
             }
         }
 
@@ -880,7 +693,7 @@ namespace StationeersStructureXMLConverter
             if (airlockControlXsiTypeValue != null && airlockControlXsiTypeValue.Contains("CircuitboardAirlockControl"))
             {
                 var linkedDeviceReferences = thingElement.Element("LinkedDeviceReferences");
-                if (linkedDeviceReferences != null) spawnEntry.Add(linkedDeviceReferences); // Handle as XML structure if needed
+                if (linkedDeviceReferences != null) spawnEntry.Add(linkedDeviceReferences);
                 var flag = thingElement.Element("Flag")?.Value;
                 if (flag != null && int.TryParse(flag, out _)) spawnEntry.Add(new XElement("Flag", flag));
                 var masterMotherboard = thingElement.Element("MasterMotherboard")?.Value;
@@ -909,7 +722,7 @@ namespace StationeersStructureXMLConverter
         {
             var suitXsiNs = "http://www.w3.org/2001/XMLSchema-instance";
             var ductTapeXsiTypeValue = thingElement.Attribute(XName.Get("type", suitXsiNs))?.Value;
-            if (ductTapeXsiTypeValue != null && ductTapeXsiTypeValue.Contains("ItemDuctTapeSaveData")) // Adjust xsi:type as needed
+            if (ductTapeXsiTypeValue != null && ductTapeXsiTypeValue.Contains("ItemDuctTapeSaveData"))
             {
                 var quantity = thingElement.Element("Quantity")?.Value;
                 if (quantity != null && float.TryParse(quantity, out _)) spawnEntry.Add(new XElement("Quantity", quantity));
@@ -936,11 +749,11 @@ namespace StationeersStructureXMLConverter
                 var outputSetting = thingElement.Element("OutputSetting")?.Value;
                 if (outputSetting != null && int.TryParse(outputSetting, out _)) spawnEntry.Add(new XElement("OutputSetting", outputSetting));
                 var hotInputAtmosphere = thingElement.Element("HotInputAtmosphere");
-                if (hotInputAtmosphere != null) spawnEntry.Add(hotInputAtmosphere); // Handle as XML structure
+                if (hotInputAtmosphere != null) spawnEntry.Add(hotInputAtmosphere);
                 var hotSideAtmosphere = thingElement.Element("HotSideAtmosphere");
-                if (hotSideAtmosphere != null) spawnEntry.Add(hotSideAtmosphere); // Handle as XML structure
+                if (hotSideAtmosphere != null) spawnEntry.Add(hotSideAtmosphere);
                 var coldSideAtmosphere = thingElement.Element("ColdSideAtmosphere");
-                if (coldSideAtmosphere != null) spawnEntry.Add(coldSideAtmosphere); // Handle as XML structure
+                if (coldSideAtmosphere != null) spawnEntry.Add(coldSideAtmosphere);
             }
         }
 
@@ -959,7 +772,7 @@ namespace StationeersStructureXMLConverter
         {
             var suitXsiNs = "http://www.w3.org/2001/XMLSchema-instance";
             var seedBagXsiTypeValue = thingElement.Attribute(XName.Get("type", suitXsiNs))?.Value;
-            if (seedBagXsiTypeValue != null && seedBagXsiTypeValue.Contains("SeedBag_SoybeanSaveData")) // Adjust xsi:type as needed
+            if (seedBagXsiTypeValue != null && seedBagXsiTypeValue.Contains("SeedBag_SoybeanSaveData"))
             {
                 var quantity = thingElement.Element("Quantity")?.Value;
                 if (quantity != null && int.TryParse(quantity, out _)) spawnEntry.Add(new XElement("Quantity", quantity));
@@ -976,13 +789,13 @@ namespace StationeersStructureXMLConverter
                 var isFertilized = thingElement.Element("IsFertilized")?.Value;
                 if (isFertilized != null) spawnEntry.Add(new XElement("IsFertilized", isFertilized));
                 var stackedGeneCollections = thingElement.Element("StackedGeneCollections");
-                if (stackedGeneCollections != null) spawnEntry.Add(stackedGeneCollections); // Handle as XML structure
+                if (stackedGeneCollections != null) spawnEntry.Add(stackedGeneCollections);
                 var plantRecord = thingElement.Element("PlantRecord");
-                if (plantRecord != null) spawnEntry.Add(plantRecord); // Handle as XML structure
+                if (plantRecord != null) spawnEntry.Add(plantRecord);
                 var aggregateStates = thingElement.Element("AggregateStates");
-                if (aggregateStates != null) spawnEntry.Add(aggregateStates); // Handle as XML structure
+                if (aggregateStates != null) spawnEntry.Add(aggregateStates);
                 var currentStates = thingElement.Element("CurrentStates");
-                if (currentStates != null) spawnEntry.Add(currentStates); // Handle as XML structure
+                if (currentStates != null) spawnEntry.Add(currentStates);
             }
         }
 
@@ -990,7 +803,7 @@ namespace StationeersStructureXMLConverter
         {
             var suitXsiNs = "http://www.w3.org/2001/XMLSchema-instance";
             var eggXsiTypeValue = thingElement.Attribute(XName.Get("type", suitXsiNs))?.Value;
-            if (eggXsiTypeValue != null && eggXsiTypeValue.Contains("ItemFertilizedEggSaveData")) // Adjust xsi:type as needed
+            if (eggXsiTypeValue != null && eggXsiTypeValue.Contains("ItemFertilizedEggSaveData"))
             {
                 var eggHatchTime = thingElement.Element("EggHatchTime")?.Value;
                 if (eggHatchTime != null && int.TryParse(eggHatchTime, out _)) spawnEntry.Add(new XElement("EggHatchTime", eggHatchTime));
@@ -999,7 +812,6 @@ namespace StationeersStructureXMLConverter
             }
         }
 
-        // Sub-method: Add DamageState (nested copy, only if any value >0)
         private static void AddDamageState(XElement thingElement, XElement spawnEntry)
         {
             var damageState = thingElement.Element("DamageState");
@@ -1019,7 +831,7 @@ namespace StationeersStructureXMLConverter
                     var damageEntry = new XElement("DamageState");
                     foreach (var damageType in damageState.Elements())
                     {
-                        damageEntry.Add(new XElement(damageType.Name, damageType.Value)); // Copy each <Brute>0</Brute> individually
+                        damageEntry.Add(new XElement(damageType.Name, damageType.Value));
                     }
                     spawnEntry.Add(damageEntry);
                 }
@@ -1028,7 +840,6 @@ namespace StationeersStructureXMLConverter
 
         private static void AddReagents(XElement thingElement, XElement spawnEntry)
         {
-            // Add Reagents if present
             var reagents = thingElement.Element("Reagents");
             if (reagents != null)
             {
@@ -1049,7 +860,6 @@ namespace StationeersStructureXMLConverter
 
         private static void AddStates(XElement thingElement, XElement spawnEntry)
         {
-            // Add States transformation (aligned with WorldSettings.xsd)
             var states = thingElement.Element("States");
             if (states != null)
             {
@@ -1058,11 +868,11 @@ namespace StationeersStructureXMLConverter
                 {
                     var stateName = state.Element("StateName")?.Value;
                     var stateValue = state.Element("State")?.Value;
-                    if (stateName != null && stateValue != null && int.TryParse(stateValue, out _))
+                    if (!string.IsNullOrEmpty(stateName) && !string.IsNullOrEmpty(stateValue) && int.TryParse(stateValue, out _))
                     {
                         statesElement.Add(new XElement("State",
                             new XAttribute("Name", stateName),
-                            new XText(stateValue)
+                            stateValue
                         ));
                     }
                 }
@@ -1077,26 +887,23 @@ namespace StationeersStructureXMLConverter
         {
             var worldPos = thingElement.Element("WorldPosition");
             var offsetX = worldPos?.Element("x")?.Value ?? "0";
-            var offsetY = worldPos?.Element("y")?.Value ?? "0"; // Y is vertical
+            var offsetY = worldPos?.Element("y")?.Value ?? "0";
             var offsetZ = worldPos?.Element("z")?.Value ?? "0";
             double pitch = 0, yaw = 0, roll = 0;
             var worldRot = thingElement.Element("WorldRotation");
             var euler = worldRot?.Element("eulerAngles");
             if (euler != null)
             {
-                // Use eulerAngles directly (x=pitch, y=yaw, z=roll)
                 pitch = double.Parse(euler.Element("x")?.Value ?? "0");
                 yaw = double.Parse(euler.Element("y")?.Value ?? "0");
                 roll = double.Parse(euler.Element("z")?.Value ?? "0");
             }
             else
             {
-                // Fallback to quaternion (Y-up: yaw=Y, pitch=X, roll=Z)
                 var rotX = double.Parse(worldRot?.Element("x")?.Value ?? "0");
                 var rotY = double.Parse(worldRot?.Element("y")?.Value ?? "0");
                 var rotZ = double.Parse(worldRot?.Element("z")?.Value ?? "0");
                 var rotW = double.Parse(worldRot?.Element("w")?.Value ?? "1");
-                // Normalize quaternion
                 double length = Math.Sqrt(rotX * rotX + rotY * rotY + rotZ * rotZ + rotW * rotW);
                 if (length > 0)
                 {
@@ -1105,16 +912,14 @@ namespace StationeersStructureXMLConverter
                     rotZ /= length;
                     rotW /= length;
                 }
-                // Convert to Euler (Y-up, adjusted to minimize flips)
                 double sinr_cosp = 2 * (rotW * rotX + rotY * rotZ);
                 double cosr_cosp = 1 - 2 * (rotX * rotX + rotY * rotY);
-                pitch = Math.Atan2(sinr_cosp, cosr_cosp) * (180 / Math.PI); // X (pitch)
-                double sinp = Math.Min(Math.Max(2 * (rotW * rotY - rotZ * rotX), -1), 1); // Clamp to avoid NaN
-                yaw = Math.Asin(sinp) * (180 / Math.PI); // Y (yaw)
+                pitch = Math.Atan2(sinr_cosp, cosr_cosp) * (180 / Math.PI);
+                double sinp = Math.Min(Math.Max(2 * (rotW * rotY - rotZ * rotX), -1), 1);
+                yaw = Math.Asin(sinp) * (180 / Math.PI);
                 double siny_cosp = 2 * (rotW * rotZ + rotX * rotY);
                 double cosy_cosp = 1 - 2 * (rotY * rotY + rotZ * rotZ);
-                roll = Math.Atan2(siny_cosp, cosy_cosp) * (180 / Math.PI); // Z (roll)
-                // Adjust for potential flips (e.g., if yaw near ±90, adjust pitch/roll)
+                roll = Math.Atan2(siny_cosp, cosy_cosp) * (180 / Math.PI);
                 if (Math.Abs(sinp) > 0.9999)
                 {
                     pitch = 0;
@@ -1125,11 +930,9 @@ namespace StationeersStructureXMLConverter
                     output.AppendText($"Warning: No eulerAngles for {thingElement.Element("PrefabName")?.Value ?? "Unknown"}, using default rotation (0,0,0)\r\n");
                 }
             }
-            // Normalize to 0-360
             pitch = (pitch + 360) % 360;
             yaw = (yaw + 360) % 360;
             roll = (roll + 360) % 360;
-            // For Structures: Snap to 90-degree increments
             if (spawnEntry.Name.LocalName == "Structure")
             {
                 pitch = Math.Round(pitch / 90) * 90 % 360;
