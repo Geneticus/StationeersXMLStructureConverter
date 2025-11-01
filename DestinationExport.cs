@@ -42,7 +42,8 @@ namespace StationeersStructureXMLConverter
                 output.AppendText("No things to export.\r\n");
                 return;
             }
-            output.AppendText($"Processing {things.Count} input things.\r\n");
+            //output.AppendText($"Processing {things.Count} input things.\r\n");
+            output.AppendText(DateTime.Now.ToString("HH:mm:ss.fff") + $" Processing {things.Count} input things.\r\n"); //temp timestamp
             string scenarioName = "My_Scenario";
             string spawnId = scenarioName + "Things";
             var gameData = BuildGameData(things, scenarioName, spawnId, output);
@@ -123,10 +124,28 @@ namespace StationeersStructureXMLConverter
             {
                 if (thingObj is XElement thingElement)
                 {
-                    var spawnEntry = CreateSpawnEntryFromThing(thingElement, output);
-                    if (spawnEntry != null)
+                    // If prepped (has Name like "Item"/"Structure"), use as-is; else build
+                    if (!string.IsNullOrEmpty(thingElement.Name.LocalName) && new[] { "Item", "Structure", "DynamicThing" }.Contains(thingElement.Name.LocalName))
                     {
-                        spawnEntries.Add(spawnEntry);
+                        // Prepped: Add temp IDs if missing (hierarchy needs them)
+                        if (thingElement.Element("TempReferenceId") == null)
+                        {
+                            var referenceId = thingElement.Element("ReferenceId")?.Value ?? "0";
+                            var parentReferenceId = thingElement.Element("ParentReferenceId")?.Value ?? "0";
+                            var parentSlotId = thingElement.Element("ParentSlotId")?.Value ?? "0";
+                            thingElement.Add(new XElement("TempReferenceId", referenceId));
+                            thingElement.Add(new XElement("TempParentReferenceId", parentReferenceId));
+                            thingElement.Add(new XElement("TempParentSlotId", parentSlotId));
+                        }
+                        spawnEntries.Add(thingElement);
+                    }
+                    else
+                    {
+                        var spawnEntry = CreateSpawnEntryFromThing(thingElement, output);
+                        if (spawnEntry != null)
+                        {
+                            spawnEntries.Add(spawnEntry);
+                        }
                     }
                 }
             }
@@ -138,8 +157,8 @@ namespace StationeersStructureXMLConverter
             var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
             var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
             var cleanId = xsiType.Replace("SaveData", "");
-            var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;
-            Console.WriteLine($"Processing {prefabName}: ReferenceId={thingElement.Element("ReferenceId")?.Value}, ParentReferenceId={thingElement.Element("ParentReferenceId")?.Value}");
+            var prefabName = thingElement.Attribute("Id")?.Value ?? thingElement.Element("PrefabName")?.Value ?? cleanId;
+            //Console.WriteLine($"Processing {prefabName}: ReferenceId={thingElement.Element("ReferenceId")?.Value}, ParentReferenceId={thingElement.Element("ParentReferenceId")?.Value}");
             // tagName already set in prepped entry; skip re-classify
             string tagName = "Item"; // Fallback for raw inputs
             var spawnEntry = new XElement(tagName,
@@ -153,7 +172,7 @@ namespace StationeersStructureXMLConverter
             spawnEntry.Add(new XElement("TempReferenceId", referenceId));
             spawnEntry.Add(new XElement("TempParentReferenceId", parentReferenceId));
             spawnEntry.Add(new XElement("TempParentSlotId", parentSlotId));
-            Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
+            //Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
             AddAllProps(thingElement, spawnEntry, output); // Device-specific only
             return spawnEntry;
         }
@@ -305,6 +324,7 @@ namespace StationeersStructureXMLConverter
             AddDynamicGasCanisterSpecificProps(thingElement, spawnEntry);
             AddSeedBagSpecificProps(thingElement, spawnEntry);
             AddFertilizedEggSpecificProps(thingElement, spawnEntry);
+            //AddConsumableSpecificProps(thingElement, spawnEntry);
         }
 
         private static void AddOreSpecificProps(XElement thingElement, XElement spawnEntry)
@@ -809,6 +829,26 @@ namespace StationeersStructureXMLConverter
                 if (eggHatchTime != null && int.TryParse(eggHatchTime, out _)) spawnEntry.Add(new XElement("EggHatchTime", eggHatchTime));
                 var viable = thingElement.Element("Viable")?.Value;
                 if (viable != null) spawnEntry.Add(new XElement("Viable", viable));
+            }
+        }
+
+        private static void AddConsumableSpecificProps(XElement thingElement, XElement spawnEntry)
+        {
+            var prefab = thingElement.Element("PrefabName")?.Value ?? "";
+            if (prefab.Contains("ItemWaterBottle") || prefab.Contains("ItemCerealBar") || prefab.Contains("ItemGasCanisterEmpty"))
+            {
+                var quantity = thingElement.Element("Quantity")?.Value;
+                if (quantity != null && float.TryParse(quantity, out float qValue) && qValue > 0)
+                {
+                    var maxCapacities = new Dictionary<string, float> { { "ItemWaterBottle", 1.5f }, { "ItemCerealBar", 1.0f }, { "ItemGasCanisterEmpty", 1.0f } }; // Add more as needed
+                    float maxCapacity = 1.0f;
+                    if (maxCapacities.TryGetValue(prefab, out float value))
+                    {
+                        maxCapacity = value;
+                    }
+                    int percent = (int)Math.Min((qValue / maxCapacity) * 100, 100);
+                    spawnEntry.Add(new XElement("Percent", new XAttribute("Value", percent.ToString())));
+                }
             }
         }
 

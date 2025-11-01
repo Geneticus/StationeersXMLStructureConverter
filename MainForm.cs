@@ -156,7 +156,7 @@ namespace StationeersStructureXMLConverter
                 }
                 conversionUserControl.AppendLog($"Extracted {things.Count} Things... (Step 4 of 6)");
                 conversionUserControl.AppendLog("Transforming Things to Spawn Items... (Step 5 of 6)");
-                var spawnEntries = SourceExtraction.ExtractSpawnEntries(things, conversionUserControl.LogTextBox);
+                var spawnEntries = SourceExtraction.ExtractSpawnEntries(things, conversionUserControl.LogTextBox, doc);
                 if ((conversionUserControl.VanillaWorldChecked || conversionUserControl.LocalModChecked) && conversionUserControl.WorldSelectionIndex > 0 && string.IsNullOrEmpty(conversionUserControl.ModName))
                 {
                     conversionUserControl.AppendLog("Error: Mod name is not set. Please configure file outputs.");
@@ -263,7 +263,7 @@ namespace StationeersStructureXMLConverter
                     conversionUserControl.AppendLog("Error: No output destination set (world or folder not selected).");
                     return;
                 }
-                DestinationExport.TransformToNewSchema(things, destSpawnGroupPath, conversionUserControl.LogTextBox);
+                //DestinationExport.TransformToNewSchema(things, destSpawnGroupPath, conversionUserControl.LogTextBox);
                 int landerCapsuleRemovedCount = 0;
                 int characterRemovedCount = 0;
                 int supplyLanderRemovedCount = 0;
@@ -277,7 +277,7 @@ namespace StationeersStructureXMLConverter
                     if (conversionUserControl.FilterLanderCapsule)
                     {
                         var landerCapsuleNodes = spawnRoot?.Elements()
-                            .Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall")
+                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("LanderCapsuleSmall", StringComparison.OrdinalIgnoreCase) == true)
                             .ToList() ?? new List<XElement>();
                         nodesToPrune.AddRange(landerCapsuleNodes);
                         landerCapsuleRemovedCount = landerCapsuleNodes.Count;
@@ -285,7 +285,7 @@ namespace StationeersStructureXMLConverter
                     if (conversionUserControl.FilterCharacter)
                     {
                         var characterNodes = spawnRoot?.Elements()
-                            .Where(n => n.Attribute("Id")?.Value == "Character")
+                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("Character", StringComparison.OrdinalIgnoreCase) == true)
                             .ToList() ?? new List<XElement>();
                         nodesToPrune.AddRange(characterNodes);
                         characterRemovedCount = characterNodes.Count;
@@ -293,7 +293,7 @@ namespace StationeersStructureXMLConverter
                     if (conversionUserControl.FilterSupplyLander)
                     {
                         var supplyLanderNodes = spawnRoot?.Elements()
-                            .Where(n => n.Attribute("Id")?.Value == "Lander" || n.Attribute("Id")?.Value == "LanderMkII")
+                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("Lander", StringComparison.OrdinalIgnoreCase) == true || n.Attribute("Id")?.Value?.Equals("LanderMkII", StringComparison.OrdinalIgnoreCase) == true)
                             .ToList() ?? new List<XElement>();
                         nodesToPrune.AddRange(supplyLanderNodes);
                         supplyLanderRemovedCount = supplyLanderNodes.Count;
@@ -301,7 +301,7 @@ namespace StationeersStructureXMLConverter
                     if (conversionUserControl.FilterOre)
                     {
                         var oreNodes = spawnRoot?.Elements()
-                            .Where(n => n.Attribute("Id")?.Value.Contains("Ore") ?? false)
+                            .Where((XElement n) => n.Attribute("Id")?.Value?.IndexOf("Ore", StringComparison.OrdinalIgnoreCase) >= 0)
                             .ToList() ?? new List<XElement>();
                         nodesToPrune.AddRange(oreNodes);
                         oreRemovedCount = oreNodes.Count;
@@ -309,47 +309,41 @@ namespace StationeersStructureXMLConverter
                     if (conversionUserControl.FilterItemKit)
                     {
                         var itemKitNodes = spawnRoot?.Elements()
-                            .Where(n => n.Attribute("Id")?.Value.Contains("ItemKit") ?? false)
+                            .Where((XElement n) => n.Attribute("Id")?.Value?.IndexOf("ItemKit", StringComparison.OrdinalIgnoreCase) >= 0)
                             .ToList() ?? new List<XElement>();
                         nodesToPrune.AddRange(itemKitNodes);
                         itemKitRemovedCount = itemKitNodes.Count;
                     }
+                    //Debug Temporary Coment
+                    conversionUserControl.AppendLog($"Pruning: Found {nodesToPrune.Count} nodes to remove (e.g., {nodesToPrune.FirstOrDefault()?.Attribute("Id")?.Value ?? "none"}).");
                     if (nodesToPrune.Any())
                     {
                         foreach (var node in nodesToPrune)
                         {
                             node.Remove();
                         }
+                        var originalSize = new FileInfo(destSpawnGroupPath).Length; // Pre-prune size
                         outputDoc.Save(destSpawnGroupPath);
+                        var fileSize = new FileInfo(destSpawnGroupPath).Length;
+                        //Temporary Debug Logging for save not occuring
+                        conversionUserControl.AppendLog($"Pruned file saved at {destSpawnGroupPath} (size: {fileSize} bytes, change: {originalSize - fileSize} bytes)");
                         int totalChildrenRemoved = nodesToPrune.Sum(n => n.Descendants().Count());
-                        int landerCapsuleSpawnableChildrenRemoved = conversionUserControl.FilterLanderCapsule ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall").Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
-                        int characterSpawnableChildrenRemoved = conversionUserControl.FilterCharacter ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Character").Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
-                        int supplyLanderSpawnableChildrenRemoved = conversionUserControl.FilterSupplyLander ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Lander" || n.Attribute("Id")?.Value == "LanderMkII").Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
-                        int oreSpawnableChildrenRemoved = conversionUserControl.FilterOre ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("Ore") ?? false).Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
-                        int itemKitSpawnableChildrenRemoved = conversionUserControl.FilterItemKit ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("ItemKit") ?? false).Sum(n => n.Descendants().Count(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing")) : 0;
+                        var spawnableFilter = new Func<XElement, bool>(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing");
+                        int landerCapsuleSpawnableChildrenRemoved = conversionUserControl.FilterLanderCapsule ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
+                        int characterSpawnableChildrenRemoved = conversionUserControl.FilterCharacter ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Character").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
+                        int supplyLanderSpawnableChildrenRemoved = conversionUserControl.FilterSupplyLander ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Lander" || n.Attribute("Id")?.Value == "LanderMkII").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
+                        int oreSpawnableChildrenRemoved = conversionUserControl.FilterOre ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("Ore") ?? false).Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
+                        int itemKitSpawnableChildrenRemoved = conversionUserControl.FilterItemKit ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("ItemKit") ?? false).Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
                         string logMessage = "";
-                        if (landerCapsuleRemovedCount > 0) logMessage += $"Removed {landerCapsuleRemovedCount} LanderCapsuleSmall node(s) and {landerCapsuleSpawnableChildrenRemoved} of children";
-                        if (characterRemovedCount > 0)
+                        if (landerCapsuleRemovedCount > 0) logMessage += $"Removed {landerCapsuleRemovedCount} LanderCapsuleSmall item(s) and {landerCapsuleSpawnableChildrenRemoved} child items.\r\n";
+                        if (characterRemovedCount > 0) logMessage += $"Removed {characterRemovedCount} Character item(s) and {characterSpawnableChildrenRemoved} child items.\r\n";
+                        if (supplyLanderRemovedCount > 0) logMessage += $"Removed {supplyLanderRemovedCount} SupplyLander item(s) and {supplyLanderSpawnableChildrenRemoved} child items.\r\n";
+                        if (oreRemovedCount > 0) logMessage += $"Removed {oreRemovedCount} Ore item(s) and {oreSpawnableChildrenRemoved} child items.\r\n";
+                        if (itemKitRemovedCount > 0) logMessage += $"Removed {itemKitRemovedCount} ItemKit item(s) and {itemKitSpawnableChildrenRemoved} child items.\r\n";
+                        if (!string.IsNullOrEmpty(logMessage))
                         {
-                            if (logMessage.Length > 0) logMessage += ", ";
-                            logMessage += $"Removed {characterRemovedCount} Character node(s) and {characterSpawnableChildrenRemoved} of children";
+                            conversionUserControl.AppendLog("***Removed Items:***\r\n" + logMessage + "***End Removed Items.***");
                         }
-                        if (supplyLanderRemovedCount > 0)
-                        {
-                            if (logMessage.Length > 0) logMessage += ", ";
-                            logMessage += $"Removed {supplyLanderRemovedCount} Lander/LanderMkII node(s) and {supplyLanderSpawnableChildrenRemoved} of children";
-                        }
-                        if (oreRemovedCount > 0)
-                        {
-                            if (logMessage.Length > 0) logMessage += ", ";
-                            logMessage += $"Removed {oreRemovedCount} Ore node(s) and {oreSpawnableChildrenRemoved} of children";
-                        }
-                        if (itemKitRemovedCount > 0)
-                        {
-                            if (logMessage.Length > 0) logMessage += ", ";
-                            logMessage += $"Removed {itemKitRemovedCount} ItemKit node(s) and {itemKitSpawnableChildrenRemoved} of children";
-                        }
-                        conversionUserControl.AppendLog(logMessage + ".");
                         conversionUserControl.AppendLog($"Debug: Removed {totalChildrenRemoved} total child nodes.");
                     }
                 }
@@ -624,7 +618,7 @@ namespace StationeersStructureXMLConverter
                         folderDialog.CheckPathExists = true;
                         folderDialog.FileName = "Select Folder";
                         folderDialog.Filter = "Folders|*.*";
-                        folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers");
+                        folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers\\mods");
                         folderDialog.Title = "Select folder for the transformed SpawnGroup.xml";
                         if (folderDialog.ShowDialog() == DialogResult.OK)
                         {

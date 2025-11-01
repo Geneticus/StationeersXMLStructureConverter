@@ -8,10 +8,17 @@ namespace StationeersStructureXMLConverter
 {
     public static class SourceExtraction
     {
-        public static List<XElement> ExtractSpawnEntries(List<object> things, TextBox output)
+        public static List<XElement> ExtractSpawnEntries(List<object> things, TextBox output, XDocument doc)
         {
             var spawnEntries = new List<XElement>();
             int exportedCount = 0;
+            var uniquePrefabNames = things.OfType<XElement>().Select(t => t.Element("PrefabName")?.Value ?? "Unknown").Distinct().ToList();
+            output.AppendText("Items Found:");
+            foreach (var prefab in uniquePrefabNames)
+            {
+                output.AppendText(prefab + "\r\n");
+            }
+            output.AppendText("\r\n");
             foreach (var thingObj in things)
             {
                 if (thingObj is XElement thingElement)
@@ -22,13 +29,13 @@ namespace StationeersStructureXMLConverter
                     var xsiNs = "http://www.w3.org/2001/XMLSchema-instance";
                     var xsiType = thingElement.Attribute(XName.Get("type", xsiNs))?.Value ?? "Unknown";
                     var cleanId = xsiType.Replace("SaveData", "");
-                    var prefabName = thingElement.Element("PrefabName")?.Value ?? cleanId;
-                    string tagName = ClassifyTagName(prefabName);
-                    if (string.IsNullOrEmpty(prefabName) || string.IsNullOrEmpty(xsiType))
+                    var prefabName = thingElement.Element("PrefabName")?.Value;
+                    if (string.IsNullOrEmpty(prefabName))
                     {
-                        output.AppendText($"Warning: Skipping element with missing PrefabName or xsi:type: {thingElement}\r\n");
-                        continue;
+                        prefabName = cleanId;
+                        
                     }
+                    string tagName = ClassifyTagName(prefabName);                    
                     var spawnEntry = new XElement(tagName,
                         new XAttribute("Id", prefabName),
                         new XAttribute("HideInStartScreen", "true"),
@@ -36,19 +43,20 @@ namespace StationeersStructureXMLConverter
                         new XElement("TempParentReferenceId", parentReferenceId),
                         new XElement("TempParentSlotId", parentSlotId)
                     );
-                    Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
+                    spawnEntry.SetAttributeValue("Id", prefabName);
+                    //Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
                     AddCoreProps(thingElement, spawnEntry);
                     AddBuildState(thingElement, spawnEntry);
                     AddDamageState(thingElement, spawnEntry);
                     AddSpawnPositionAndReagents(thingElement, spawnEntry);
                     AddStates(thingElement, spawnEntry);
                     AddHealthCurrentForDynamicThings(thingElement, spawnEntry);
-                    // Tank linking (port from Phase 4)
-                    AddTankContentsFromAtmosphere(thingElement, spawnEntry, output); // Stub for full doc access; adjust as needed
                     spawnEntries.Add(spawnEntry);
                     exportedCount++;
+                    
                 }
             }
+            AugmentTankContents(spawnEntries, doc, output); // Augment with gases; doc from MainForm
             output.AppendText($"Extracted {exportedCount} spawn entries, {spawnEntries.Count(s => s.Name.LocalName == "Structure")} Structures, {spawnEntries.Count(s => s.Name.LocalName == "Item")} Items.\r\n");
             return spawnEntries;
         }
@@ -87,6 +95,7 @@ namespace StationeersStructureXMLConverter
             {
                 spawnEntry.Add(new XElement("Indestructable", indestructable));
             }
+            AddConsumableSpecificProps(thingElement, spawnEntry);
         }
 
         private static string GetColorName(int index)
@@ -282,36 +291,142 @@ namespace StationeersStructureXMLConverter
         }
 
         // Tank linking (Phase 4)
-        private static void AddTankContentsFromAtmosphere(XElement thingElement, XElement spawnEntry, TextBox output)
+        private static void AugmentTankContents(List<XElement> spawnEntries, XDocument doc, TextBox output)
         {
-            // Assume doc is accessible or passed; stub for now
-            // var atmospheres = doc.Root?.Element("Atmospheres")?.Elements("AtmosphereSaveData")?.ToList() ?? new List<XElement>();
-            // var atmosphereByThingId = atmospheres.ToDictionary(a => int.Parse(a.Element("ThingReferenceId")?.Value ?? "0"), a => a);
-            // var refId = int.Parse(thingElement.Element("ReferenceId")?.Value ?? "0");
-            // if (atmosphereByThingId.TryGetValue(refId, out var atm))
-            // {
-            //     var contentElements = new List<XElement>();
-            //     double totalMoles = 0;
-            //     double celsius = 20;
-            //     foreach (var child in atm.Elements().Where(el => double.TryParse(el.Value, out double moles) && moles > 0 && el.Name.LocalName != "Energy" && el.Name.LocalName != "Volume"))
-            //     {
-            //         totalMoles += moles;
-            //         string attrName = child.Name.LocalName.StartsWith("Liquid") ? "Litres" : "Moles";
-            //         contentElements.Add(new XElement("Gas",
-            //             new XAttribute("Type", child.Name.LocalName),
-            //             new XAttribute(attrName, moles.ToString("F2")),
-            //             new XAttribute("Celsius", celsius.ToString("F2"))
-            //         ));
-            //     }
-            //     if (contentElements.Any())
-            //     {
-            //         foreach (var elem in contentElements)
-            //         {
-            //             spawnEntry.Add(elem);
-            //         }
-            //         output.AppendText($"Added {contentElements.Count} gases to tank {refId}: {totalMoles:F2} total moles at {celsius:F2}°C\r\n");
-            //     }
-            // }
+            var allAtmospheres = doc?.Root?.Element("Atmospheres")?.Elements("AtmosphereSaveData")?.ToList() ?? new List<XElement>();
+            var atmospheres = allAtmospheres.Where(a => int.TryParse(a.Element("ThingReferenceId")?.Value, out int refId) && refId != 0).ToList();
+            if (!atmospheres.Any()) return;
+            var atmosphereGroup = atmospheres.GroupBy(a => int.Parse(a.Element("ThingReferenceId")?.Value ?? "0"));
+            var atmosphereByThingId = atmosphereGroup.ToDictionary(g => g.Key, g => g.First());
+            int duplicateCount = atmosphereGroup.Count(g => g.Count() > 1);
+            if (duplicateCount > 0)
+            {
+                var duplicateIds = atmosphereGroup.Where(g => g.Count() > 1).Select(g => g.Key).ToList();
+                output.AppendText($"Duplicate IDs: {string.Join(", ", duplicateIds)} (e.g., tank {duplicateIds.First()} has {atmosphereGroup.First(g => g.Key == duplicateIds.First()).Count()} AtmosphereSaveData).\r\n");
+                output.AppendText($"Warning: {duplicateCount} duplicate ThingReferenceId in Atmospheres (using first, skipping extras).\r\n");
+
+            }
+            var cvDict = new Dictionary<string, double>
+                {
+                    {"Oxygen", 21.1},
+                    {"Nitrogen", 20.6},
+                    {"CarbonDioxide", 28.2},
+                    {"Volatiles", 20.4},
+                    {"Chlorine", 25.2},
+                    {"Water", 72.0},
+                    {"PollutedWater", 72.0},
+                    {"NitrousOxide", 37.2},
+                    {"LiquidNitrogen", 56.0},
+                    {"LiquidOxygen", 54.0},
+                    {"LiquidVolatiles", 70.0},
+                    {"Steam", 33.6},
+                    {"LiquidCarbonDioxide", 75.0},
+                    {"LiquidPollutant", 72.0},
+                    {"LiquidNitrousOxide", 80.0},
+                    {"Hydrogen", 20.5},
+                    {"LiquidHydrogen", 28.0}
+                };
+            int tankCount = 0;
+            foreach (var entry in spawnEntries)
+            {
+                var prefab = entry.Attribute("Id")?.Value ?? "";
+                if (prefab.Contains("GasCanister") || prefab.Contains("LiquidCanister") ||
+                    prefab.Contains("GasTank") || prefab.Contains("LiquidTank") ||
+                    prefab == "DynamicGasTankBasic" || prefab == "DynamicGasTankAdvanced" ||
+                    prefab == "DynamicLiquidTankBasic" || prefab == "DynamicLiquidTankAdvanced" ||
+                    prefab == "StructureGasTankBasic" || prefab == "StructureGasTankAdvanced" ||
+                    prefab == "StructureLiquidTankBasic" || prefab == "StructureLiquidTankAdvanced")
+                {
+                    var refIdStr = entry.Element("TempReferenceId")?.Value ?? "0";
+                    if (int.TryParse(refIdStr, out int refId) && atmosphereByThingId.TryGetValue(refId, out var atm))
+                    {
+                        double totalMoles = 0;
+                        double totalCvWeighted = 0;
+                        if (double.TryParse(atm.Element("Energy")?.Value, out double energy) && energy > 0)
+                        {
+                            var contentElements = new List<XElement>();
+                            foreach (var child in atm.Elements())
+                            {
+                                string name = child.Name.LocalName;
+                                double moles;
+                                if (name != "Energy" &&
+                                    name != "Volume" &&
+                                    name != "ThingReferenceId" &&
+                                    name != "ReferenceId" &&
+                                    double.TryParse(child.Value, out moles) &&
+                                    moles > 0)
+                                {
+                                    totalMoles += moles;
+                                    double cv;
+                                    if (cvDict.TryGetValue(name, out cv))
+                                    {
+                                        totalCvWeighted += moles * cv;
+                                    }
+                                    else
+                                    {
+                                        cv = 20.8;
+                                        totalCvWeighted += moles * cv;
+                                    }
+                                    string unit = name.StartsWith("Liquid") ? "Litres" : "Moles";
+                                    contentElements.Add(new XElement("Gas",
+                                        new XAttribute("Type", name),
+                                        new XAttribute(unit, moles.ToString("F2")),
+                                        new XAttribute("Celsius", "20.00") // Placeholder; backfill below
+                                    ));
+                                }
+                            }
+                            if (contentElements.Any())
+                            {
+                                double celsius = 20.0;
+                                if (totalMoles > 0)
+                                {
+                                    double weightedCv = totalCvWeighted / totalMoles;
+                                    double tK = energy / (totalMoles * weightedCv);
+                                    celsius = Math.Max(Math.Min(tK - 273.15, 150), -200);
+                                }
+                                foreach (var gas in contentElements)
+                                {
+                                    gas.SetAttributeValue("Celsius", celsius.ToString("F2"));
+                                }
+                                foreach (var elem in contentElements)
+                                {
+                                    entry.Add(elem);
+                                }
+                                tankCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            if (tankCount > 0)
+            {
+                output.AppendText($"Augmented {tankCount} tanks with gas properties.\r\n");
+            }
+        }
+
+        private static void AddConsumableSpecificProps(XElement thingElement, XElement spawnEntry)
+        {
+            var prefab = spawnEntry.Attribute("Id")?.Value ?? thingElement.Element("PrefabName")?.Value ?? "";
+            if (prefab.Contains("ItemWaterBottle") || prefab.Contains("ItemCerealBar") || prefab.Contains("ItemGasCanisterEmpty"))
+            {
+                var quantity = thingElement.Element("Quantity")?.Value;
+                if (quantity != null && float.TryParse(quantity, out float qValue) && qValue > 0)
+                {
+                    var maxCapacities = new Dictionary<string, float>
+            {
+                {"ItemWaterBottle", 1.5f},
+                {"ItemCerealBar", 1.0f},
+                {"ItemGasCanisterEmpty", 1.0f}
+            }; // Add more as needed
+                    float maxCapacity = 1.0f;
+                    if (maxCapacities.TryGetValue(prefab, out float value))
+                    {
+                        maxCapacity = value;
+                    }
+                    int percent = (int)Math.Min((qValue / maxCapacity) * 100, 100);
+                    spawnEntry.Add(new XElement("Percent", new XAttribute("Value", percent.ToString())));
+                }
+            }
         }
     }
 }
