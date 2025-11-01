@@ -2,9 +2,9 @@
 using System;
 using System.Windows.Forms;
 
-namespace StationeersXMLStructureConverter
+namespace StationeersStructureXMLConverter
 {
-    static class Program
+    internal static class Program
     {
         [STAThread]
         static void Main()
@@ -13,5 +13,6 @@ namespace StationeersXMLStructureConverter
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Main_Form());
         }
+    
     }
 }
