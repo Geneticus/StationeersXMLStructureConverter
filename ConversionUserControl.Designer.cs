@@ -15,433 +15,544 @@ namespace StationeersStructureXMLConverter
         }
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConversionUserControl));
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.labelInstructions = new System.Windows.Forms.Label();
-            this.tableLayoutPanelPaths = new System.Windows.Forms.TableLayoutPanel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.ItemFilters_TableLayout = new System.Windows.Forms.TableLayoutPanel();
-            this.WorldTypeOptions_GroupBox = new System.Windows.Forms.GroupBox();
-            this.comboBoxLabel = new System.Windows.Forms.Label();
-            this.VanillaWorld_CheckBox = new System.Windows.Forms.CheckBox();
-            this.LocalMod_CheckBox = new System.Windows.Forms.CheckBox();
-            this.None_CheckBox = new System.Windows.Forms.CheckBox();
-            this.WorldSelection_ComboBox = new System.Windows.Forms.ComboBox();
-            this.ItemFilters_GroupBox = new System.Windows.Forms.GroupBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.Filter5_CheckBox = new System.Windows.Forms.CheckBox();
-            this.Filter6_CheckBox = new System.Windows.Forms.CheckBox();
-            this.Right_GroupBox = new System.Windows.Forms.GroupBox();
-            this.configureOutputsButton = new System.Windows.Forms.Button();
-            this.configureOutputsLabel = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.tableLayoutPanelButtons = new System.Windows.Forms.TableLayoutPanel();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.tableLayoutPanel1.SuspendLayout();
-            this.tableLayoutPanelPaths.SuspendLayout();
-            this.ItemFilters_TableLayout.SuspendLayout();
-            this.WorldTypeOptions_GroupBox.SuspendLayout();
-            this.ItemFilters_GroupBox.SuspendLayout();
-            this.Right_GroupBox.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.tableLayoutPanelButtons.SuspendLayout();
-            this.SuspendLayout();
+            tableLayoutPanel1 = new TableLayoutPanel();
+            labelInstructions = new Label();
+            tableLayoutPanelPaths = new TableLayoutPanel();
+            label1 = new Label();
+            textBox1 = new TextBox();
+            button2 = new Button();
+            ItemFilters_TableLayout = new TableLayoutPanel();
+            WorldTypeOptions_GroupBox = new GroupBox();
+            WorldTypeOptions_MainPanel = new TableLayoutPanel();
+            WorldSelection_UpperPanel = new TableLayoutPanel();
+            VanillaWorld_CheckBox = new CheckBox();
+            WorldSelection_ComboBox = new ComboBox();
+            LocalMod_CheckBox = new CheckBox();
+            comboBoxLabel = new Label();
+            WorldSelection_LowerPanel = new TableLayoutPanel();
+            None_CheckBox = new CheckBox();
+            txtSpawnId = new TextBox();
+            lblSpawnId = new Label();
+            ItemFilters_GroupBox = new GroupBox();
+            itemFiltersPanel = new TableLayoutPanel();
+            checkBox1 = new CheckBox();
+            checkBox2 = new CheckBox();
+            checkBox3 = new CheckBox();
+            Filter5_CheckBox = new CheckBox();
+            Filter6_CheckBox = new CheckBox();
+            chkCheckAll = new CheckBox();
+            Right_GroupBox = new GroupBox();
+            configureOutputsButton = new Button();
+            configureOutputsLabel = new Label();
+            label3 = new Label();
+            groupBox2 = new GroupBox();
+            textBox3 = new TextBox();
+            tableLayoutPanelButtons = new TableLayoutPanel();
+            button1 = new Button();
+            button4 = new Button();
+            toolTip1 = new ToolTip(components);
+            tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanelPaths.SuspendLayout();
+            ItemFilters_TableLayout.SuspendLayout();
+            WorldTypeOptions_GroupBox.SuspendLayout();
+            WorldTypeOptions_MainPanel.SuspendLayout();
+            WorldSelection_UpperPanel.SuspendLayout();
+            WorldSelection_LowerPanel.SuspendLayout();
+            ItemFilters_GroupBox.SuspendLayout();
+            itemFiltersPanel.SuspendLayout();
+            Right_GroupBox.SuspendLayout();
+            groupBox2.SuspendLayout();
+            tableLayoutPanelButtons.SuspendLayout();
+            SuspendLayout();
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.labelInstructions, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanelPaths, 0, 1);
-            this.tableLayoutPanel1.Controls.Add(this.ItemFilters_TableLayout, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.label3, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(this.groupBox2, 0, 4);
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanelButtons, 0, 5);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.MaximumSize = new System.Drawing.Size(1280, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 6;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 210F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1280, 874);
-            this.tableLayoutPanel1.TabIndex = 0;
+            tableLayoutPanel1.ColumnCount = 1;
+            tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.Controls.Add(labelInstructions, 0, 0);
+            tableLayoutPanel1.Controls.Add(tableLayoutPanelPaths, 0, 1);
+            tableLayoutPanel1.Controls.Add(ItemFilters_TableLayout, 0, 2);
+            tableLayoutPanel1.Controls.Add(label3, 0, 3);
+            tableLayoutPanel1.Controls.Add(groupBox2, 0, 4);
+            tableLayoutPanel1.Controls.Add(tableLayoutPanelButtons, 0, 5);
+            tableLayoutPanel1.Dock = DockStyle.Fill;
+            tableLayoutPanel1.Location = new Point(0, 0);
+            tableLayoutPanel1.Margin = new Padding(5, 6, 5, 6);
+            tableLayoutPanel1.MaximumSize = new Size(2133, 0);
+            tableLayoutPanel1.Name = "tableLayoutPanel1";
+            tableLayoutPanel1.RowCount = 6;
+            tableLayoutPanel1.RowStyles.Add(new RowStyle());
+            tableLayoutPanel1.RowStyles.Add(new RowStyle());
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 422F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle());
+            tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanel1.RowStyles.Add(new RowStyle());
+            tableLayoutPanel1.Size = new Size(2133, 1681);
+            tableLayoutPanel1.TabIndex = 0;
             // 
             // labelInstructions
             // 
-            this.labelInstructions.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelInstructions.AutoSize = true;
-            this.labelInstructions.Location = new System.Drawing.Point(0, 10);
-            this.labelInstructions.Margin = new System.Windows.Forms.Padding(0, 10, 0, 10);
-            this.labelInstructions.Name = "labelInstructions";
-            this.labelInstructions.Size = new System.Drawing.Size(1280, 13);
-            this.labelInstructions.TabIndex = 0;
-            this.labelInstructions.Text = resources.GetString("labelInstructions.Text");
-            this.labelInstructions.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            labelInstructions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            labelInstructions.AutoSize = true;
+            labelInstructions.Location = new Point(0, 19);
+            labelInstructions.Margin = new Padding(0, 19, 0, 19);
+            labelInstructions.Name = "labelInstructions";
+            labelInstructions.Size = new Size(2133, 25);
+            labelInstructions.TabIndex = 0;
+            labelInstructions.Text = resources.GetString("labelInstructions.Text");
+            labelInstructions.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // tableLayoutPanelPaths
             // 
-            this.tableLayoutPanelPaths.ColumnCount = 3;
-            this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 55F));
-            this.tableLayoutPanelPaths.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this.tableLayoutPanelPaths.Controls.Add(this.label1, 0, 0);
-            this.tableLayoutPanelPaths.Controls.Add(this.textBox1, 1, 0);
-            this.tableLayoutPanelPaths.Controls.Add(this.button2, 2, 0);
-            this.tableLayoutPanelPaths.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanelPaths.Location = new System.Drawing.Point(3, 36);
-            this.tableLayoutPanelPaths.Name = "tableLayoutPanelPaths";
-            this.tableLayoutPanelPaths.RowCount = 1;
-            this.tableLayoutPanelPaths.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelPaths.Size = new System.Drawing.Size(1274, 50);
-            this.tableLayoutPanelPaths.TabIndex = 1;
+            tableLayoutPanelPaths.ColumnCount = 3;
+            tableLayoutPanelPaths.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250F));
+            tableLayoutPanelPaths.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            tableLayoutPanelPaths.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+            tableLayoutPanelPaths.Controls.Add(label1, 0, 0);
+            tableLayoutPanelPaths.Controls.Add(textBox1, 1, 0);
+            tableLayoutPanelPaths.Controls.Add(button2, 2, 0);
+            tableLayoutPanelPaths.Dock = DockStyle.Fill;
+            tableLayoutPanelPaths.Location = new Point(5, 69);
+            tableLayoutPanelPaths.Margin = new Padding(5, 6, 5, 6);
+            tableLayoutPanelPaths.Name = "tableLayoutPanelPaths";
+            tableLayoutPanelPaths.RowCount = 1;
+            tableLayoutPanelPaths.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanelPaths.Size = new Size(2123, 96);
+            tableLayoutPanelPaths.TabIndex = 1;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 5);
-            this.label1.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(94, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Saved Game Path";
+            label1.AutoSize = true;
+            label1.Location = new Point(17, 10);
+            label1.Margin = new Padding(17, 10, 0, 10);
+            label1.Name = "label1";
+            label1.Size = new Size(150, 25);
+            label1.TabIndex = 0;
+            label1.Text = "Saved Game Path";
             // 
             // textBox1
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(150, 5);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(0, 5, 4, 5);
-            this.textBox1.MinimumSize = new System.Drawing.Size(300, 4);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(723, 20);
-            this.textBox1.TabIndex = 1;
+            textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            textBox1.Location = new Point(250, 10);
+            textBox1.Margin = new Padding(0, 10, 7, 10);
+            textBox1.MinimumSize = new Size(497, 4);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(1204, 31);
+            textBox1.TabIndex = 1;
             // 
             // button2
             // 
-            this.button2.AutoSize = true;
-            this.button2.Location = new System.Drawing.Point(887, 5);
-            this.button2.Margin = new System.Windows.Forms.Padding(10, 5, 0, 5);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(120, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Browse Saves";
-            this.toolTip1.SetToolTip(this.button2, "Select the .save file to convert.");
-            this.button2.Click += new System.EventHandler(this.BrowseInput_Click);
+            button2.AutoSize = true;
+            button2.Location = new Point(1478, 10);
+            button2.Margin = new Padding(17, 10, 0, 10);
+            button2.Name = "button2";
+            button2.Size = new Size(215, 35);
+            button2.TabIndex = 2;
+            button2.Text = "Browse Saves";
+            toolTip1.SetToolTip(button2, "Select the .save file to convert.");
+            button2.Click += BrowseInput_Click;
             // 
             // ItemFilters_TableLayout
             // 
-            this.ItemFilters_TableLayout.ColumnCount = 3;
-            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 497F));
-            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 316F));
-            this.ItemFilters_TableLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 467F));
-            this.ItemFilters_TableLayout.Controls.Add(this.WorldTypeOptions_GroupBox, 0, 0);
-            this.ItemFilters_TableLayout.Controls.Add(this.ItemFilters_GroupBox, 1, 0);
-            this.ItemFilters_TableLayout.Controls.Add(this.Right_GroupBox, 2, 0);
-            this.ItemFilters_TableLayout.Location = new System.Drawing.Point(0, 92);
-            this.ItemFilters_TableLayout.Margin = new System.Windows.Forms.Padding(0, 3, 3, 3);
-            this.ItemFilters_TableLayout.Name = "ItemFilters_TableLayout";
-            this.ItemFilters_TableLayout.RowCount = 1;
-            this.ItemFilters_TableLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ItemFilters_TableLayout.Size = new System.Drawing.Size(1277, 200);
-            this.ItemFilters_TableLayout.TabIndex = 6;
+            ItemFilters_TableLayout.ColumnCount = 3;
+            ItemFilters_TableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 842F));
+            ItemFilters_TableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 685F));
+            ItemFilters_TableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            ItemFilters_TableLayout.Controls.Add(WorldTypeOptions_GroupBox, 0, 0);
+            ItemFilters_TableLayout.Controls.Add(ItemFilters_GroupBox, 1, 0);
+            ItemFilters_TableLayout.Controls.Add(Right_GroupBox, 2, 0);
+            ItemFilters_TableLayout.Location = new Point(0, 177);
+            ItemFilters_TableLayout.Margin = new Padding(0, 6, 5, 6);
+            ItemFilters_TableLayout.Name = "ItemFilters_TableLayout";
+            ItemFilters_TableLayout.RowCount = 1;
+            ItemFilters_TableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            ItemFilters_TableLayout.Size = new Size(2128, 385);
+            ItemFilters_TableLayout.TabIndex = 6;
             // 
             // WorldTypeOptions_GroupBox
             // 
-            this.WorldTypeOptions_GroupBox.Controls.Add(this.comboBoxLabel);
-            this.WorldTypeOptions_GroupBox.Controls.Add(this.VanillaWorld_CheckBox);
-            this.WorldTypeOptions_GroupBox.Controls.Add(this.LocalMod_CheckBox);
-            this.WorldTypeOptions_GroupBox.Controls.Add(this.None_CheckBox);
-            this.WorldTypeOptions_GroupBox.Controls.Add(this.WorldSelection_ComboBox);
-            this.WorldTypeOptions_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.WorldTypeOptions_GroupBox.Location = new System.Drawing.Point(4, 5);
-            this.WorldTypeOptions_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.WorldTypeOptions_GroupBox.Name = "WorldTypeOptions_GroupBox";
-            this.WorldTypeOptions_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.WorldTypeOptions_GroupBox.Size = new System.Drawing.Size(489, 190);
-            this.WorldTypeOptions_GroupBox.TabIndex = 4;
-            this.WorldTypeOptions_GroupBox.TabStop = false;
-            this.WorldTypeOptions_GroupBox.Text = "World Type Options";
+            WorldTypeOptions_GroupBox.Controls.Add(WorldTypeOptions_MainPanel);
+            WorldTypeOptions_GroupBox.Dock = DockStyle.Fill;
+            WorldTypeOptions_GroupBox.Location = new Point(7, 10);
+            WorldTypeOptions_GroupBox.Margin = new Padding(7, 10, 7, 10);
+            WorldTypeOptions_GroupBox.Name = "WorldTypeOptions_GroupBox";
+            WorldTypeOptions_GroupBox.Padding = new Padding(7, 10, 7, 10);
+            WorldTypeOptions_GroupBox.Size = new Size(828, 365);
+            WorldTypeOptions_GroupBox.TabIndex = 4;
+            WorldTypeOptions_GroupBox.TabStop = false;
+            WorldTypeOptions_GroupBox.Text = "World Type Options";
             // 
-            // comboBoxLabel
+            // WorldTypeOptions_MainPanel
             // 
-            this.comboBoxLabel.AutoSize = true;
-            this.comboBoxLabel.Location = new System.Drawing.Point(112, 168);
-            this.comboBoxLabel.Name = "comboBoxLabel";
-            this.comboBoxLabel.Size = new System.Drawing.Size(370, 13);
-            this.comboBoxLabel.TabIndex = 4;
-            this.comboBoxLabel.Text = "^This is the world that will be used as the base for the new Scenario/Tutorial.";
+            WorldTypeOptions_MainPanel.AutoSize = true;
+            WorldTypeOptions_MainPanel.ColumnCount = 1;
+            WorldTypeOptions_MainPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            WorldTypeOptions_MainPanel.Controls.Add(WorldSelection_UpperPanel, 0, 0);
+            WorldTypeOptions_MainPanel.Controls.Add(WorldSelection_LowerPanel, 0, 1);
+            WorldTypeOptions_MainPanel.Dock = DockStyle.Fill;
+            WorldTypeOptions_MainPanel.Location = new Point(7, 34);
+            WorldTypeOptions_MainPanel.Name = "WorldTypeOptions_MainPanel";
+            WorldTypeOptions_MainPanel.RowCount = 2;
+            WorldTypeOptions_MainPanel.RowStyles.Add(new RowStyle());
+            WorldTypeOptions_MainPanel.RowStyles.Add(new RowStyle());
+            WorldTypeOptions_MainPanel.Size = new Size(814, 321);
+            WorldTypeOptions_MainPanel.TabIndex = 0;
+            // 
+            // WorldSelection_UpperPanel
+            // 
+            WorldSelection_UpperPanel.AutoSize = true;
+            WorldSelection_UpperPanel.ColumnCount = 2;
+            WorldSelection_UpperPanel.ColumnStyles.Add(new ColumnStyle());
+            WorldSelection_UpperPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            WorldSelection_UpperPanel.Controls.Add(VanillaWorld_CheckBox, 0, 0);
+            WorldSelection_UpperPanel.Controls.Add(WorldSelection_ComboBox, 1, 0);
+            WorldSelection_UpperPanel.Controls.Add(LocalMod_CheckBox, 0, 1);
+            WorldSelection_UpperPanel.Controls.Add(comboBoxLabel, 1, 1);
+            WorldSelection_UpperPanel.Dock = DockStyle.Top;
+            WorldSelection_UpperPanel.Location = new Point(10, 10);
+            WorldSelection_UpperPanel.Margin = new Padding(10, 10, 10, 0);
+            WorldSelection_UpperPanel.Name = "WorldSelection_UpperPanel";
+            WorldSelection_UpperPanel.RowCount = 2;
+            WorldSelection_UpperPanel.RowStyles.Add(new RowStyle());
+            WorldSelection_UpperPanel.RowStyles.Add(new RowStyle());
+            WorldSelection_UpperPanel.Size = new Size(794, 102);
+            WorldSelection_UpperPanel.TabIndex = 0;
             // 
             // VanillaWorld_CheckBox
             // 
-            this.VanillaWorld_CheckBox.AutoSize = true;
-            this.VanillaWorld_CheckBox.Location = new System.Drawing.Point(12, 25);
-            this.VanillaWorld_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.VanillaWorld_CheckBox.Name = "VanillaWorld_CheckBox";
-            this.VanillaWorld_CheckBox.Size = new System.Drawing.Size(88, 17);
-            this.VanillaWorld_CheckBox.TabIndex = 0;
-            this.VanillaWorld_CheckBox.Text = "Vanilla World";
-            this.VanillaWorld_CheckBox.UseVisualStyleBackColor = true;
-            // 
-            // LocalMod_CheckBox
-            // 
-            this.LocalMod_CheckBox.AutoSize = true;
-            this.LocalMod_CheckBox.Location = new System.Drawing.Point(12, 55);
-            this.LocalMod_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.LocalMod_CheckBox.Name = "LocalMod_CheckBox";
-            this.LocalMod_CheckBox.Size = new System.Drawing.Size(76, 17);
-            this.LocalMod_CheckBox.TabIndex = 1;
-            this.LocalMod_CheckBox.Text = "Local Mod";
-            this.LocalMod_CheckBox.UseVisualStyleBackColor = true;
-            // 
-            // None_CheckBox
-            // 
-            this.None_CheckBox.AutoSize = true;
-            this.None_CheckBox.Location = new System.Drawing.Point(12, 85);
-            this.None_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.None_CheckBox.Name = "None_CheckBox";
-            this.None_CheckBox.Size = new System.Drawing.Size(52, 17);
-            this.None_CheckBox.TabIndex = 2;
-            this.None_CheckBox.Text = "None";
-            this.None_CheckBox.UseVisualStyleBackColor = true;
+            VanillaWorld_CheckBox.AutoSize = true;
+            VanillaWorld_CheckBox.Location = new Point(7, 10);
+            VanillaWorld_CheckBox.Margin = new Padding(7, 10, 7, 10);
+            VanillaWorld_CheckBox.Name = "VanillaWorld_CheckBox";
+            VanillaWorld_CheckBox.Size = new Size(141, 29);
+            VanillaWorld_CheckBox.TabIndex = 0;
+            VanillaWorld_CheckBox.Text = "Vanilla World";
+            VanillaWorld_CheckBox.UseVisualStyleBackColor = true;
             // 
             // WorldSelection_ComboBox
             // 
-            this.WorldSelection_ComboBox.FormattingEnabled = true;
-            this.WorldSelection_ComboBox.Location = new System.Drawing.Point(115, 142);
-            this.WorldSelection_ComboBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.WorldSelection_ComboBox.Name = "WorldSelection_ComboBox";
-            this.WorldSelection_ComboBox.Size = new System.Drawing.Size(200, 21);
-            this.WorldSelection_ComboBox.TabIndex = 3;
-            this.toolTip1.SetToolTip(this.WorldSelection_ComboBox, "Select a world folder to copy for the new world linked to SpawnGroup.xml.");
+            WorldSelection_ComboBox.FormattingEnabled = true;
+            WorldSelection_ComboBox.Location = new Point(162, 10);
+            WorldSelection_ComboBox.Margin = new Padding(7, 10, 7, 10);
+            WorldSelection_ComboBox.Name = "WorldSelection_ComboBox";
+            WorldSelection_ComboBox.Size = new Size(331, 33);
+            WorldSelection_ComboBox.TabIndex = 3;
+            toolTip1.SetToolTip(WorldSelection_ComboBox, "Select a world folder to copy for the new world linked to SpawnGroup.xml.");
+            // 
+            // LocalMod_CheckBox
+            // 
+            LocalMod_CheckBox.AutoSize = true;
+            LocalMod_CheckBox.Location = new Point(7, 63);
+            LocalMod_CheckBox.Margin = new Padding(7, 10, 7, 10);
+            LocalMod_CheckBox.Name = "LocalMod_CheckBox";
+            LocalMod_CheckBox.Size = new Size(121, 29);
+            LocalMod_CheckBox.TabIndex = 1;
+            LocalMod_CheckBox.Text = "Local Mod";
+            LocalMod_CheckBox.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxLabel
+            // 
+            comboBoxLabel.AutoSize = true;
+            comboBoxLabel.Location = new Point(160, 53);
+            comboBoxLabel.Margin = new Padding(5, 0, 5, 0);
+            comboBoxLabel.Name = "comboBoxLabel";
+            comboBoxLabel.Size = new Size(617, 25);
+            comboBoxLabel.TabIndex = 4;
+            comboBoxLabel.Text = "^This is the world that will be used as the base for the new Scenario/Tutorial.";
+            // 
+            // WorldSelection_LowerPanel
+            // 
+            WorldSelection_LowerPanel.ColumnCount = 2;
+            WorldSelection_LowerPanel.ColumnStyles.Add(new ColumnStyle());
+            WorldSelection_LowerPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            WorldSelection_LowerPanel.Controls.Add(None_CheckBox, 0, 0);
+            WorldSelection_LowerPanel.Controls.Add(txtSpawnId, 1, 0);
+            WorldSelection_LowerPanel.Controls.Add(lblSpawnId, 1, 1);
+            WorldSelection_LowerPanel.Location = new Point(10, 122);
+            WorldSelection_LowerPanel.Margin = new Padding(10, 10, 10, 0);
+            WorldSelection_LowerPanel.Name = "WorldSelection_LowerPanel";
+            WorldSelection_LowerPanel.RowCount = 2;
+            WorldSelection_LowerPanel.RowStyles.Add(new RowStyle());
+            WorldSelection_LowerPanel.RowStyles.Add(new RowStyle());
+            WorldSelection_LowerPanel.Size = new Size(794, 94);
+            WorldSelection_LowerPanel.TabIndex = 1;
+            // 
+            // None_CheckBox
+            // 
+            None_CheckBox.Location = new Point(7, 10);
+            None_CheckBox.Margin = new Padding(7, 10, 7, 10);
+            None_CheckBox.Name = "None_CheckBox";
+            None_CheckBox.Size = new Size(150, 29);
+            None_CheckBox.TabIndex = 2;
+            None_CheckBox.Text = "None";
+            None_CheckBox.UseVisualStyleBackColor = true;
+            // 
+            // txtSpawnId
+            // 
+            txtSpawnId.Location = new Point(167, 3);
+            txtSpawnId.Name = "txtSpawnId";
+            txtSpawnId.Size = new Size(333, 31);
+            txtSpawnId.TabIndex = 1;
+            // 
+            // lblSpawnId
+            // 
+            lblSpawnId.AutoSize = true;
+            lblSpawnId.Location = new Point(167, 49);
+            lblSpawnId.Name = "lblSpawnId";
+            lblSpawnId.Size = new Size(444, 25);
+            lblSpawnId.TabIndex = 3;
+            lblSpawnId.Text = "Custom Spawn ID (If None is checked. Default if blank)";
             // 
             // ItemFilters_GroupBox
             // 
-            this.ItemFilters_GroupBox.Controls.Add(this.checkBox2);
-            this.ItemFilters_GroupBox.Controls.Add(this.checkBox1);
-            this.ItemFilters_GroupBox.Controls.Add(this.checkBox3);
-            this.ItemFilters_GroupBox.Controls.Add(this.Filter5_CheckBox);
-            this.ItemFilters_GroupBox.Controls.Add(this.Filter6_CheckBox);
-            this.ItemFilters_GroupBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ItemFilters_GroupBox.Location = new System.Drawing.Point(501, 5);
-            this.ItemFilters_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.ItemFilters_GroupBox.Name = "ItemFilters_GroupBox";
-            this.ItemFilters_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.ItemFilters_GroupBox.Size = new System.Drawing.Size(308, 190);
-            this.ItemFilters_GroupBox.TabIndex = 5;
-            this.ItemFilters_GroupBox.TabStop = false;
-            this.ItemFilters_GroupBox.Text = "Item Filters";
+            ItemFilters_GroupBox.Controls.Add(itemFiltersPanel);
+            ItemFilters_GroupBox.Dock = DockStyle.Fill;
+            ItemFilters_GroupBox.Location = new Point(849, 5);
+            ItemFilters_GroupBox.Margin = new Padding(7, 5, 7, 5);
+            ItemFilters_GroupBox.Name = "ItemFilters_GroupBox";
+            ItemFilters_GroupBox.Padding = new Padding(7, 5, 7, 5);
+            ItemFilters_GroupBox.Size = new Size(671, 375);
+            ItemFilters_GroupBox.TabIndex = 5;
+            ItemFilters_GroupBox.TabStop = false;
+            ItemFilters_GroupBox.Text = "Item Filters";
             // 
-            // checkBox2
+            // itemFiltersPanel
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(12, 62);
-            this.checkBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(113, 17);
-            this.checkBox2.TabIndex = 1;
-            this.checkBox2.Text = "Exclude Character";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            itemFiltersPanel.AutoSize = true;
+            itemFiltersPanel.ColumnCount = 1;
+            itemFiltersPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            itemFiltersPanel.Controls.Add(checkBox1, 0, 0);
+            itemFiltersPanel.Controls.Add(checkBox2, 0, 1);
+            itemFiltersPanel.Controls.Add(checkBox3, 0, 2);
+            itemFiltersPanel.Controls.Add(Filter5_CheckBox, 0, 3);
+            itemFiltersPanel.Controls.Add(Filter6_CheckBox, 0, 4);
+            itemFiltersPanel.Controls.Add(chkCheckAll, 0, 5);
+            itemFiltersPanel.Dock = DockStyle.Fill;
+            itemFiltersPanel.Location = new Point(7, 29);
+            itemFiltersPanel.Margin = new Padding(10, 15, 10, 5);
+            itemFiltersPanel.Name = "itemFiltersPanel";
+            itemFiltersPanel.RowCount = 6;
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            itemFiltersPanel.Size = new Size(657, 341);
+            itemFiltersPanel.TabIndex = 0;
             // 
             // checkBox1
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 27);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(163, 17);
-            this.checkBox1.TabIndex = 0;
-            this.checkBox1.Text = "Exclude LanderCapsuleSmall";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.Location = new Point(0, 0);
+            checkBox1.Margin = new Padding(0, 0, 0, 2);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(260, 29);
+            checkBox1.TabIndex = 0;
+            checkBox1.Text = "Exclude LanderCapsuleSmall";
+            checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // checkBox2
+            // 
+            checkBox2.Location = new Point(0, 40);
+            checkBox2.Margin = new Padding(0, 0, 0, 2);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(176, 29);
+            checkBox2.TabIndex = 1;
+            checkBox2.Text = "Exclude Character";
+            checkBox2.UseVisualStyleBackColor = true;
             // 
             // checkBox3
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Location = new System.Drawing.Point(12, 97);
-            this.checkBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(140, 17);
-            this.checkBox3.TabIndex = 2;
-            this.checkBox3.Text = "Exclude Supply Landers";
-            this.checkBox3.UseVisualStyleBackColor = true;
+            checkBox3.Location = new Point(0, 80);
+            checkBox3.Margin = new Padding(0, 0, 0, 2);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(223, 29);
+            checkBox3.TabIndex = 2;
+            checkBox3.Text = "Exclude Supply Landers";
+            checkBox3.UseVisualStyleBackColor = true;
             // 
             // Filter5_CheckBox
             // 
-            this.Filter5_CheckBox.AutoSize = true;
-            this.Filter5_CheckBox.Location = new System.Drawing.Point(12, 132);
-            this.Filter5_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Filter5_CheckBox.Name = "Filter5_CheckBox";
-            this.Filter5_CheckBox.Size = new System.Drawing.Size(140, 17);
-            this.Filter5_CheckBox.TabIndex = 3;
-            this.Filter5_CheckBox.Text = "Exclude loose Ore Items";
-            this.Filter5_CheckBox.UseVisualStyleBackColor = true;
+            Filter5_CheckBox.Location = new Point(0, 120);
+            Filter5_CheckBox.Margin = new Padding(0, 0, 0, 2);
+            Filter5_CheckBox.Name = "Filter5_CheckBox";
+            Filter5_CheckBox.Size = new Size(228, 29);
+            Filter5_CheckBox.TabIndex = 3;
+            Filter5_CheckBox.Text = "Exclude loose Ore Items";
+            Filter5_CheckBox.UseVisualStyleBackColor = true;
             // 
             // Filter6_CheckBox
             // 
-            this.Filter6_CheckBox.AutoSize = true;
-            this.Filter6_CheckBox.Location = new System.Drawing.Point(12, 167);
-            this.Filter6_CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Filter6_CheckBox.Name = "Filter6_CheckBox";
-            this.Filter6_CheckBox.Size = new System.Drawing.Size(132, 17);
-            this.Filter6_CheckBox.TabIndex = 4;
-            this.Filter6_CheckBox.Text = "Exclude loose ItemKits";
-            this.Filter6_CheckBox.UseVisualStyleBackColor = true;
+            Filter6_CheckBox.Location = new Point(0, 160);
+            Filter6_CheckBox.Margin = new Padding(0, 0, 0, 2);
+            Filter6_CheckBox.Name = "Filter6_CheckBox";
+            Filter6_CheckBox.Size = new Size(214, 29);
+            Filter6_CheckBox.TabIndex = 4;
+            Filter6_CheckBox.Text = "Exclude loose ItemKits";
+            Filter6_CheckBox.UseVisualStyleBackColor = true;
+            // 
+            // chkCheckAll
+            // 
+            chkCheckAll.AutoSize = true;
+            chkCheckAll.Location = new Point(0, 200);
+            chkCheckAll.Margin = new Padding(0, 0, 0, 2);
+            chkCheckAll.Name = "chkCheckAll";
+            chkCheckAll.Size = new Size(110, 29);
+            chkCheckAll.TabIndex = 5;
+            chkCheckAll.Text = "Check All";
             // 
             // Right_GroupBox
             // 
-            this.Right_GroupBox.Controls.Add(this.configureOutputsButton);
-            this.Right_GroupBox.Controls.Add(this.configureOutputsLabel);
-            this.Right_GroupBox.Location = new System.Drawing.Point(817, 5);
-            this.Right_GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.Right_GroupBox.MinimumSize = new System.Drawing.Size(460, 190);
-            this.Right_GroupBox.Name = "Right_GroupBox";
-            this.Right_GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 7, 5);
-            this.Right_GroupBox.Size = new System.Drawing.Size(460, 190);
-            this.Right_GroupBox.TabIndex = 6;
-            this.Right_GroupBox.TabStop = false;
-            this.Right_GroupBox.Text = "Mod Creation Options";
+            Right_GroupBox.Controls.Add(configureOutputsButton);
+            Right_GroupBox.Controls.Add(configureOutputsLabel);
+            Right_GroupBox.Location = new Point(1534, 10);
+            Right_GroupBox.Margin = new Padding(7, 10, 7, 10);
+            Right_GroupBox.MinimumSize = new Size(767, 365);
+            Right_GroupBox.Name = "Right_GroupBox";
+            Right_GroupBox.Padding = new Padding(7, 10, 12, 10);
+            Right_GroupBox.Size = new Size(767, 365);
+            Right_GroupBox.TabIndex = 6;
+            Right_GroupBox.TabStop = false;
+            Right_GroupBox.Text = "Mod Creation Options";
             // 
             // configureOutputsButton
             // 
-            this.configureOutputsButton.AutoSize = true;
-            this.configureOutputsButton.Enabled = false;
-            this.configureOutputsButton.Location = new System.Drawing.Point(12, 23);
-            this.configureOutputsButton.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.configureOutputsButton.Name = "configureOutputsButton";
-            this.configureOutputsButton.Size = new System.Drawing.Size(178, 30);
-            this.configureOutputsButton.TabIndex = 0;
-            this.configureOutputsButton.Text = "Configure File Outputs";
-            this.toolTip1.SetToolTip(this.configureOutputsButton, "Open a form to configure mod creation settings.");
-            this.configureOutputsButton.UseVisualStyleBackColor = true;
-            this.configureOutputsButton.Click += new System.EventHandler(this.ConfigureOutputs_Click);
+            configureOutputsButton.AutoSize = true;
+            configureOutputsButton.Enabled = false;
+            configureOutputsButton.Location = new Point(20, 44);
+            configureOutputsButton.Margin = new Padding(3, 6, 3, 6);
+            configureOutputsButton.Name = "configureOutputsButton";
+            configureOutputsButton.Size = new Size(230, 35);
+            configureOutputsButton.TabIndex = 0;
+            configureOutputsButton.Text = "Configure File Outputs";
+            toolTip1.SetToolTip(configureOutputsButton, "Open a form to configure mod creation settings.");
+            configureOutputsButton.UseVisualStyleBackColor = true;
+            configureOutputsButton.Click += ConfigureOutputs_Click;
             // 
             // configureOutputsLabel
             // 
-            this.configureOutputsLabel.AutoSize = true;
-            this.configureOutputsLabel.Location = new System.Drawing.Point(12, 55);
-            this.configureOutputsLabel.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.configureOutputsLabel.Name = "configureOutputsLabel";
-            this.configureOutputsLabel.Size = new System.Drawing.Size(266, 13);
-            this.configureOutputsLabel.TabIndex = 1;
-            this.configureOutputsLabel.Text = "(Only applies if Vanilla World or Local Mod is checked.)";
-            this.toolTip1.SetToolTip(this.configureOutputsLabel, "This button is enabled only when Vanilla World or Local Mod is selected.");
+            configureOutputsLabel.AutoSize = true;
+            configureOutputsLabel.Location = new Point(20, 106);
+            configureOutputsLabel.Margin = new Padding(3, 6, 3, 6);
+            configureOutputsLabel.Name = "configureOutputsLabel";
+            configureOutputsLabel.Size = new Size(443, 25);
+            configureOutputsLabel.TabIndex = 1;
+            configureOutputsLabel.Text = "(Only applies if Vanilla World or Local Mod is checked.)";
+            toolTip1.SetToolTip(configureOutputsLabel, "This button is enabled only when Vanilla World or Local Mod is selected.");
             // 
             // label3
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(4, 299);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(0, 13);
-            this.label3.TabIndex = 9;
+            label3.AutoSize = true;
+            label3.Location = new Point(7, 593);
+            label3.Margin = new Padding(7, 0, 7, 0);
+            label3.Name = "label3";
+            label3.Size = new Size(0, 25);
+            label3.TabIndex = 9;
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.textBox3);
-            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(4, 317);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox2.Size = new System.Drawing.Size(1272, 514);
-            this.groupBox2.TabIndex = 10;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Conversion Log";
+            groupBox2.Controls.Add(textBox3);
+            groupBox2.Dock = DockStyle.Fill;
+            groupBox2.Location = new Point(7, 628);
+            groupBox2.Margin = new Padding(7, 10, 7, 10);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Padding = new Padding(7, 10, 7, 10);
+            groupBox2.Size = new Size(2119, 969);
+            groupBox2.TabIndex = 10;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Conversion Log";
             // 
             // textBox3
             // 
-            this.textBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox3.Location = new System.Drawing.Point(4, 18);
-            this.textBox3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.textBox3.Multiline = true;
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox3.Size = new System.Drawing.Size(1264, 491);
-            this.textBox3.TabIndex = 0;
+            textBox3.Dock = DockStyle.Fill;
+            textBox3.Location = new Point(7, 34);
+            textBox3.Margin = new Padding(7, 10, 7, 10);
+            textBox3.Multiline = true;
+            textBox3.Name = "textBox3";
+            textBox3.ScrollBars = ScrollBars.Vertical;
+            textBox3.Size = new Size(2105, 925);
+            textBox3.TabIndex = 0;
             // 
             // tableLayoutPanelButtons
             // 
-            this.tableLayoutPanelButtons.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanelButtons.ColumnCount = 2;
-            this.tableLayoutPanelButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanelButtons.Controls.Add(this.button1, 0, 0);
-            this.tableLayoutPanelButtons.Controls.Add(this.button4, 1, 0);
-            this.tableLayoutPanelButtons.Location = new System.Drawing.Point(1064, 839);
-            this.tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
-            this.tableLayoutPanelButtons.RowCount = 1;
-            this.tableLayoutPanelButtons.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanelButtons.Size = new System.Drawing.Size(213, 32);
-            this.tableLayoutPanelButtons.TabIndex = 13;
+            tableLayoutPanelButtons.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            tableLayoutPanelButtons.ColumnCount = 2;
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelButtons.Controls.Add(button1, 0, 0);
+            tableLayoutPanelButtons.Controls.Add(button4, 1, 0);
+            tableLayoutPanelButtons.Location = new Point(1773, 1613);
+            tableLayoutPanelButtons.Margin = new Padding(5, 6, 5, 6);
+            tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
+            tableLayoutPanelButtons.RowCount = 1;
+            tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tableLayoutPanelButtons.Size = new Size(355, 62);
+            tableLayoutPanelButtons.TabIndex = 13;
             // 
             // button1
             // 
-            this.button1.AutoSize = true;
-            this.button1.Location = new System.Drawing.Point(4, 5);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(98, 22);
-            this.button1.TabIndex = 7;
-            this.button1.Text = "Convert";
-            this.toolTip1.SetToolTip(this.button1, "Convert the input XML to the output format.");
+            button1.AutoSize = true;
+            button1.Location = new Point(7, 10);
+            button1.Margin = new Padding(7, 10, 7, 10);
+            button1.Name = "button1";
+            button1.Size = new Size(163, 42);
+            button1.TabIndex = 7;
+            button1.Text = "Convert";
+            toolTip1.SetToolTip(button1, "Convert the input XML to the output format.");
             // 
             // button4
             // 
-            this.button4.AutoSize = true;
-            this.button4.Location = new System.Drawing.Point(110, 5);
-            this.button4.Margin = new System.Windows.Forms.Padding(4, 5, 10, 5);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(93, 22);
-            this.button4.TabIndex = 12;
-            this.button4.Text = "Close";
-            this.toolTip1.SetToolTip(this.button4, "Close the application.");
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.button4_Click);
+            button4.AutoSize = true;
+            button4.Location = new Point(184, 10);
+            button4.Margin = new Padding(7, 10, 17, 10);
+            button4.Name = "button4";
+            button4.Size = new Size(154, 42);
+            button4.TabIndex = 12;
+            button4.Text = "Close";
+            toolTip1.SetToolTip(button4, "Close the application.");
+            button4.UseVisualStyleBackColor = true;
+            button4.Click += button4_Click;
             // 
             // toolTip1
             // 
-            this.toolTip1.AutoPopDelay = 5000;
-            this.toolTip1.InitialDelay = 500;
-            this.toolTip1.ReshowDelay = 100;
+            toolTip1.AutoPopDelay = 5000;
+            toolTip1.InitialDelay = 500;
+            toolTip1.ReshowDelay = 100;
             // 
             // ConversionUserControl
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.tableLayoutPanel1);
-            this.Name = "ConversionUserControl";
-            this.Size = new System.Drawing.Size(1280, 874);
-            this.tableLayoutPanel1.ResumeLayout(false);
-            this.tableLayoutPanel1.PerformLayout();
-            this.tableLayoutPanelPaths.ResumeLayout(false);
-            this.tableLayoutPanelPaths.PerformLayout();
-            this.ItemFilters_TableLayout.ResumeLayout(false);
-            this.WorldTypeOptions_GroupBox.ResumeLayout(false);
-            this.WorldTypeOptions_GroupBox.PerformLayout();
-            this.ItemFilters_GroupBox.ResumeLayout(false);
-            this.ItemFilters_GroupBox.PerformLayout();
-            this.Right_GroupBox.ResumeLayout(false);
-            this.Right_GroupBox.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.tableLayoutPanelButtons.ResumeLayout(false);
-            this.tableLayoutPanelButtons.PerformLayout();
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleMode = AutoScaleMode.Font;
+            Controls.Add(tableLayoutPanel1);
+            Margin = new Padding(5, 6, 5, 6);
+            Name = "ConversionUserControl";
+            Size = new Size(2133, 1681);
+            tableLayoutPanel1.ResumeLayout(false);
+            tableLayoutPanel1.PerformLayout();
+            tableLayoutPanelPaths.ResumeLayout(false);
+            tableLayoutPanelPaths.PerformLayout();
+            ItemFilters_TableLayout.ResumeLayout(false);
+            WorldTypeOptions_GroupBox.ResumeLayout(false);
+            WorldTypeOptions_GroupBox.PerformLayout();
+            WorldTypeOptions_MainPanel.ResumeLayout(false);
+            WorldTypeOptions_MainPanel.PerformLayout();
+            WorldSelection_UpperPanel.ResumeLayout(false);
+            WorldSelection_UpperPanel.PerformLayout();
+            WorldSelection_LowerPanel.ResumeLayout(false);
+            WorldSelection_LowerPanel.PerformLayout();
+            ItemFilters_GroupBox.ResumeLayout(false);
+            ItemFilters_GroupBox.PerformLayout();
+            itemFiltersPanel.ResumeLayout(false);
+            itemFiltersPanel.PerformLayout();
+            Right_GroupBox.ResumeLayout(false);
+            Right_GroupBox.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
+            tableLayoutPanelButtons.ResumeLayout(false);
+            tableLayoutPanelButtons.PerformLayout();
+            ResumeLayout(false);
         }
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.Label labelInstructions;
@@ -472,5 +583,12 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.ToolTip toolTip1;
+        private TableLayoutPanel WorldTypeOptions_MainPanel;
+        private TableLayoutPanel WorldSelection_UpperPanel;
+        private TableLayoutPanel WorldSelection_LowerPanel;
+        private TextBox txtSpawnId;
+        private Label lblSpawnId;
+        private System.Windows.Forms.CheckBox chkCheckAll;
+        private TableLayoutPanel itemFiltersPanel;
     }
 }

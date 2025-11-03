@@ -27,6 +27,7 @@ namespace StationeersStructureXMLConverter
         {
             InitializeComponent();
             InitializeListViews();
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
         }
 
         private void InitializeListViews()

@@ -20,6 +20,7 @@ namespace StationeersStructureXMLConverter
         public ConversionUserControl()
         {
             InitializeComponent();
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
             if (configureOutputsButton != null)
             {
                 configureOutputsButton.Enabled = false;
@@ -36,6 +37,12 @@ namespace StationeersStructureXMLConverter
             VanillaWorld_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
             LocalMod_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
             None_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            checkBox1.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            checkBox2.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            checkBox3.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            Filter5_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            Filter6_CheckBox.CheckedChanged += (s, e) => CheckBox_CheckedChanged?.Invoke(s, e);
+            chkCheckAll.CheckedChanged += (s, e) => chkCheckAll_CheckedChanged?.Invoke(s, e);
 
             // Wire ComboBox to raise public event (pass original 's' for consistency, though MainForm may not cast it)
             WorldSelection_ComboBox.SelectedIndexChanged += (s, e) => WorldSelection_ComboBox_SelectedIndexChanged?.Invoke(s, e);
@@ -52,7 +59,12 @@ namespace StationeersStructureXMLConverter
             }
             Right_GroupBox.PerformLayout();
         }
-
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if (System.Diagnostics.Debugger.IsAttached)
+                txtSpawnId.Text = "My_ScenarioThings";
+        }
         public string InputPath
         {
             get => textBox1.Text;
@@ -106,26 +118,37 @@ namespace StationeersStructureXMLConverter
         public bool FilterLanderCapsule
         {
             get => checkBox1.Checked;
+            set => checkBox1.Checked = value;
         }
 
         public bool FilterCharacter
         {
             get => checkBox2.Checked;
+            set => checkBox2.Checked = value;
         }
 
         public bool FilterSupplyLander
         {
             get => checkBox3.Checked;
+            set => checkBox3.Checked = value;
         }
 
         public bool FilterOre
         {
             get => Filter5_CheckBox.Checked;
+            set => Filter5_CheckBox.Checked = value;
         }
 
         public bool FilterItemKit
         {
             get => Filter6_CheckBox.Checked;
+            set => Filter6_CheckBox.Checked = value;
+        }
+
+        public bool CheckAll
+        { 
+            get => chkCheckAll.Checked;
+            set => chkCheckAll.Checked = value;
         }
 
         public string StationeersPath
@@ -138,6 +161,12 @@ namespace StationeersStructureXMLConverter
         {
             get => outputPath;
             set => outputPath = value;
+        }
+
+        public string SpawnID
+        {
+            get => txtSpawnId.Text;
+            set => txtSpawnId.Text = value;
         }
 
         public string ModName
@@ -178,6 +207,7 @@ namespace StationeersStructureXMLConverter
 
         public event EventHandler Convert_Click;
         public event EventHandler CheckBox_CheckedChanged;
+        public event EventHandler chkCheckAll_CheckedChanged;
         public event EventHandler WorldSelection_ComboBox_SelectedIndexChanged;
 
 

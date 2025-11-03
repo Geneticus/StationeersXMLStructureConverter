@@ -15,6 +15,7 @@
 
         private void InitializeComponent()
         {
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
             this.btnRunXsdGenerator = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 

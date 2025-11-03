@@ -35,7 +35,7 @@ namespace StationeersStructureXMLConverter
             output.AppendText($"Exported {exportedCount} things as standalone XML files to {destPath}.\r\n");
         }
 
-        public static void TransformToNewSchema(List<object> things, string destPath, TextBox output)
+        public static void TransformToNewSchema(List<object> things, string destPath, TextBox output,ConversionUserControl control)
         {
             if (things.Count == 0)
             {
@@ -44,9 +44,11 @@ namespace StationeersStructureXMLConverter
             }
             //output.AppendText($"Processing {things.Count} input things.\r\n");
             output.AppendText(DateTime.Now.ToString("HH:mm:ss.fff") + $" Processing {things.Count} input things.\r\n"); //temp timestamp
-            string scenarioName = "My_Scenario";
+            string scenarioName = string.IsNullOrWhiteSpace(control.SpawnID)
+            ? "My_Scenario"
+            : control.SpawnID;
             string spawnId = scenarioName + "Things";
-            var gameData = BuildGameData(things, scenarioName, spawnId, output);
+            var gameData = BuildGameData(things, scenarioName, spawnId, output, control);
             output.AppendText($"Attempting to write to: {destPath}\r\n");
             try
             {
@@ -102,16 +104,128 @@ namespace StationeersStructureXMLConverter
             return fullPath;
         }
 
-        private static XDocument BuildGameData(List<object> things, string scenarioName, string spawnId, TextBox output)
+        private static XDocument BuildGameData(List<object> things, string scenarioName, string spawnId, TextBox output, ConversionUserControl control)
         {
             var spawnEntries = ProcessThingsToSpawnEntries(things, output);
             var nestedHierarchy = BuildNestedHierarchy(spawnEntries, output);
+            // === FILTERING START ===
+            bool isDebug = System.Diagnostics.Debugger.IsAttached;
+
+            if (control != null &&
+                (control.FilterLanderCapsule ||
+                 control.FilterCharacter ||
+                 control.FilterSupplyLander ||
+                 control.FilterOre ||
+                 control.FilterItemKit))
+            {
+                var nodesToPrune = new List<XElement>();
+                int landerCapsuleRemovedCount = 0;
+                int characterRemovedCount = 0;
+                int supplyLanderRemovedCount = 0;
+                int oreRemovedCount = 0;
+                int itemKitRemovedCount = 0;
+
+                foreach (var node in nestedHierarchy.ToList())
+                {
+                    var id = node.Attribute("Id")?.Value ?? "";
+                    if (control.FilterLanderCapsule && string.Equals(id, "LanderCapsuleSmall", StringComparison.OrdinalIgnoreCase))
+                    {
+                        nodesToPrune.Add(node);
+                        landerCapsuleRemovedCount++;
+                    }
+                    else if (control.FilterCharacter && string.Equals(id, "Character", StringComparison.OrdinalIgnoreCase))
+                    {
+                        nodesToPrune.Add(node);
+                        characterRemovedCount++;
+                    }
+                    else if (control.FilterSupplyLander &&
+                             (string.Equals(id, "Lander", StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(id, "LanderMkII", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        nodesToPrune.Add(node);
+                        supplyLanderRemovedCount++;
+                    }
+                    else if (control.FilterOre && id.IndexOf("Ore", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        nodesToPrune.Add(node);
+                        oreRemovedCount++;
+                    }
+                    else if (control.FilterItemKit && id.IndexOf("ItemKit", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        nodesToPrune.Add(node);
+                        itemKitRemovedCount++;
+                    }
+                }
+
+                // === DEBUG: Parent count ===
+                if (isDebug)
+                {
+                    output.AppendText($"Pruning: Found {nodesToPrune.Count} parent items to remove (e.g., {nodesToPrune.FirstOrDefault()?.Attribute("Id")?.Value ?? "none"}).\r\n");
+                }
+
+                if (nodesToPrune.Any())
+                {
+                    var spawnableFilter = new Func<XElement, bool>(d =>
+                        d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing");
+
+                    int landerCapsuleChildren = control.FilterLanderCapsule
+                        ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall").Sum(n => n.Descendants().Count(spawnableFilter))
+                        : 0;
+                    int characterChildren = control.FilterCharacter
+                        ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Character").Sum(n => n.Descendants().Count(spawnableFilter))
+                        : 0;
+                    int supplyLanderChildren = control.FilterSupplyLander
+                        ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Lander" || n.Attribute("Id")?.Value == "LanderMkII").Sum(n => n.Descendants().Count(spawnableFilter))
+                        : 0;
+                    int oreChildren = control.FilterOre
+                        ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("Ore") ?? false).Sum(n => n.Descendants().Count(spawnableFilter))
+                        : 0;
+                    int itemKitChildren = control.FilterItemKit
+                        ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("ItemKit") ?? false).Sum(n => n.Descendants().Count(spawnableFilter))
+                        : 0;
+
+                    int totalItems = nodesToPrune.Count +
+                                     landerCapsuleChildren +
+                                     characterChildren +
+                                     supplyLanderChildren +
+                                     oreChildren +
+                                     itemKitChildren;
+
+                    foreach (var node in nodesToPrune)
+                        nestedHierarchy.Remove(node);
+
+                    // === USER LOG ===
+                    string logMessage = "";
+                    if (landerCapsuleRemovedCount > 0)
+                        logMessage += $"Removed {landerCapsuleRemovedCount} LanderCapsuleSmall item(s) and {landerCapsuleChildren} child items.\r\n";
+                    if (characterRemovedCount > 0)
+                        logMessage += $"Removed {characterRemovedCount} Character item(s) and {characterChildren} child items.\r\n";
+                    if (supplyLanderRemovedCount > 0)
+                        logMessage += $"Removed {supplyLanderRemovedCount} SupplyLander item(s) and {supplyLanderChildren} child items.\r\n";
+                    if (oreRemovedCount > 0)
+                        logMessage += $"Removed {oreRemovedCount} Ore item(s) and {oreChildren} child items.\r\n";
+                    if (itemKitRemovedCount > 0)
+                        logMessage += $"Removed {itemKitRemovedCount} ItemKit item(s) and {itemKitChildren} child items.\r\n";
+
+                    if (!string.IsNullOrEmpty(logMessage))
+                    {
+                        output.AppendText("\r\n***Removed Items:***\r\n" + logMessage + "***End Removed Items.***\r\n\r\n");
+                    }
+
+                    // === DEBUG: Total items only ===
+                    if (isDebug)
+                    {
+                        output.AppendText($"Debug: Removed {totalItems} total items.\r\n");
+                    }
+                }
+            }
+            // === FILTERING END ===
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", null),
                 new XElement("GameData",
                     new XAttribute(XNamespace.Xmlns + "xsi", "http://www.w3.org/2001/XMLSchema-instance"),
                     new XAttribute(XNamespace.Xmlns + "xsd", "http://www.w3.org/2001/XMLSchema"),
-                    BuildWorldSettings(scenarioName),
+                    //BuildWorldSettings(scenarioName),
                     BuildSpawn(nestedHierarchy, spawnId)
                 )
             );
@@ -175,18 +289,6 @@ namespace StationeersStructureXMLConverter
             //Console.WriteLine($"Added {tagName} with TempReferenceId={referenceId}, TempParentReferenceId={parentReferenceId}");
             AddAllProps(thingElement, spawnEntry, output); // Device-specific only
             return spawnEntry;
-        }
-
-        private static string ClassifyTagName(string prefabName)
-        {
-            string tagName = "Item"; // Default
-            if (prefabName.StartsWith("Structure")) tagName = "Structure";
-            else if (prefabName == "DynamicGasTankAdvanced" || prefabName == "DynamicMKIILiquidCanisterEmpty" ||
-                     prefabName == "CrateMkII" || prefabName == "DynamicGasCanisterEmpty" ||
-                     prefabName == "DynamicLiquidCanisterEmpty" || prefabName == "LanderCapsuleSmall") tagName = "DynamicThing";
-            else if (prefabName.Contains("LanderCapsule")) tagName = "Item";
-            else if (prefabName.Contains("Wreckage")) tagName = "Item";
-            return tagName;
         }
 
         private static List<XElement> BuildNestedHierarchy(List<XElement> spawnEntries, TextBox output)
@@ -277,12 +379,12 @@ namespace StationeersStructureXMLConverter
             }
         }
 
-        private static XElement BuildWorldSettings(string scenarioName)
-        {
-            return new XElement("WorldSettings",
-                new XAttribute("Id", scenarioName)
-            );
-        }
+        //private static XElement BuildWorldSettings(string scenarioName)
+        //{
+        //    return new XElement("WorldSettings",
+        //        new XAttribute("Id", scenarioName)
+        //    );
+        //}
 
         private static XElement BuildSpawn(List<XElement> spawnEntries, string spawnId)
         {

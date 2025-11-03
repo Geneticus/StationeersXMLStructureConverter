@@ -35,7 +35,7 @@ namespace StationeersStructureXMLConverter
                         prefabName = cleanId;
                         
                     }
-                    string tagName = ClassifyTagName(prefabName);                    
+                    string tagName = ClassifyTagName(thingElement);                    
                     var spawnEntry = new XElement(tagName,
                         new XAttribute("Id", prefabName),
                         new XAttribute("HideInStartScreen", "true"),
@@ -61,16 +61,33 @@ namespace StationeersStructureXMLConverter
             return spawnEntries;
         }
 
-        private static string ClassifyTagName(string prefabName)
+        private static string ClassifyTagName(XElement thingElement)
         {
-            string tagName = "Item"; // Default
-            if (prefabName.StartsWith("Structure")) tagName = "Structure";
-            else if (prefabName == "DynamicGasTankAdvanced" || prefabName == "DynamicMKIILiquidCanisterEmpty" ||
-                     prefabName == "CrateMkII" || prefabName == "DynamicGasCanisterEmpty" ||
-                     prefabName == "DynamicLiquidCanisterEmpty" || prefabName == "LanderCapsuleSmall") tagName = "DynamicThing";
-            else if (prefabName.Contains("LanderCapsule")) tagName = "Item";
-            else if (prefabName.Contains("Wreckage")) tagName = "Item";
-            return tagName;
+            var xsiType = thingElement.Attribute(
+                XName.Get("type", "http://www.w3.org/2001/XMLSchema-instance"))?.Value ?? "";
+            var prefabName = thingElement.Element("PrefabName")?.Value ?? "";
+
+            // 1. Structures via xsi:type
+            if (xsiType.Contains("StructureSaveData"))
+                return "Structure";
+
+            // 2. Structures via PrefabName (e.g., StructureSolarPanel45)
+            if (prefabName.StartsWith("Structure", StringComparison.OrdinalIgnoreCase))
+                return "Structure";
+
+            // 3. DynamicThing via xsi:type or known prefabs
+            if (xsiType.Contains("DynamicThingSaveData") ||
+                prefabName == "LanderCapsuleSmall" ||
+                prefabName == "DynamicGasTankAdvanced" ||
+                prefabName == "CrateMkII" ||
+                prefabName == "Rover_MkI")
+                return "DynamicThing";
+
+            // 4. Wreckage and LanderCapsule (not DynamicThing)
+            if (prefabName.Contains("Wreckage") || prefabName.Contains("LanderCapsule"))
+                return "Item";
+
+            return "Item"; // Default
         }
 
         private static void AddCoreProps(XElement thingElement, XElement spawnEntry)

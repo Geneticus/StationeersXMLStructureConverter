@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Windows.Forms;
+using WinForms = System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace StationeersStructureXMLConverter
 {
@@ -17,10 +18,13 @@ namespace StationeersStructureXMLConverter
         private XDocument objectivesDoc;
         private string objectivesPath;
         private string newModPath;
+        private string _originalTitle;
 
         public Main_Form()
         {
             InitializeComponent();
+            conversionUserControl.chkCheckAll_CheckedChanged += chkCheckAll_CheckedChanged;
+            conversionUserControl.CheckBox_CheckedChanged += Filter_CheckedChanged;
             conversionUserControl.Convert_Click += Convert_Click;
             conversionUserControl.CheckBox_CheckedChanged += CheckBox_CheckedChanged;
             conversionUserControl.WorldSelection_ComboBox_SelectedIndexChanged += WorldSelection_ComboBox_SelectedIndexChanged;
@@ -28,6 +32,7 @@ namespace StationeersStructureXMLConverter
             toolsUserControl.ConversionUserControl = conversionUserControl;
             conversionUserControl.StationeersPath = worldEditorUserControl.StationeersPath = toolsUserControl.StationeersPath = conversionUserControl.StationeersPath;
             conversionUserControl.OutputPath = toolsUserControl.OutputPath = conversionUserControl.OutputPath;
+            conversionUserControl.SpawnID = conversionUserControl.SpawnID;
             conversionUserControl.ModName = worldEditorUserControl.ModName = conversionUserControl.ModName;
             conversionUserControl.WorldName = worldEditorUserControl.WorldName = conversionUserControl.WorldName;
             conversionUserControl.Description = worldEditorUserControl.Description = conversionUserControl.Description;
@@ -38,9 +43,33 @@ namespace StationeersStructureXMLConverter
             worldEditorUserControl.ObjectivesPath = objectivesPath;
             worldEditorUserControl.NewModPath = newModPath;
             conversionUserControl.WorldSelectionItems.Add("Select a world...");
-            conversionUserControl.WorldSelectionIndex = 0;
+            conversionUserControl.WorldSelectionIndex = 0; 
             conversionUserControl.WorldSelectionEnabled = false;
+            //this.AutoScaleMode = AutoScaleMode.Dpi;
+            _originalTitle = this.Text;
+            // === DPI DEBUG IN TITLE BAR ===
+            this.Load += (s, e) => UpdateDebugTitle();
+            this.DpiChanged += (s, e) => UpdateDebugTitle();
+            this.SizeChanged += (s, e) => UpdateDebugTitle(); 
+            
         }
+        private Size _originalSize;
+
+        
+
+        private void UpdateDebugTitle()
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                float scale = this.CurrentAutoScaleDimensions.Width / 96f;
+                string debugInfo = $"[DPI: {this.DeviceDpi} ({(this.DeviceDpi / 96.0 * 100):F0}%) | Scale: {scale:F2}x | Size: {this.ClientSize.Width}x{this.ClientSize.Height}]";
+                this.Text = _originalTitle + " " + debugInfo;
+            }
+            else
+            {
+                this.Text = _originalTitle;
+            }
+        }        
 
         private void Convert_Click(object sender, EventArgs e)
         {
@@ -263,90 +292,8 @@ namespace StationeersStructureXMLConverter
                     conversionUserControl.AppendLog("Error: No output destination set (world or folder not selected).");
                     return;
                 }
-                //DestinationExport.TransformToNewSchema(things, destSpawnGroupPath, conversionUserControl.LogTextBox);
-                int landerCapsuleRemovedCount = 0;
-                int characterRemovedCount = 0;
-                int supplyLanderRemovedCount = 0;
-                int oreRemovedCount = 0;
-                int itemKitRemovedCount = 0;
-                if (conversionUserControl.FilterLanderCapsule || conversionUserControl.FilterCharacter || conversionUserControl.FilterSupplyLander || conversionUserControl.FilterOre || conversionUserControl.FilterItemKit)
-                {
-                    var outputDoc = XDocument.Load(destSpawnGroupPath);
-                    var spawnRoot = outputDoc.Root?.Element("Spawn");
-                    var nodesToPrune = new List<XElement>();
-                    if (conversionUserControl.FilterLanderCapsule)
-                    {
-                        var landerCapsuleNodes = spawnRoot?.Elements()
-                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("LanderCapsuleSmall", StringComparison.OrdinalIgnoreCase) == true)
-                            .ToList() ?? new List<XElement>();
-                        nodesToPrune.AddRange(landerCapsuleNodes);
-                        landerCapsuleRemovedCount = landerCapsuleNodes.Count;
-                    }
-                    if (conversionUserControl.FilterCharacter)
-                    {
-                        var characterNodes = spawnRoot?.Elements()
-                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("Character", StringComparison.OrdinalIgnoreCase) == true)
-                            .ToList() ?? new List<XElement>();
-                        nodesToPrune.AddRange(characterNodes);
-                        characterRemovedCount = characterNodes.Count;
-                    }
-                    if (conversionUserControl.FilterSupplyLander)
-                    {
-                        var supplyLanderNodes = spawnRoot?.Elements()
-                            .Where((XElement n) => n.Attribute("Id")?.Value?.Equals("Lander", StringComparison.OrdinalIgnoreCase) == true || n.Attribute("Id")?.Value?.Equals("LanderMkII", StringComparison.OrdinalIgnoreCase) == true)
-                            .ToList() ?? new List<XElement>();
-                        nodesToPrune.AddRange(supplyLanderNodes);
-                        supplyLanderRemovedCount = supplyLanderNodes.Count;
-                    }
-                    if (conversionUserControl.FilterOre)
-                    {
-                        var oreNodes = spawnRoot?.Elements()
-                            .Where((XElement n) => n.Attribute("Id")?.Value?.IndexOf("Ore", StringComparison.OrdinalIgnoreCase) >= 0)
-                            .ToList() ?? new List<XElement>();
-                        nodesToPrune.AddRange(oreNodes);
-                        oreRemovedCount = oreNodes.Count;
-                    }
-                    if (conversionUserControl.FilterItemKit)
-                    {
-                        var itemKitNodes = spawnRoot?.Elements()
-                            .Where((XElement n) => n.Attribute("Id")?.Value?.IndexOf("ItemKit", StringComparison.OrdinalIgnoreCase) >= 0)
-                            .ToList() ?? new List<XElement>();
-                        nodesToPrune.AddRange(itemKitNodes);
-                        itemKitRemovedCount = itemKitNodes.Count;
-                    }
-                    //Debug Temporary Coment
-                    conversionUserControl.AppendLog($"Pruning: Found {nodesToPrune.Count} nodes to remove (e.g., {nodesToPrune.FirstOrDefault()?.Attribute("Id")?.Value ?? "none"}).");
-                    if (nodesToPrune.Any())
-                    {
-                        foreach (var node in nodesToPrune)
-                        {
-                            node.Remove();
-                        }
-                        var originalSize = new FileInfo(destSpawnGroupPath).Length; // Pre-prune size
-                        outputDoc.Save(destSpawnGroupPath);
-                        var fileSize = new FileInfo(destSpawnGroupPath).Length;
-                        //Temporary Debug Logging for save not occuring
-                        conversionUserControl.AppendLog($"Pruned file saved at {destSpawnGroupPath} (size: {fileSize} bytes, change: {originalSize - fileSize} bytes)");
-                        int totalChildrenRemoved = nodesToPrune.Sum(n => n.Descendants().Count());
-                        var spawnableFilter = new Func<XElement, bool>(d => d.Name.LocalName == "Structure" || d.Name.LocalName == "Item" || d.Name.LocalName == "DynamicThing");
-                        int landerCapsuleSpawnableChildrenRemoved = conversionUserControl.FilterLanderCapsule ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "LanderCapsuleSmall").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
-                        int characterSpawnableChildrenRemoved = conversionUserControl.FilterCharacter ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Character").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
-                        int supplyLanderSpawnableChildrenRemoved = conversionUserControl.FilterSupplyLander ? nodesToPrune.Where(n => n.Attribute("Id")?.Value == "Lander" || n.Attribute("Id")?.Value == "LanderMkII").Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
-                        int oreSpawnableChildrenRemoved = conversionUserControl.FilterOre ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("Ore") ?? false).Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
-                        int itemKitSpawnableChildrenRemoved = conversionUserControl.FilterItemKit ? nodesToPrune.Where(n => n.Attribute("Id")?.Value.Contains("ItemKit") ?? false).Sum(n => n.Descendants().Count(d => spawnableFilter(d))) : 0;
-                        string logMessage = "";
-                        if (landerCapsuleRemovedCount > 0) logMessage += $"Removed {landerCapsuleRemovedCount} LanderCapsuleSmall item(s) and {landerCapsuleSpawnableChildrenRemoved} child items.\r\n";
-                        if (characterRemovedCount > 0) logMessage += $"Removed {characterRemovedCount} Character item(s) and {characterSpawnableChildrenRemoved} child items.\r\n";
-                        if (supplyLanderRemovedCount > 0) logMessage += $"Removed {supplyLanderRemovedCount} SupplyLander item(s) and {supplyLanderSpawnableChildrenRemoved} child items.\r\n";
-                        if (oreRemovedCount > 0) logMessage += $"Removed {oreRemovedCount} Ore item(s) and {oreSpawnableChildrenRemoved} child items.\r\n";
-                        if (itemKitRemovedCount > 0) logMessage += $"Removed {itemKitRemovedCount} ItemKit item(s) and {itemKitSpawnableChildrenRemoved} child items.\r\n";
-                        if (!string.IsNullOrEmpty(logMessage))
-                        {
-                            conversionUserControl.AppendLog("***Removed Items:***\r\n" + logMessage + "***End Removed Items.***");
-                        }
-                        conversionUserControl.AppendLog($"Debug: Removed {totalChildrenRemoved} total child nodes.");
-                    }
-                }
+                //DestinationExport.TransformToNewSchema(things, destSpawnGroupPath, conversionUserControl.LogTextBox, conversionUserControl);
+
                 if (!File.Exists(destSpawnGroupPath))
                 {
                     conversionUserControl.AppendLog($"Error: Failed to create '{destSpawnGroupPath}'. Check permissions or path.");
@@ -536,7 +483,7 @@ namespace StationeersStructureXMLConverter
                 {
                     destSpawnGroupPath = Path.Combine(conversionUserControl.OutputPath ?? "", "SpawnGroup.xml");
                     Directory.CreateDirectory(Path.GetDirectoryName(destSpawnGroupPath));
-                    DestinationExport.TransformToNewSchema(spawnEntries.Cast<object>().ToList(), destSpawnGroupPath, conversionUserControl.LogTextBox);
+                    DestinationExport.TransformToNewSchema(spawnEntries.Cast<object>().ToList(), destSpawnGroupPath, conversionUserControl.LogTextBox, conversionUserControl);
                     conversionUserControl.AppendLog("Conversion completed successfully! (Step 6 of 6)");
                     tabControlMain.SelectedTab = tabConversion;
                 }
@@ -549,9 +496,39 @@ namespace StationeersStructureXMLConverter
             }
         }
 
+
+        private bool _ignoreCheckAllChange = false;
+
+        private void chkCheckAll_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_ignoreCheckAllChange) return;
+
+            bool check = conversionUserControl.CheckAll;
+            conversionUserControl.FilterLanderCapsule = check;
+            conversionUserControl.FilterCharacter = check;
+            conversionUserControl.FilterSupplyLander = check;
+            conversionUserControl.FilterOre = check;
+            conversionUserControl.FilterItemKit = check;
+        }
+
+        private void Filter_CheckedChanged(object sender, EventArgs e)
+        {
+            bool allChecked = conversionUserControl.FilterLanderCapsule &&
+                              conversionUserControl.FilterCharacter &&
+                              conversionUserControl.FilterSupplyLander &&
+                              conversionUserControl.FilterOre &&
+                              conversionUserControl.FilterItemKit;
+
+            _ignoreCheckAllChange = true;
+            conversionUserControl.CheckAll = allChecked;
+            _ignoreCheckAllChange = false;
+        }
+
+
+
         private void CheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            CheckBox changedBox = (CheckBox)sender;
+            System.Windows.Forms.CheckBox changedBox = (System.Windows.Forms.CheckBox)sender;
             if (changedBox == conversionUserControl.VanillaWorldCheckBox)
             {
                 conversionUserControl.LocalModChecked = false;

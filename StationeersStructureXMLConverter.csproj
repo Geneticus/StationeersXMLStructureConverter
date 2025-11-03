@@ -14,9 +14,13 @@
   </PropertyGroup>
 	
 	<PropertyGroup>
- <NoWarn>$(NoWarn);CA1416;CS8601;CS8604;CS8622;CS0168;CS0414;CS0649</NoWarn>
-</PropertyGroup>
-
+	 <NoWarn>$(NoWarn);CA1416;CS8601;CS8604;CS8622;CS0168;CS0414;CS0649</NoWarn>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+	
   <!-- Debug/Release -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -84,10 +88,10 @@
 
 
 	<Target Name="CopyXsdGenerator" AfterTargets="PostBuildEvent">
-  <ItemGroup>
-    <XsdFiles Include="..\StationeersXsdGenerator\bin\$(Configuration)\net8.0\StationeersXsdGenerator.*" />
-  </ItemGroup>
-  <Copy SourceFiles="@(XsdFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-</Target>
+	  <ItemGroup>
+		<XsdFiles Include="..\StationeersXsdGenerator\bin\$(Configuration)\net8.0\StationeersXsdGenerator.*" />
+	  </ItemGroup>
+	  <Copy SourceFiles="@(XsdFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+	</Target>
 
 </Project>
