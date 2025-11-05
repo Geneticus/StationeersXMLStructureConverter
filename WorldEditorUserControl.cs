@@ -169,88 +169,241 @@ namespace StationeersStructureXMLConverter
             set => conversionUserControl = value;
         }
 
+        private List<string> WorldStartConditions = new List<string>();
+
+        private string GetUserLanguageCode()
+        {
+            string lang = System.Globalization.CultureInfo.CurrentUICulture.Name.ToLower();
+            // "cs-CZ" → "czech", "de-DE" → "german", etc.
+            return lang.Split('-')[0];
+        }
+
+        private string GetLanguageFileName(string code)
+        {
+            // Common mappings
+            var map = new Dictionary<string, string>
+    {
+        { "en", "english" },
+        { "cs", "czech" },
+        { "de", "german" },
+        { "fr", "french" },
+        { "it", "italian" },
+        { "hu", "hungarian" },
+        { "da", "danish" },
+        { "nl", "dutch" }
+        // Add more as needed
+    };
+
+            return map.TryGetValue(code, out var name) ? name : null;
+        }
+
+        private string DetectStationeersPath()
+        {
+            // 1. Try default path
+            string defaultPath = @"C:\Program Files (x86)\Steam\steamapps\common\Stationeers";
+            string exePath = Path.Combine(defaultPath, "rocketstation.exe");
+
+            if (File.Exists(exePath))
+            {
+                return defaultPath;
+            }
+
+            // 2. If not found, prompt user
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.ValidateNames = false;
+                dialog.CheckFileExists = false;
+                dialog.CheckPathExists = true;
+                dialog.FileName = "Select Folder";
+                dialog.Filter = "Folders|*.*";
+                dialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                dialog.Title = "Select Stationeers installation folder (containing 'rocketstation_Data')";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string selected = Path.GetDirectoryName(dialog.FileName);
+                    if (Directory.Exists(Path.Combine(selected, "rocketstation_Data", "StreamingAssets", "Worlds")))
+                    {
+                        return selected;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid Stationeers installation. Please select the folder containing 'rocketstation_Data'.", "Invalid Path", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return null;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private string LoadFromFile(string filePath, string key)
+        {
+            if (!File.Exists(filePath)) return null;
+
+            try
+            {
+                var doc = XDocument.Load(filePath);
+                var record = doc.Root?.Element("Interface")?
+                    .Elements("Record")
+                    .FirstOrDefault(r => r.Element("Key")?.Value == key);
+
+                return record?.Element("Value")?.Value ?? "";
+            }
+            catch { return null; }
+        }
+
         public void LoadWorldSettings()
         {
+            // Ensure we have a mod path
             if (string.IsNullOrEmpty(newModPath))
             {
-                MessageBox.Show("Create a mod first.");
+                conversionUserControl.AppendLog("No mod path set.");
                 return;
             }
-            string selectedWorld = conversionUserControl.SelectedWorld;
-            if (string.IsNullOrEmpty(selectedWorld) || selectedWorld == "Select a world...")
+
+            // === LOAD worldDoc ===
+            if (!string.IsNullOrEmpty(worldXmlPath) && File.Exists(worldXmlPath))
             {
-                MessageBox.Show("Invalid world selection.");
-                return;
-            }
-            string worldFolder = Path.Combine(newModPath, "GameData", "Worlds", selectedWorld);
-            var worldXmlFiles = Directory.GetFiles(worldFolder, "*.xml").Where(f =>
-            {
-                try
-                {
-                    var doc = XDocument.Load(f);
-                    return doc.Root?.Name.LocalName == "WorldSettingData" && doc.Root.Element("World") != null;
-                }
-                catch
-                {
-                    return false;
-                }
-            }).ToList();
-            if (worldXmlFiles.Any())
-            {
-                worldXmlPath = worldXmlFiles.First();
                 worldDoc = XDocument.Load(worldXmlPath);
-                var settings = worldDoc.Root;
-                txtWorldId.Text = settings.Element("World")?.Attribute("Id")?.Value ?? (string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName);
-                nudPriority.Value = int.TryParse(settings.Element("World")?.Attribute("Priority")?.Value, out int priority) ? priority : 2;
-                txtNameValue.Text = settings.Element("Name")?.Value ?? (string.IsNullOrEmpty(worldName) ? modName : worldName);
-                txtDescValue.Text = settings.Element("Description")?.Attribute("Key")?.Value ?? $"{modName}_Description";
-                txtShortDescValue.Text = settings.Element("ShortDescription")?.Attribute("Key")?.Value ?? $"{modName}_ShortDesc";
-                txtSummary.Text = settings.Element("SummaryText")?.Attribute("Key")?.Value ?? $"{modName}_Summary";
-                clbStartConditions.Items.Clear();
-                List<string> conditionIds = new List<string>();
-                string vanillaConditions = Path.Combine(stationeersPath ?? @"C:\Program Files (x86)\Steam\steamapps\common\Stationeers", "rocketstation_Data", "StreamingAssets", "Data", "startconditions.xml");
-                if (File.Exists(vanillaConditions))
-                {
-                    var vanDoc = XDocument.Load(vanillaConditions);
-                    conditionIds.AddRange(vanDoc.Root?.Elements("StartConditionData").Select(e => e.Attribute("Id")?.Value ?? "") ?? Enumerable.Empty<string>());
-                }
-                string sourceConditions = Path.Combine(newModPath, "GameData", "startconditions.xml");
-                if (File.Exists(sourceConditions))
-                {
-                    var srcDoc = XDocument.Load(sourceConditions);
-                    conditionIds.AddRange(srcDoc.Root?.Elements("StartConditionData").Select(e => e.Attribute("Id")?.Value ?? "") ?? Enumerable.Empty<string>());
-                }
-                clbStartConditions.Items.AddRange(conditionIds.Distinct().ToArray());
-                var currentConditions = settings.Element("StartConditions")?.Elements("StartCondition").Select(e => e.Attribute("Id")?.Value ?? "").ToList();
-                foreach (var id in currentConditions)
-                {
-                    int index = clbStartConditions.Items.IndexOf(id);
-                    if (index >= 0) clbStartConditions.SetItemChecked(index, true);
-                }
-                lvStartLocations.Items.Clear();
-                foreach (var loc in settings.Elements("startlocation"))
-                {
-                    var pos = loc.Element("Position");
-                    var item = new ListViewItem(pos?.Element("x")?.Value ?? "0");
-                    item.SubItems.Add(pos?.Element("y")?.Value ?? "0");
-                    item.SubItems.Add(pos?.Element("z")?.Value ?? "0");
-                    item.SubItems.Add("Edit");
-                    item.Tag = loc;
-                    lvStartLocations.Items.Add(item);
-                }
             }
             else
             {
-                conversionUserControl.AppendLog("No world.xml found; using defaults.");
-                worldDoc = new XDocument(new XElement("WorldSettingData"));
-                worldXmlPath = Path.Combine(worldFolder, "world.xml");
-                txtWorldId.Text = string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName;
-                nudPriority.Value = 2;
-                txtNameValue.Text = string.IsNullOrEmpty(worldName) ? modName : worldName;
-                txtDescValue.Text = $"{modName}_Description";
-                txtShortDescValue.Text = $"{modName}_ShortDesc";
-                txtSummary.Text = $"{modName}_Summary";
+                string selectedWorld = conversionUserControl.SelectedWorld;
+                if (string.IsNullOrEmpty(selectedWorld) || selectedWorld == "Select a world...")
+                {
+                    MessageBox.Show("No world selected in conversion tab.");
+                    return;
+                }
+
+                string worldFolder = Path.Combine(newModPath, "GameData", "Worlds", selectedWorld);
+                if (!Directory.Exists(worldFolder))
+                {
+                    MessageBox.Show($"World folder not found: {worldFolder}");
+                    return;
+                }
+
+                var worldXmlFiles = Directory.GetFiles(worldFolder, "*.xml")
+                    .Where(f =>
+                    {
+                        try
+                        {
+                            var doc = XDocument.Load(f);
+                            var ws = doc.Root?.Element("WorldSettings");
+                            return ws != null && ws.Element("World") != null;
+                        }
+                        catch { return false; }
+                    }).ToList();
+
+                if (!worldXmlFiles.Any())
+                {
+                    MessageBox.Show("No valid world.xml found in selected world folder.");
+                    return;
+                }
+
+                worldXmlPath = worldXmlFiles.First();
+                worldDoc = XDocument.Load(worldXmlPath);
             }
+
+            // === PARSE WorldSettings and World ===
+            var worldSettings = worldDoc.Root?.Element("WorldSettings");
+            var world = worldSettings?.Element("World");
+            if (world == null)
+            {
+                conversionUserControl.AppendLog("No <World> element found.");
+                return;
+            }
+
+            // === POPULATE KEYS ===
+            txtNameKey.Text = world.Element("Name")?.Attribute("Key")?.Value ?? "";
+            txtDescKey.Text = world.Element("Description")?.Attribute("Key")?.Value ?? "";
+            txtShortDescKey.Text = world.Element("ShortDescription")?.Attribute("Key")?.Value ?? "";
+            var summaryKey = world.Element("SummaryText")?.Attribute("Key")?.Value ?? "";
+
+            // === LOAD VALUES: MOD → VANILLA → KEY ===
+            string GetValueForKey(string key)
+            {
+                if (string.IsNullOrEmpty(key)) return "";
+
+                string value = null;
+
+                // 1. MOD
+                string modLangPath = Path.Combine(newModPath, "GameData", "Language");
+                if (Directory.Exists(modLangPath))
+                {
+                    // Try user language
+                    string userLang = GetLanguageFileName(GetUserLanguageCode());
+                    if (userLang != null)
+                    {
+                        value = LoadFromFile(Path.Combine(modLangPath, $"{userLang}.xml"), key);
+                    }
+                    // Fallback to english in mod
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        value = LoadFromFile(Path.Combine(modLangPath, "english.xml"), key);
+                    }
+                }
+
+                // 2. VANILLA
+                if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(StationeersPath))
+                {
+                    string vanillaLangPath = Path.Combine(StationeersPath, "rocketstation_Data", "StreamingAssets", "Language");
+                    if (Directory.Exists(vanillaLangPath))
+                    {
+                        string userLang = GetLanguageFileName(GetUserLanguageCode());
+                        if (userLang != null)
+                        {
+                            value = LoadFromFile(Path.Combine(vanillaLangPath, $"{userLang}.xml"), key);
+                        }
+                        if (string.IsNullOrEmpty(value))
+                        {
+                            value = LoadFromFile(Path.Combine(vanillaLangPath, "english.xml"), key);
+                        }
+                    }
+                }
+
+                return value ?? "";
+            }
+
+            txtNameValue.Text = GetValueForKey(txtNameKey.Text);
+            txtDescValue.Text = GetValueForKey(txtDescKey.Text);
+            txtShortDescValue.Text = GetValueForKey(txtShortDescKey.Text);
+            txtSummary.Text = GetValueForKey(summaryKey);
+
+            // === POPULATE WORLD ID & PRIORITY ===
+            txtWorldId.Text = world?.Attribute("Id")?.Value
+                              ?? (string.IsNullOrEmpty(worldName) ? $"{modName}_World" : worldName);
+            nudPriority.Value = int.TryParse(world?.Attribute("Priority")?.Value, out int priority) ? priority : 2;
+
+            // === POPULATE START CONDITIONS (only those in the world file) ===
+            clbStartConditions.Items.Clear();
+            WorldStartConditions.Clear();
+
+            var worldConditions = world.Elements("StartCondition")
+                .Select(e => e.Attribute("Id")?.Value)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList() ?? new List<string>();
+
+            foreach (var id in worldConditions)
+            {
+                clbStartConditions.Items.Add(id);
+                WorldStartConditions.Add(id);
+            }
+
+            // === POPULATE START LOCATIONS ===
+            lvStartLocations.Items.Clear();
+            foreach (var loc in world.Elements("Startlocation"))
+            {
+                var pos = loc.Element("Position");
+                var item = new ListViewItem(pos?.Element("x")?.Value ?? "0");
+                item.SubItems.Add(pos?.Element("y")?.Value ?? "0");
+                item.SubItems.Add(pos?.Element("z")?.Value ?? "0");
+                item.SubItems.Add("Edit");
+                item.Tag = loc;
+                lvStartLocations.Items.Add(item);
+            }
+
+            // === POPULATE OBJECTIVES ===
             objectivesPath = Path.Combine(newModPath, "GameData", "WorldObjectives.xml");
             if (File.Exists(objectivesPath))
             {
@@ -272,6 +425,28 @@ namespace StationeersStructureXMLConverter
             }
         }
 
+        private string SearchLanguageFiles(string folder, string key)
+        {
+            foreach (var file in Directory.GetFiles(folder, "*.xml"))
+            {
+                try
+                {
+                    var doc = XDocument.Load(file);
+                    var record = doc.Root?.Element("Interface")?
+                        .Elements("Record")
+                        .FirstOrDefault(r =>
+                            r.Element("Key")?.Value?.Trim() == key.Trim());
+
+                    if (record != null)
+                    {
+                        return record.Element("Value")?.Value?.Trim() ?? "";
+                    }
+                }
+                catch { }
+            }
+            return null;
+        }
+
         private void btnBrowseMod_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog folderDialog = new OpenFileDialog())
@@ -283,11 +458,76 @@ namespace StationeersStructureXMLConverter
                 folderDialog.Filter = "Folders|*.*";
                 folderDialog.InitialDirectory = Environment.ExpandEnvironmentVariables("%userprofile%\\Documents\\My Games\\Stationeers\\mods");
                 folderDialog.Title = "Select your world mod's top level Folder";
+
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    txtModPath.Text = folderDialog.FileName;
+                    string modPath = Path.GetDirectoryName(folderDialog.FileName);
+                    if (Directory.Exists(modPath))
+                    {
+                        txtModPath.Text = modPath;
+                        newModPath = modPath;
+                        if (string.IsNullOrEmpty(StationeersPath))
+                        {
+                            StationeersPath = DetectStationeersPath();
+                            if (!string.IsNullOrEmpty(StationeersPath))
+                            {
+                                conversionUserControl.AppendLog($"Auto-detected Stationeers path: {StationeersPath}");
+                            }
+                            else
+                            {
+                                conversionUserControl.AppendLog("Stationeers path not found. Vanilla text unavailable.");
+                            }
+                        }
+                        LoadWorldFromModPath(modPath);
+                    }
+                    else
+                    {
+                        conversionUserControl.AppendLog("Invalid folder selected.");
+                    }
                 }
             }
+        }
+
+        private void LoadWorldFromModPath(string modPath)
+        {
+            this.newModPath = modPath;
+            string gameDataPath = Path.Combine(modPath, "GameData");
+            if (!Directory.Exists(gameDataPath))
+            {
+                conversionUserControl.AppendLog("No GameData folder found.");
+                return;
+            }
+
+            string worldsPath = Path.Combine(gameDataPath, "Worlds");
+            if (!Directory.Exists(worldsPath))
+            {
+                conversionUserControl.AppendLog("No Worlds folder found.");
+                return;
+            }
+
+            var worldFiles = Directory.GetFiles(worldsPath, "*.xml", SearchOption.AllDirectories)
+                .Where(f =>
+                {
+                    try
+                    {
+                        var doc = XDocument.Load(f);
+                        var worldSettings = doc.Root?.Element("WorldSettings");
+                        return worldSettings != null && worldSettings.Element("World") != null;
+                    }
+                    catch { return false; }
+                }).ToList();
+
+            if (!worldFiles.Any())
+            {
+                conversionUserControl.AppendLog("No valid world.xml found in mod.");
+                return;
+            }
+
+            worldXmlPath = worldFiles.First();
+            worldDoc = XDocument.Load(worldXmlPath);
+            conversionUserControl.AppendLog($"Loaded: {Path.GetFileName(worldXmlPath)}");
+
+            LoadWorldSettings();
         }
 
         private void btnClearAll_Click(object sender, EventArgs e)
@@ -298,22 +538,16 @@ namespace StationeersStructureXMLConverter
 
         private void btnAddCondition_Click(object sender, EventArgs e)
         {
-            using (var dialog = new Form())
+            using (var picker = new StartConditionPickerForm(newModPath, StationeersPath, WorldStartConditions))
             {
-                dialog.Text = "Add Start Condition";
-                dialog.AutoSize = true;
-                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                var txtConditionId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = $"Condition{clbStartConditions.Items.Count + 1}" };
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 60), DialogResult = DialogResult.OK };
-                dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "Condition ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
-                    txtConditionId,
-                    btnOk
-                });
-                dialog.MinimumSize = new System.Drawing.Size(300, 120);
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (picker.ShowDialog() == DialogResult.OK && !string.IsNullOrEmpty(picker.SelectedConditionId))
                 {
-                    clbStartConditions.Items.Add(txtConditionId.Text, true);
+                    string id = picker.SelectedConditionId;
+                    if (!clbStartConditions.Items.Contains(id))
+                    {
+                        clbStartConditions.Items.Add(id);
+                        WorldStartConditions.Add(id);
+                    }
                 }
             }
         }
@@ -322,7 +556,9 @@ namespace StationeersStructureXMLConverter
         {
             if (clbStartConditions.SelectedIndex >= 0)
             {
+                string id = clbStartConditions.SelectedItem.ToString();
                 clbStartConditions.Items.RemoveAt(clbStartConditions.SelectedIndex);
+                WorldStartConditions.Remove(id);
             }
         }
 
@@ -524,35 +760,74 @@ namespace StationeersStructureXMLConverter
                 MessageBox.Show("No mod created.");
                 return;
             }
-            var settings = worldDoc.Root;
-            settings.Element("World")?.Remove();
-            settings.Add(new XElement("World",
-                new XAttribute("Id", txtWorldId.Text),
-                new XAttribute("Priority", nudPriority.Value.ToString()),
-                new XAttribute("Hidden", "false")
-            ));
-            if (settings.Element("Name") != null) settings.Element("Name").Remove();
-            settings.Add(new XElement("Name", txtNameValue.Text));
-            if (settings.Element("Description") != null) settings.Element("Description").Remove();
-            settings.Add(new XElement("Description", new XAttribute("Key", txtDescValue.Text)));
-            if (settings.Element("ShortDescription") != null) settings.Element("ShortDescription").Remove();
-            settings.Add(new XElement("ShortDescription", new XAttribute("Key", txtShortDescValue.Text)));
-            if (settings.Element("SummaryText") != null) settings.Element("SummaryText").Remove();
-            settings.Add(new XElement("SummaryText", new XAttribute("Key", txtSummary.Text)));
-            settings.Element("StartConditions")?.Remove();
-            var startConditions = new XElement("StartConditions");
-            foreach (var item in clbStartConditions.CheckedItems)
+
+            var worldSettings = worldDoc.Root?.Element("WorldSettings");
+            if (worldSettings == null)
             {
-                startConditions.Add(new XElement("StartCondition", new XAttribute("Id", item.ToString())));
+                conversionUserControl.AppendLog("No <WorldSettings> found.");
+                return;
             }
-            settings.Add(startConditions);
-            settings.Elements("startlocation").Remove();
+
+            var world = worldSettings.Element("World");
+            if (world == null)
+            {
+                world = new XElement("World");
+                worldSettings.Add(world);
+            }
+            else
+            {
+                world.Remove();
+                world = new XElement("World");
+                worldSettings.Add(world);
+            }
+
+            // === Update World attributes ===
+            world.SetAttributeValue("Id", txtWorldId.Text);
+            world.SetAttributeValue("Priority", nudPriority.Value.ToString());
+            world.SetAttributeValue("Hidden", "false");
+
+            // === Update Name, Description, ShortDescription, SummaryText ===
+            world.Element("Name")?.Remove();
+            world.Add(new XElement("Name", new XAttribute("Key", txtNameKey.Text)));
+
+            world.Element("Description")?.Remove();
+            world.Add(new XElement("Description", new XAttribute("Key", txtDescKey.Text)));
+
+            world.Element("ShortDescription")?.Remove();
+            world.Add(new XElement("ShortDescription", new XAttribute("Key", txtShortDescKey.Text)));
+
+            world.Element("SummaryText")?.Remove();
+            world.Add(new XElement("SummaryText", new XAttribute("Key", txtSummary.Text)));
+
+            // === Update StartConditions ===
+            var startConditionsEl = world.Element("StartConditions");
+            if (startConditionsEl == null)
+            {
+                startConditionsEl = new XElement("StartConditions");
+                world.Add(startConditionsEl);
+            }
+            else
+            {
+                startConditionsEl.RemoveAll();
+            }
+
+            foreach (string id in WorldStartConditions)
+            {
+                startConditionsEl.Add(new XElement("StartCondition", new XAttribute("Id", id)));
+            }
+
+            // === Update Start Locations ===
+            world.Elements("startlocation").Remove();
             foreach (ListViewItem item in lvStartLocations.Items)
             {
-                settings.Add((XElement)item.Tag);
+                world.Add((XElement)item.Tag);
             }
+
+            // === Save world.xml ===
             worldDoc.Save(worldXmlPath);
             conversionUserControl.AppendLog($"Saved world settings to {worldXmlPath}");
+
+            // === Save Objectives ===
             objectivesDoc.Root?.Elements("WorldObjective").Remove();
             foreach (ListViewItem item in lvObjectives.Items)
             {
@@ -560,6 +835,8 @@ namespace StationeersStructureXMLConverter
             }
             objectivesDoc.Save(objectivesPath);
             conversionUserControl.AppendLog($"Saved objectives to {objectivesPath}");
+
+            // === Update About.xml ===
             string aboutXmlPath = Path.Combine(newModPath, "About", "About.xml");
             if (File.Exists(aboutXmlPath))
             {
@@ -574,11 +851,13 @@ namespace StationeersStructureXMLConverter
                             nameElement.Value = txtNameValue.Text;
                         else
                             modElement.Add(new XElement("Name", txtNameValue.Text));
+
                         var descElement = modElement.Element("Description");
                         if (descElement != null && !string.IsNullOrEmpty(description))
                             descElement.Value = description;
                         else if (!string.IsNullOrEmpty(description))
                             modElement.Add(new XElement("Description", description));
+
                         aboutDoc.Save(aboutXmlPath);
                         conversionUserControl.AppendLog($"Updated {aboutXmlPath} with Name and Description");
                     }
@@ -588,6 +867,8 @@ namespace StationeersStructureXMLConverter
                     conversionUserControl.AppendLog($"Failed to update About.xml: {ex.Message}");
                 }
             }
+
+            // === Update Language Files ===
             string languageFolder = Path.Combine(newModPath, "GameData", "Language");
             if (Directory.Exists(languageFolder))
             {
@@ -598,11 +879,9 @@ namespace StationeersStructureXMLConverter
                         var doc = XDocument.Load(f);
                         return doc.Root?.Element("Interface") != null;
                     }
-                    catch
-                    {
-                        return false;
-                    }
+                    catch { return false; }
                 }).ToList();
+
                 foreach (var langFile in languageFiles)
                 {
                     try
@@ -611,40 +890,14 @@ namespace StationeersStructureXMLConverter
                         var interfaceElement = langDoc.Root?.Element("Interface");
                         if (interfaceElement != null)
                         {
-                            var worldNameEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtWorldId.Text);
-                            if (worldNameEntry != null)
-                                worldNameEntry.SetElementValue("Value", txtNameValue.Text);
-                            else
-                                interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtWorldId.Text),
-                                    new XElement("Value", txtNameValue.Text)
-                                ));
-                            var descEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtDescValue.Text);
-                            if (descEntry != null)
-                                descEntry.SetElementValue("Value", description);
-                            else if (!string.IsNullOrEmpty(description))
-                                interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtDescValue.Text),
-                                    new XElement("Value", description)
-                                ));
-                            var shortDescEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtShortDescValue.Text);
-                            if (shortDescEntry != null)
-                                shortDescEntry.SetElementValue("Value", summary);
-                            else if (!string.IsNullOrEmpty(summary))
-                                interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtShortDescValue.Text),
-                                    new XElement("Value", summary)
-                                ));
-                            var summaryEntry = interfaceElement.Elements("Record").FirstOrDefault(r => r.Element("Key")?.Value == txtSummary.Text);
-                            if (summaryEntry != null)
-                                summaryEntry.SetElementValue("Value", summary);
-                            else if (!string.IsNullOrEmpty(summary))
-                                interfaceElement.Add(new XElement("Record",
-                                    new XElement("Key", txtSummary.Text),
-                                    new XElement("Value", summary)
-                                ));
+                            // Update or add entries
+                            UpdateOrAddRecord(interfaceElement, txtNameKey.Text, txtNameValue.Text);
+                            UpdateOrAddRecord(interfaceElement, txtDescKey.Text, description);
+                            UpdateOrAddRecord(interfaceElement, txtShortDescKey.Text, summary);
+                            UpdateOrAddRecord(interfaceElement, txtSummary.Text, summary);
+
                             langDoc.Save(langFile);
-                            conversionUserControl.AppendLog($"Updated language file {langFile} with WorldName, Description, ShortDescription, Summary");
+                            conversionUserControl.AppendLog($"Updated language file {Path.GetFileName(langFile)}");
                         }
                     }
                     catch (Exception ex)
@@ -652,6 +905,27 @@ namespace StationeersStructureXMLConverter
                         conversionUserControl.AppendLog($"Failed to update {langFile}: {ex.Message}");
                     }
                 }
+            }
+        }
+
+        // Helper method to update or add a Record
+        private void UpdateOrAddRecord(XElement interfaceElement, string key, string value)
+        {
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)) return;
+
+            var record = interfaceElement.Elements("Record")
+                .FirstOrDefault(r => r.Element("Key")?.Value == key);
+
+            if (record != null)
+            {
+                record.SetElementValue("Value", value);
+            }
+            else
+            {
+                interfaceElement.Add(new XElement("Record",
+                    new XElement("Key", key),
+                    new XElement("Value", value)
+                ));
             }
         }
     }
