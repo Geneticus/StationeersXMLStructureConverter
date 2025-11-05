@@ -45,6 +45,8 @@ namespace StationeersStructureXMLConverter
             txtShortDescKey = new TextBox();
             labelShortDesc = new Label();
             txtShortDescValue = new TextBox();
+            labelSummaryKey = new Label();
+            txtSummaryKey = new TextBox();
             labelSummary = new Label();
             txtSummary = new TextBox();
             column1TableLayout = new TableLayoutPanel();
@@ -234,13 +236,15 @@ namespace StationeersStructureXMLConverter
             worldSettingsTableLayout.Controls.Add(txtShortDescKey, 1, 6);
             worldSettingsTableLayout.Controls.Add(labelShortDesc, 0, 7);
             worldSettingsTableLayout.Controls.Add(txtShortDescValue, 1, 7);
-            worldSettingsTableLayout.Controls.Add(labelSummary, 0, 8);
-            worldSettingsTableLayout.Controls.Add(txtSummary, 1, 8);
+            worldSettingsTableLayout.Controls.Add(labelSummaryKey, 0, 8);
+            worldSettingsTableLayout.Controls.Add(txtSummaryKey, 1, 8);
+            worldSettingsTableLayout.Controls.Add(labelSummary, 0, 9);
+            worldSettingsTableLayout.Controls.Add(txtSummary, 1, 9);
             worldSettingsTableLayout.Dock = DockStyle.Fill;
             worldSettingsTableLayout.Location = new Point(3, 28);
             worldSettingsTableLayout.Margin = new Padding(3, 4, 3, 4);
             worldSettingsTableLayout.Name = "worldSettingsTableLayout";
-            worldSettingsTableLayout.RowCount = 9;
+            worldSettingsTableLayout.RowCount = 10;
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
@@ -250,8 +254,10 @@ namespace StationeersStructureXMLConverter
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
             worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.Size = new Size(644, 1477);
+            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
+            worldSettingsTableLayout.Size = new Size(644, 1673);
             worldSettingsTableLayout.TabIndex = 5;
+            
             // 
             // labelWorldId
             // 
@@ -279,14 +285,14 @@ namespace StationeersStructureXMLConverter
             labelPriority.Location = new Point(25, 145);
             labelPriority.Margin = new Padding(25, 38, 25, 38);
             labelPriority.Name = "labelPriority";
-            labelPriority.Size = new Size(162, 50);
+            labelPriority.Size = new Size(202, 50);
             labelPriority.TabIndex = 8;
             labelPriority.Text = "Priority (World List Order):";
             toolTip1.SetToolTip(labelPriority, "Number should be set so that your scenario appears first or last. Other numbers may result in random sorting.");
             // 
             // nudPriority
             // 
-            nudPriority.Location = new Point(257, 145);
+            nudPriority.Location = new Point(277, 145);
             nudPriority.Margin = new Padding(25, 38, 25, 38);
             nudPriority.Name = "nudPriority";
             nudPriority.Size = new Size(200, 31);
@@ -416,26 +422,47 @@ namespace StationeersStructureXMLConverter
             txtShortDescValue.Size = new Size(362, 150);
             txtShortDescValue.TabIndex = 21;
             // 
+            // labelSummaryKey
+            // 
+            labelSummaryKey.AutoSize = true;
+            labelSummaryKey.Location = new Point(25, 1289);
+            labelSummaryKey.Margin = new Padding(25, 38, 25, 38);
+            labelSummaryKey.Name = "labelSummaryKey";
+            labelSummaryKey.Size = new Size(87, 25);
+            labelSummaryKey.TabIndex = 22;
+            labelSummaryKey.Text = "Summary Key:";
+            
+            // 
+            // txtSummaryKey
+            // 
+            txtSummaryKey.Location = new Point(257, 1289);
+            txtSummaryKey.Margin = new Padding(25, 38, 25, 38);
+            txtSummaryKey.Name = "txtSummaryKey";
+            txtSummaryKey.Size = new Size(362, 31);
+            txtSummaryKey.TabIndex = 23;
+            
+
+            // 
             // labelSummary
             // 
             labelSummary.AutoSize = true;
-            labelSummary.Location = new Point(25, 1289);
+            labelSummary.Location = new Point(25, 1515);
             labelSummary.Margin = new Padding(25, 38, 25, 38);
             labelSummary.Name = "labelSummary";
             labelSummary.Size = new Size(125, 25);
-            labelSummary.TabIndex = 22;
-            labelSummary.Text = "Summary Key:";
+            labelSummary.TabIndex = 24;
+            labelSummary.Text = "Summary:";
             // 
             // txtSummary
             // 
             txtSummary.AcceptsReturn = true;
-            txtSummary.Location = new Point(257, 1289);
+            txtSummary.Location = new Point(257, 1515);
             txtSummary.Margin = new Padding(25, 38, 25, 38);
             txtSummary.Multiline = true;
             txtSummary.Name = "txtSummary";
             txtSummary.ScrollBars = ScrollBars.Vertical;
             txtSummary.Size = new Size(362, 150);
-            txtSummary.TabIndex = 23;
+            txtSummary.TabIndex = 25;
             // 
             // column1TableLayout
             // 
@@ -793,6 +820,8 @@ namespace StationeersStructureXMLConverter
         private System.Windows.Forms.TextBox txtShortDescKey;
         private System.Windows.Forms.Label labelShortDesc;
         private System.Windows.Forms.TextBox txtShortDescValue;
+        private System.Windows.Forms.Label labelSummaryKey;
+        private System.Windows.Forms.TextBox txtSummaryKey;
         private System.Windows.Forms.Label labelSummary;
         private System.Windows.Forms.TextBox txtSummary;
         private System.Windows.Forms.TableLayoutPanel column1TableLayout;

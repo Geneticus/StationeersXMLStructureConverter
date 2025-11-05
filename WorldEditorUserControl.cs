@@ -22,6 +22,7 @@ namespace StationeersStructureXMLConverter
         private string summary = "";
         private string stationeersPath;
         private ConversionUserControl conversionUserControl;
+        private XElement world;
 
         public WorldEditorUserControl()
         {
@@ -33,14 +34,18 @@ namespace StationeersStructureXMLConverter
         private void InitializeListViews()
         {
             // Configure lvStartLocations
+            lvStartLocations.View = View.Details;
+            lvStartLocations.HeaderStyle = ColumnHeaderStyle.Nonclickable;
             lvStartLocations.Items.Clear();
             lvStartLocations.Columns.Clear();
-            lvStartLocations.Columns.Add("X", 200);
-            lvStartLocations.Columns.Add("Y", 200);
-            lvStartLocations.Columns.Add("Z", 200);
+            lvStartLocations.Columns.Add("Name", 250);
+            lvStartLocations.Columns.Add("X", 100);
+            lvStartLocations.Columns.Add("Y", 100);
             lvStartLocations.Columns.Add("Edit", 60);
 
             // Configure lvObjectives
+            lvObjectives.View = View.Details;
+            lvObjectives.HeaderStyle = ColumnHeaderStyle.Nonclickable;
             lvObjectives.Items.Clear();
             lvObjectives.Columns.Clear();
             lvObjectives.Columns.Add("Id", 250);
@@ -51,18 +56,22 @@ namespace StationeersStructureXMLConverter
             // Enable custom drawing for buttons
             lvStartLocations.OwnerDraw = true;
             lvObjectives.OwnerDraw = true;
-            lvStartLocations.DrawSubItem += new DrawListViewSubItemEventHandler(LvStartLocations_DrawSubItem);
-            lvObjectives.DrawSubItem += new DrawListViewSubItemEventHandler(LvObjectives_DrawSubItem);
-            lvStartLocations.MouseDown += new MouseEventHandler(LvStartLocations_MouseDown);
-            lvObjectives.MouseDown += new MouseEventHandler(LvObjectives_MouseDown);
+            lvStartLocations.DrawSubItem += LvStartLocations_DrawSubItem;
+            lvObjectives.DrawSubItem += LvObjectives_DrawSubItem;
+            lvStartLocations.MouseDown += LvStartLocations_MouseDown;
+            lvObjectives.MouseDown += LvObjectives_MouseDown;
         }
 
         private void LvStartLocations_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            if (e.ColumnIndex == 3) // Edit column
+            if (e.ColumnIndex == 3)
             {
-                Rectangle bounds = e.SubItem.Bounds;
-                Rectangle buttonBounds = new Rectangle(bounds.X + 5, bounds.Y + 5, 50, 20);
+                e.DrawBackground();
+                if (e.Item.Selected)
+                {
+                    e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
+                }
+                var buttonBounds = new Rectangle(e.Bounds.X + 5, e.Bounds.Y + 2, 50, e.Bounds.Height - 4);
                 ButtonRenderer.DrawButton(e.Graphics, buttonBounds, "Edit", SystemFonts.DefaultFont, false, PushButtonState.Normal);
             }
             else
@@ -88,9 +97,11 @@ namespace StationeersStructureXMLConverter
         private void LvStartLocations_MouseDown(object sender, MouseEventArgs e)
         {
             var info = lvStartLocations.HitTest(e.Location);
-            if (info.SubItem != null && info.Item.SubItems.IndexOf(info.SubItem) == 3)
+            if (info.Item != null)
             {
-                btnEditLocation_Click(sender, new EventArgs());
+                lvStartLocations.SelectedItems.Clear();
+                info.Item.Selected = true;
+                OpenStartLocationEditor((XElement)info.Item.Tag, info.Item);
             }
         }
 
@@ -253,6 +264,7 @@ namespace StationeersStructureXMLConverter
             catch { return null; }
         }
 
+        //Populate the Form and load child controls. 
         public void LoadWorldSettings()
         {
             // Ensure we have a mod path
@@ -266,6 +278,7 @@ namespace StationeersStructureXMLConverter
             if (!string.IsNullOrEmpty(worldXmlPath) && File.Exists(worldXmlPath))
             {
                 worldDoc = XDocument.Load(worldXmlPath);
+                InitializeListViews();
             }
             else
             {
@@ -392,13 +405,22 @@ namespace StationeersStructureXMLConverter
 
             // === POPULATE START LOCATIONS ===
             lvStartLocations.Items.Clear();
-            foreach (var loc in world.Elements("Startlocation"))
+
+            foreach (var loc in world.Elements("StartLocation"))
             {
+                var id = loc.Attribute("Id")?.Value ?? "Unknown";
+                var nameKey = loc.Element("Name")?.Attribute("Key")?.Value ?? "";
+                var nameValue = GetValueForKey(nameKey);
                 var pos = loc.Element("Position");
-                var item = new ListViewItem(pos?.Element("x")?.Value ?? "0");
-                item.SubItems.Add(pos?.Element("y")?.Value ?? "0");
-                item.SubItems.Add(pos?.Element("z")?.Value ?? "0");
-                item.SubItems.Add("Edit");
+                var x = pos?.Attribute("x")?.Value ?? "0";
+                var y = pos?.Attribute("y")?.Value ?? "0";
+
+                var item = new ListViewItem(new[] {
+                    nameValue,  // Column 0: Name
+                    x,          // Column 1: X
+                    y,          // Column 2: Y
+                    "Edit"      // Column 3: Edit
+                });
                 item.Tag = loc;
                 lvStartLocations.Items.Add(item);
             }
@@ -562,79 +584,102 @@ namespace StationeersStructureXMLConverter
             }
         }
 
-        private void btnAddLocation_Click(object sender, EventArgs e)
+        private void OpenStartLocationEditor(XElement loc = null, ListViewItem item = null)
         {
+            bool isEdit = loc != null;
+            string title = isEdit ? "Edit Start Location" : "Add Start Location";
+
             using (var dialog = new Form())
             {
-                dialog.Text = "Add/Edit Start Location";
+                dialog.Text = title;
+                dialog.StartPosition = FormStartPosition.CenterParent;
                 dialog.AutoSize = true;
                 dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                var txtX = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 100, Text = "0" };
-                var txtY = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 100, Text = "0" };
-                var txtZ = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 100, Text = "0" };
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 110), DialogResult = DialogResult.OK };
+                dialog.MinimumSize = new Size(600, 400);
+
+                // Controls
+                var txtId = new TextBox { Location = new Point(120, 20), Width = 300, Text = isEdit ? loc.Attribute("Id")?.Value ?? "" : "NewLocation" };
+                var txtNameKey = new TextBox { Location = new Point(120, 50), Width = 300, Text = isEdit ? loc.Element("Name")?.Attribute("Key")?.Value ?? "" : "NewLocation_Name" };
+                var txtNameValue = new TextBox { Location = new Point(120, 80), Width = 300, Text = isEdit ? GetValueForKey(txtNameKey.Text) : "New Location" };
+                var txtDescKey = new TextBox { Location = new Point(120, 110), Width = 300, Text = isEdit ? loc.Element("Description")?.Attribute("Key")?.Value ?? "" : "NewLocation_Desc" };
+                var txtDescValue = new TextBox
+                {
+                    Location = new Point(120, 140),
+                    Width = 450,  // 1.5x wider
+                    Height = 100,
+                    Multiline = true,
+                    ScrollBars = ScrollBars.Vertical,
+                    AcceptsReturn = true,
+                    WordWrap = true,
+                    Text = isEdit ? GetValueForKey(txtDescKey.Text) : "Description here..."
+                };
+                var txtX = new TextBox { Location = new Point(120, 250), Width = 100, Text = isEdit ? loc.Element("Position")?.Attribute("x")?.Value ?? "0" : "0" };
+                var txtY = new TextBox { Location = new Point(230, 250), Width = 100, Text = isEdit ? loc.Element("Position")?.Attribute("y")?.Value ?? "0" : "0" };
+                var txtRadius = new TextBox { Location = new Point(340, 250), Width = 100, Text = isEdit ? loc.Element("SpawnRadius")?.Attribute("Value")?.Value ?? "10" : "10" };
+                var btnOK = new Button { Text = "OK", Location = new Point(120, 320), DialogResult = DialogResult.OK };
+
                 dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "X:", Location = new System.Drawing.Point(20, 20), Width = 80 },
-                    txtX,
-                    new Label { Text = "Y:", Location = new System.Drawing.Point(20, 50), Width = 80 },
-                    txtY,
-                    new Label { Text = "Z:", Location = new System.Drawing.Point(20, 80), Width = 80 },
-                    txtZ,
-                    btnOk
-                });
-                dialog.MinimumSize = new System.Drawing.Size(300, 200);
+            new Label { Text = "ID:", Location = new Point(20, 20), Width = 80 },
+            txtId,
+            new Label { Text = "Name Key:", Location = new Point(20, 50), Width = 80 },
+            txtNameKey,
+            new Label { Text = "Name:", Location = new Point(20, 80), Width = 80 },
+            txtNameValue,
+            new Label { Text = "Desc Key:", Location = new Point(20, 110), Width = 80 },
+            txtDescKey,
+            new Label { Text = "Description:", Location = new Point(20, 140), Width = 80 },
+            txtDescValue,
+            new Label { Text = "X:", Location = new Point(20, 250), Width = 80 },
+            txtX,
+            new Label { Text = "Y:", Location = new Point(130, 250), Width = 80 },
+            txtY,
+            new Label { Text = "Radius:", Location = new Point(240, 250), Width = 80 },
+            txtRadius,
+            btnOK
+        });
+
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    var item = new ListViewItem(txtX.Text);
+                    if (!isEdit)
+                    {
+                        loc = new XElement("StartLocation");
+                        world.Add(loc);
+                        item = new ListViewItem();
+                        lvStartLocations.Items.Add(item);
+                    }
+
+                    loc.SetAttributeValue("Id", txtId.Text);
+                    loc.Element("Name")?.Remove();
+                    loc.Add(new XElement("Name", new XAttribute("Key", txtNameKey.Text)));
+                    loc.Element("Description")?.Remove();
+                    loc.Add(new XElement("Description", new XAttribute("Key", txtDescKey.Text)));
+                    var pos = loc.Element("Position") ?? new XElement("Position");
+                    pos.SetAttributeValue("x", txtX.Text);
+                    pos.SetAttributeValue("y", txtY.Text);
+                    loc.Element("Position")?.Remove();
+                    loc.Add(pos);
+                    loc.Element("SpawnRadius")?.Remove();
+                    loc.Add(new XElement("SpawnRadius", new XAttribute("Value", txtRadius.Text)));
+
+                    item.SubItems.Clear();
+                    item.SubItems.Add(txtNameValue.Text);
+                    item.SubItems.Add(txtX.Text);
                     item.SubItems.Add(txtY.Text);
-                    item.SubItems.Add(txtZ.Text);
                     item.SubItems.Add("Edit");
-                    var locElement = new XElement("startlocation", new XElement("Position",
-                        new XElement("x", txtX.Text),
-                        new XElement("y", txtY.Text),
-                        new XElement("z", txtZ.Text)));
-                    item.Tag = locElement;
-                    lvStartLocations.Items.Add(item);
+                    item.Tag = loc;
+
+                    SaveLanguageEntry(txtNameKey.Text, txtNameValue.Text);
+                    SaveLanguageEntry(txtDescKey.Text, txtDescValue.Text);
                 }
             }
         }
 
-        private void btnEditLocation_Click(object sender, EventArgs e)
+        private void btnAddLocation_Click(object sender, EventArgs e)
         {
-            if (lvStartLocations.SelectedItems.Count == 0) return;
-            var item = lvStartLocations.SelectedItems[0];
-            using (var dialog = new Form())
-            {
-                dialog.Text = "Edit Start Location";
-                dialog.AutoSize = true;
-                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                var txtX = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 100, Text = item.Text };
-                var txtY = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 100, Text = item.SubItems[1].Text };
-                var txtZ = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 100, Text = item.SubItems[2].Text };
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 110), DialogResult = DialogResult.OK };
-                dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "X:", Location = new System.Drawing.Point(20, 20), Width = 80 },
-                    txtX,
-                    new Label { Text = "Y:", Location = new System.Drawing.Point(20, 50), Width = 80 },
-                    txtY,
-                    new Label { Text = "Z:", Location = new System.Drawing.Point(20, 80), Width = 80 },
-                    txtZ,
-                    btnOk
-                });
-                dialog.MinimumSize = new System.Drawing.Size(300, 200);
-                if (dialog.ShowDialog() == DialogResult.OK)
-                {
-                    item.Text = txtX.Text;
-                    item.SubItems[1].Text = txtY.Text;
-                    item.SubItems[2].Text = txtZ.Text;
-                    item.SubItems[3].Text = "Edit";
-                    var locElement = (XElement)item.Tag;
-                    locElement.Element("Position").Element("x").Value = txtX.Text;
-                    locElement.Element("Position").Element("y").Value = txtY.Text;
-                    locElement.Element("Position").Element("z").Value = txtZ.Text;
-                }
-            }
+            OpenStartLocationEditor();  // ← Called with no parameters
         }
+
+
 
         private void btnDeleteLocation_Click(object sender, EventArgs e)
         {
@@ -817,7 +862,7 @@ namespace StationeersStructureXMLConverter
             }
 
             // === Update Start Locations ===
-            world.Elements("startlocation").Remove();
+            world.Elements("StartLocation").Remove();
             foreach (ListViewItem item in lvStartLocations.Items)
             {
                 world.Add((XElement)item.Tag);
@@ -906,6 +951,95 @@ namespace StationeersStructureXMLConverter
                     }
                 }
             }
+        }
+
+        private string GetValueForKey(string key)
+        {
+            if (string.IsNullOrEmpty(key)) return "";
+
+            string value = null;
+
+            // MOD
+            string modLangPath = Path.Combine(newModPath, "GameData", "Language");
+            if (Directory.Exists(modLangPath))
+            {
+                value = LoadFromLanguageFile(modLangPath, key);
+            }
+
+            // VANILLA
+            if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(StationeersPath))
+            {
+                string vanillaLangPath = Path.Combine(StationeersPath, "rocketstation_Data", "StreamingAssets", "Language");
+                if (Directory.Exists(vanillaLangPath))
+                {
+                    value = LoadFromLanguageFile(vanillaLangPath, key);
+                }
+            }
+
+            return value ?? "";
+        }
+
+        private string LoadFromLanguageFile(string folder, string key)
+        {
+            foreach (var file in Directory.GetFiles(folder, "*.xml"))
+            {
+                try
+                {
+                    var doc = XDocument.Load(file);
+                    var record = doc.Root?.Element("Interface")?
+                        .Elements("Record")
+                        .FirstOrDefault(r => r.Element("Key")?.Value == key);
+
+                    if (record != null)
+                    {
+                        return record.Element("Value")?.Value ?? "";
+                    }
+                }
+                catch { }
+            }
+            return null;
+        }
+
+        private void SaveLanguageEntry(string key, string value)
+        {
+            if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(value)) return;
+
+            string langPath = Path.Combine(newModPath, "GameData", "Language");
+            Directory.CreateDirectory(langPath);
+            string file = Path.Combine(langPath, "english.xml");
+
+            XDocument doc;
+            if (File.Exists(file))
+            {
+                doc = XDocument.Load(file);
+            }
+            else
+            {
+                doc = new XDocument(new XElement("Language",
+                    new XElement("Name", "English"),
+                    new XElement("Code", "EN"),
+                    new XElement("Font", "font_english"),
+                    new XElement("Interface")
+                ));
+            }
+
+            var interfaceEl = doc.Root.Element("Interface");
+            var record = interfaceEl?.Elements("Record")
+                .FirstOrDefault(r => r.Element("Key")?.Value == key);
+
+            if (record != null)
+            {
+                record.SetElementValue("Value", value);
+            }
+            else
+            {
+                interfaceEl?.Add(new XElement("Record",
+                    new XElement("Key", key),
+                    new XElement("Value", value)
+                ));
+            }
+
+            doc.Save(file);
         }
 
         // Helper method to update or add a Record
