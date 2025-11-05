@@ -92,9 +92,9 @@ namespace StationeersStructureXMLConverter
             objectivesButtonPanel.SuspendLayout();
             tableLayoutPanelButtons.SuspendLayout();
             SuspendLayout();
-            // 
+            //
             // scrollPanel
-            // 
+            //
             scrollPanel.AutoScroll = true;
             scrollPanel.Controls.Add(outerTableLayout);
             scrollPanel.Dock = DockStyle.Fill;
@@ -103,9 +103,9 @@ namespace StationeersStructureXMLConverter
             scrollPanel.Name = "scrollPanel";
             scrollPanel.Size = new Size(2133, 1500);
             scrollPanel.TabIndex = 0;
-            // 
+            //
             // outerTableLayout
-            // 
+            //
             outerTableLayout.AutoSize = true;
             outerTableLayout.ColumnCount = 1;
             outerTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -121,9 +121,9 @@ namespace StationeersStructureXMLConverter
             outerTableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 94F));
             outerTableLayout.Size = new Size(2168, 2231);
             outerTableLayout.TabIndex = 1;
-            // 
+            //
             // modPathTableLayout
-            // 
+            //
             modPathTableLayout.ColumnCount = 3;
             modPathTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112F));
             modPathTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
@@ -139,27 +139,27 @@ namespace StationeersStructureXMLConverter
             modPathTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             modPathTableLayout.Size = new Size(2162, 54);
             modPathTableLayout.TabIndex = 0;
-            // 
+            //
             // labelModPath
-            // 
+            //
             labelModPath.AutoSize = true;
             labelModPath.Location = new Point(3, 0);
             labelModPath.Name = "labelModPath";
             labelModPath.Size = new Size(93, 25);
             labelModPath.TabIndex = 0;
             labelModPath.Text = "Mod Path:";
-            // 
+            //
             // txtModPath
-            // 
+            //
             txtModPath.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             txtModPath.Location = new Point(115, 11);
             txtModPath.Margin = new Padding(3, 4, 3, 4);
             txtModPath.Name = "txtModPath";
             txtModPath.Size = new Size(1429, 31);
             txtModPath.TabIndex = 1;
-            // 
+            //
             // btnBrowseMod
-            // 
+            //
             btnBrowseMod.Location = new Point(1550, 4);
             btnBrowseMod.Margin = new Padding(3, 4, 3, 4);
             btnBrowseMod.Name = "btnBrowseMod";
@@ -168,9 +168,9 @@ namespace StationeersStructureXMLConverter
             btnBrowseMod.Text = "Browse";
             btnBrowseMod.UseVisualStyleBackColor = true;
             btnBrowseMod.Click += btnBrowseMod_Click;
-            // 
+            //
             // innerTableLayout
-            // 
+            //
             innerTableLayout.AutoSize = true;
             innerTableLayout.ColumnCount = 2;
             innerTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 667F));
@@ -184,9 +184,9 @@ namespace StationeersStructureXMLConverter
             innerTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             innerTableLayout.Size = new Size(2158, 1976);
             innerTableLayout.TabIndex = 1;
-            // 
+            //
             // column0TableLayout
-            // 
+            //
             column0TableLayout.AutoSize = true;
             column0TableLayout.ColumnCount = 1;
             column0TableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -198,9 +198,9 @@ namespace StationeersStructureXMLConverter
             column0TableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             column0TableLayout.Size = new Size(656, 1517);
             column0TableLayout.TabIndex = 2;
-            // 
+            //
             // worldSettingsGroupBox
-            // 
+            //
             worldSettingsGroupBox.AutoSize = true;
             worldSettingsGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             worldSettingsGroupBox.Controls.Add(worldSettingsTableLayout);
@@ -212,13 +212,13 @@ namespace StationeersStructureXMLConverter
             worldSettingsGroupBox.TabIndex = 4;
             worldSettingsGroupBox.TabStop = false;
             worldSettingsGroupBox.Text = "World Settings";
-            // 
+            //
             // worldSettingsTableLayout
-            // 
+            //
             worldSettingsTableLayout.AutoSize = true;
             worldSettingsTableLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             worldSettingsTableLayout.ColumnCount = 2;
-            worldSettingsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 232F));
+            worldSettingsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 280F));
             worldSettingsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             worldSettingsTableLayout.Controls.Add(labelWorldId, 0, 0);
             worldSettingsTableLayout.Controls.Add(txtWorldId, 1, 0);
@@ -245,227 +245,179 @@ namespace StationeersStructureXMLConverter
             worldSettingsTableLayout.Margin = new Padding(3, 4, 3, 4);
             worldSettingsTableLayout.Name = "worldSettingsTableLayout";
             worldSettingsTableLayout.RowCount = 10;
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.RowStyles.Add(new RowStyle());
-            worldSettingsTableLayout.Size = new Size(644, 1673);
+            worldSettingsTableLayout.Size = new Size(644, 1477);
             worldSettingsTableLayout.TabIndex = 5;
-            
-            // 
-            // labelWorldId
-            // 
+
+            // --- World Settings Controls (Fixed Spacing & Alignment) ---
+            Padding labelPad = new Padding(12, 8, 12, 8);
+            Padding ctrlPad = new Padding(6, 8, 6, 8);
+
             labelWorldId.AutoSize = true;
-            labelWorldId.Location = new Point(25, 38);
-            labelWorldId.Margin = new Padding(25, 38, 25, 38);
+            labelWorldId.Location = new Point(12, 8);
+            labelWorldId.Margin = labelPad;
             labelWorldId.Name = "labelWorldId";
             labelWorldId.Size = new Size(87, 25);
             labelWorldId.TabIndex = 6;
             labelWorldId.Text = "World ID:";
             toolTip1.SetToolTip(labelWorldId, "Must be Unique or Vanilla settings may be merged into your scenario or your scenario might alter the Vanilla world.");
-            // 
-            // txtWorldId
-            // 
-            txtWorldId.Location = new Point(257, 38);
-            txtWorldId.Margin = new Padding(25, 38, 25, 38);
+
+            txtWorldId.Location = new Point(292, 8);
+            txtWorldId.Margin = ctrlPad;
             txtWorldId.Name = "txtWorldId";
-            txtWorldId.Size = new Size(362, 31);
+            txtWorldId.Size = new Size(340, 31);
             txtWorldId.TabIndex = 7;
             toolTip1.SetToolTip(txtWorldId, "Must be Unique or Vanilla settings may be merged into your scenario or your scenario might alter the Vanilla world.");
-            // 
-            // labelPriority
-            // 
-            labelPriority.AutoSize = true;
-            labelPriority.Location = new Point(25, 145);
-            labelPriority.Margin = new Padding(25, 38, 25, 38);
+
+            labelPriority.AutoSize = false;
+            labelPriority.Location = new Point(12, 52);
+            labelPriority.Margin = labelPad;
             labelPriority.Name = "labelPriority";
-            labelPriority.Size = new Size(202, 50);
+            labelPriority.Size = new Size(260, 28);
             labelPriority.TabIndex = 8;
             labelPriority.Text = "Priority (World List Order):";
+            labelPriority.TextAlign = ContentAlignment.MiddleLeft;
             toolTip1.SetToolTip(labelPriority, "Number should be set so that your scenario appears first or last. Other numbers may result in random sorting.");
-            // 
-            // nudPriority
-            // 
-            nudPriority.Location = new Point(277, 145);
+
+            nudPriority.Location = new Point(287, 145);   // +5 pixels to the right
             nudPriority.Margin = new Padding(25, 38, 25, 38);
             nudPriority.Name = "nudPriority";
             nudPriority.Size = new Size(200, 31);
             nudPriority.TabIndex = 9;
             toolTip1.SetToolTip(nudPriority, "Number should be set so that your scenario appears first or last. Other numbers may result in random sorting.");
-            // 
-            // labelNameKey
-            // 
+            
             labelNameKey.AutoSize = true;
-            labelNameKey.Location = new Point(25, 271);
-            labelNameKey.Margin = new Padding(25, 38, 25, 38);
+            labelNameKey.Location = new Point(12, 96);
+            labelNameKey.Margin = labelPad;
             labelNameKey.Name = "labelNameKey";
             labelNameKey.Size = new Size(96, 25);
             labelNameKey.TabIndex = 10;
             labelNameKey.Text = "Name Key:";
             toolTip1.SetToolTip(labelNameKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // txtNameKey
-            // 
-            txtNameKey.Location = new Point(257, 271);
-            txtNameKey.Margin = new Padding(25, 38, 25, 38);
+
+            txtNameKey.Location = new Point(292, 96);
+            txtNameKey.Margin = ctrlPad;
             txtNameKey.Name = "txtNameKey";
-            txtNameKey.Size = new Size(331, 31);
+            txtNameKey.Size = new Size(340, 31);
             txtNameKey.TabIndex = 11;
             toolTip1.SetToolTip(txtNameKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // labelName
-            // 
+
             labelName.AutoSize = true;
-            labelName.Location = new Point(25, 378);
-            labelName.Margin = new Padding(25, 38, 25, 38);
+            labelName.Location = new Point(12, 140);
+            labelName.Margin = labelPad;
             labelName.Name = "labelName";
             labelName.Size = new Size(63, 25);
             labelName.TabIndex = 12;
             labelName.Text = "Name:";
-            // 
-            // txtNameValue
-            // 
+
             txtNameValue.AcceptsReturn = true;
-            txtNameValue.Location = new Point(257, 378);
-            txtNameValue.Margin = new Padding(25, 38, 25, 38);
+            txtNameValue.Location = new Point(292, 140);
+            txtNameValue.Margin = ctrlPad;
             txtNameValue.Multiline = true;
             txtNameValue.Name = "txtNameValue";
             txtNameValue.ScrollBars = ScrollBars.Vertical;
-            txtNameValue.Size = new Size(362, 150);
+            txtNameValue.Size = new Size(340, 120);
             txtNameValue.TabIndex = 13;
-            // 
-            // labelDescKey
-            // 
+
             labelDescKey.AutoSize = true;
-            labelDescKey.Location = new Point(25, 604);
-            labelDescKey.Margin = new Padding(25, 38, 25, 38);
+            labelDescKey.Location = new Point(12, 276);
+            labelDescKey.Margin = labelPad;
             labelDescKey.Name = "labelDescKey";
             labelDescKey.Size = new Size(139, 25);
             labelDescKey.TabIndex = 14;
             labelDescKey.Text = "Description Key:";
             toolTip1.SetToolTip(labelDescKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // txtDescKey
-            // 
-            txtDescKey.Location = new Point(257, 604);
-            txtDescKey.Margin = new Padding(25, 38, 25, 38);
+
+            txtDescKey.Location = new Point(292, 276);
+            txtDescKey.Margin = ctrlPad;
             txtDescKey.Name = "txtDescKey";
-            txtDescKey.Size = new Size(331, 31);
+            txtDescKey.Size = new Size(340, 31);
             txtDescKey.TabIndex = 15;
             toolTip1.SetToolTip(txtDescKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // labelDescription
-            // 
+
             labelDescription.AutoSize = true;
-            labelDescription.Location = new Point(25, 711);
-            labelDescription.Margin = new Padding(25, 38, 25, 38);
+            labelDescription.Location = new Point(12, 320);
+            labelDescription.Margin = labelPad;
             labelDescription.Name = "labelDescription";
             labelDescription.Size = new Size(106, 25);
             labelDescription.TabIndex = 16;
             labelDescription.Text = "Description:";
-            // 
-            // txtDescValue
-            // 
+
             txtDescValue.AcceptsReturn = true;
-            txtDescValue.Location = new Point(257, 711);
-            txtDescValue.Margin = new Padding(25, 38, 25, 38);
+            txtDescValue.Location = new Point(292, 320);
+            txtDescValue.Margin = ctrlPad;
             txtDescValue.Multiline = true;
             txtDescValue.Name = "txtDescValue";
             txtDescValue.ScrollBars = ScrollBars.Vertical;
-            txtDescValue.Size = new Size(362, 150);
+            txtDescValue.Size = new Size(340, 120);
             txtDescValue.TabIndex = 17;
-            // 
-            // labelShortDescKey
-            // 
+
             labelShortDescKey.AutoSize = true;
-            labelShortDescKey.Location = new Point(25, 937);
-            labelShortDescKey.Margin = new Padding(25, 38, 25, 38);
+            labelShortDescKey.Location = new Point(12, 456);
+            labelShortDescKey.Margin = labelPad;
             labelShortDescKey.Name = "labelShortDescKey";
-            labelShortDescKey.Size = new Size(155, 50);
+            labelShortDescKey.Size = new Size(155, 25);
             labelShortDescKey.TabIndex = 18;
             labelShortDescKey.Text = "Short Description Key:";
             toolTip1.SetToolTip(labelShortDescKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // txtShortDescKey
-            // 
-            txtShortDescKey.Location = new Point(257, 937);
-            txtShortDescKey.Margin = new Padding(25, 38, 25, 38);
+
+            txtShortDescKey.Location = new Point(292, 456);
+            txtShortDescKey.Margin = ctrlPad;
             txtShortDescKey.Name = "txtShortDescKey";
-            txtShortDescKey.Size = new Size(331, 31);
+            txtShortDescKey.Size = new Size(340, 31);
             txtShortDescKey.TabIndex = 19;
             toolTip1.SetToolTip(txtShortDescKey, "This key links the World Settings to your full text in your Language file(s).");
-            // 
-            // labelShortDesc
-            // 
+
             labelShortDesc.AutoSize = true;
-            labelShortDesc.Location = new Point(25, 1063);
-            labelShortDesc.Margin = new Padding(25, 38, 25, 38);
+            labelShortDesc.Location = new Point(12, 500);
+            labelShortDesc.Margin = labelPad;
             labelShortDesc.Name = "labelShortDesc";
             labelShortDesc.Size = new Size(154, 25);
             labelShortDesc.TabIndex = 20;
             labelShortDesc.Text = "Short Description:";
-            // 
-            // txtShortDescValue
-            // 
+
             txtShortDescValue.AcceptsReturn = true;
-            txtShortDescValue.Location = new Point(257, 1063);
-            txtShortDescValue.Margin = new Padding(25, 38, 25, 38);
+            txtShortDescValue.Location = new Point(292, 500);
+            txtShortDescValue.Margin = ctrlPad;
             txtShortDescValue.Multiline = true;
             txtShortDescValue.Name = "txtShortDescValue";
             txtShortDescValue.ScrollBars = ScrollBars.Vertical;
-            txtShortDescValue.Size = new Size(362, 150);
+            txtShortDescValue.Size = new Size(340, 120);
             txtShortDescValue.TabIndex = 21;
-            // 
-            // labelSummaryKey
-            // 
+
             labelSummaryKey.AutoSize = true;
-            labelSummaryKey.Location = new Point(25, 1289);
-            labelSummaryKey.Margin = new Padding(25, 38, 25, 38);
+            labelSummaryKey.Location = new Point(12, 636);
+            labelSummaryKey.Margin = labelPad;
             labelSummaryKey.Name = "labelSummaryKey";
             labelSummaryKey.Size = new Size(87, 25);
             labelSummaryKey.TabIndex = 22;
             labelSummaryKey.Text = "Summary Key:";
-            
-            // 
-            // txtSummaryKey
-            // 
-            txtSummaryKey.Location = new Point(257, 1289);
-            txtSummaryKey.Margin = new Padding(25, 38, 25, 38);
-            txtSummaryKey.Name = "txtSummaryKey";
-            txtSummaryKey.Size = new Size(362, 31);
-            txtSummaryKey.TabIndex = 23;
-            
 
-            // 
-            // labelSummary
-            // 
+            txtSummaryKey.Location = new Point(292, 636);
+            txtSummaryKey.Margin = ctrlPad;
+            txtSummaryKey.Name = "txtSummaryKey";
+            txtSummaryKey.Size = new Size(340, 31);
+            txtSummaryKey.TabIndex = 23;
+
             labelSummary.AutoSize = true;
-            labelSummary.Location = new Point(25, 1515);
-            labelSummary.Margin = new Padding(25, 38, 25, 38);
+            labelSummary.Location = new Point(12, 680);
+            labelSummary.Margin = labelPad;
             labelSummary.Name = "labelSummary";
             labelSummary.Size = new Size(125, 25);
             labelSummary.TabIndex = 24;
             labelSummary.Text = "Summary:";
-            // 
-            // txtSummary
-            // 
+
             txtSummary.AcceptsReturn = true;
-            txtSummary.Location = new Point(257, 1515);
-            txtSummary.Margin = new Padding(25, 38, 25, 38);
+            txtSummary.Location = new Point(292, 680);
+            txtSummary.Margin = ctrlPad;
             txtSummary.Multiline = true;
             txtSummary.Name = "txtSummary";
             txtSummary.ScrollBars = ScrollBars.Vertical;
-            txtSummary.Size = new Size(362, 150);
+            txtSummary.Size = new Size(340, 120);
             txtSummary.TabIndex = 25;
-            // 
+
+            //
             // column1TableLayout
-            // 
+            //
             column1TableLayout.AutoSize = true;
             column1TableLayout.ColumnCount = 1;
             column1TableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
@@ -476,14 +428,13 @@ namespace StationeersStructureXMLConverter
             column1TableLayout.Margin = new Padding(3, 4, 3, 4);
             column1TableLayout.Name = "column1TableLayout";
             column1TableLayout.RowCount = 3;
-            column1TableLayout.RowStyles.Add(new RowStyle());
-            column1TableLayout.RowStyles.Add(new RowStyle());
-            column1TableLayout.RowStyles.Add(new RowStyle());
-            column1TableLayout.Size = new Size(1485, 1968);
+            column1TableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 390F));
+            column1TableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 390F));
+            column1TableLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 390F));
+            column1TableLayout.Size = new Size(1485, 1170);
             column1TableLayout.TabIndex = 3;
-            // 
-            // startConditionsGroupBox
-            // 
+
+            // --- Start Conditions ---
             startConditionsGroupBox.AutoSize = true;
             startConditionsGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             startConditionsGroupBox.Controls.Add(startConditionsTableLayout);
@@ -491,17 +442,15 @@ namespace StationeersStructureXMLConverter
             startConditionsGroupBox.Margin = new Padding(3, 4, 3, 4);
             startConditionsGroupBox.Name = "startConditionsGroupBox";
             startConditionsGroupBox.Padding = new Padding(3, 4, 3, 4);
-            startConditionsGroupBox.Size = new Size(1479, 636);
+            startConditionsGroupBox.Size = new Size(1479, 382);
             startConditionsGroupBox.TabIndex = 0;
             startConditionsGroupBox.TabStop = false;
             startConditionsGroupBox.Text = "Start Conditions";
-            // 
-            // startConditionsTableLayout
-            // 
+
             startConditionsTableLayout.AutoSize = true;
             startConditionsTableLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             startConditionsTableLayout.ColumnCount = 2;
-            startConditionsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 117F));
+            startConditionsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60F));
             startConditionsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             startConditionsTableLayout.Controls.Add(startConditionsButtonPanel, 0, 0);
             startConditionsTableLayout.Controls.Add(clbStartConditions, 1, 0);
@@ -511,11 +460,9 @@ namespace StationeersStructureXMLConverter
             startConditionsTableLayout.Name = "startConditionsTableLayout";
             startConditionsTableLayout.RowCount = 1;
             startConditionsTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            startConditionsTableLayout.Size = new Size(1473, 604);
+            startConditionsTableLayout.Size = new Size(1473, 350);
             startConditionsTableLayout.TabIndex = 0;
-            // 
-            // startConditionsButtonPanel
-            // 
+
             startConditionsButtonPanel.AutoSize = true;
             startConditionsButtonPanel.Controls.Add(btnAddCondition);
             startConditionsButtonPanel.Controls.Add(btnDeleteCondition);
@@ -523,59 +470,53 @@ namespace StationeersStructureXMLConverter
             startConditionsButtonPanel.Location = new Point(3, 4);
             startConditionsButtonPanel.Margin = new Padding(3, 4, 3, 4);
             startConditionsButtonPanel.Name = "startConditionsButtonPanel";
-            startConditionsButtonPanel.Size = new Size(60, 140);
+            startConditionsButtonPanel.Size = new Size(54, 108);
             startConditionsButtonPanel.TabIndex = 0;
-            // 
-            // btnAddCondition
-            // 
+
             btnAddCondition.Location = new Point(5, 6);
             btnAddCondition.Margin = new Padding(5, 6, 5, 6);
             btnAddCondition.Name = "btnAddCondition";
-            btnAddCondition.Size = new Size(50, 58);
+            btnAddCondition.Size = new Size(50, 58);   // ← was 50,58 → keep original height
             btnAddCondition.TabIndex = 21;
             btnAddCondition.Text = "+";
+            btnAddCondition.Font = new Font("Microsoft Sans Serif", 18F, FontStyle.Regular);
             btnAddCondition.UseVisualStyleBackColor = true;
             btnAddCondition.Click += btnAddCondition_Click;
-            // 
-            // btnDeleteCondition
-            // 
+
             btnDeleteCondition.Location = new Point(5, 76);
             btnDeleteCondition.Margin = new Padding(5, 6, 5, 6);
             btnDeleteCondition.Name = "btnDeleteCondition";
             btnDeleteCondition.Size = new Size(50, 58);
             btnDeleteCondition.TabIndex = 22;
-            btnDeleteCondition.Text = "🗑";
+            btnDeleteCondition.Text = "\uD83D\uDDD1";
+            btnDeleteCondition.Font = new Font("Segoe UI Emoji", 14F);
+            btnDeleteCondition.TextAlign = ContentAlignment.MiddleCenter;
             btnDeleteCondition.UseVisualStyleBackColor = true;
             btnDeleteCondition.Click += btnDeleteCondition_Click;
-            // 
-            // clbStartConditions
-            // 
-            clbStartConditions.Location = new Point(122, 6);
-            clbStartConditions.Margin = new Padding(5, 6, 5, 6);
+
+            clbStartConditions.Location = new Point(66, 6);
+            clbStartConditions.Margin = new Padding(4);
             clbStartConditions.Name = "clbStartConditions";
-            clbStartConditions.Size = new Size(1346, 592);
+            clbStartConditions.Size = new Size(893, 331);
             clbStartConditions.TabIndex = 23;
-            // 
-            // startLocationsGroupBox
-            // 
+
+            // --- Start Locations ---
             startLocationsGroupBox.AutoSize = true;
             startLocationsGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             startLocationsGroupBox.Controls.Add(startLocationsTableLayout);
-            startLocationsGroupBox.Location = new Point(3, 648);
+            startLocationsGroupBox.Location = new Point(3, 390);
             startLocationsGroupBox.Margin = new Padding(3, 4, 3, 4);
             startLocationsGroupBox.Name = "startLocationsGroupBox";
             startLocationsGroupBox.Padding = new Padding(3, 4, 3, 4);
-            startLocationsGroupBox.Size = new Size(1479, 654);
+            startLocationsGroupBox.Size = new Size(1479, 382);
             startLocationsGroupBox.TabIndex = 24;
             startLocationsGroupBox.TabStop = false;
             startLocationsGroupBox.Text = "Start Locations";
-            // 
-            // startLocationsTableLayout
-            // 
+
             startLocationsTableLayout.AutoSize = true;
             startLocationsTableLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             startLocationsTableLayout.ColumnCount = 2;
-            startLocationsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 117F));
+            startLocationsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60F));
             startLocationsTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             startLocationsTableLayout.Controls.Add(startLocationsButtonPanel, 0, 0);
             startLocationsTableLayout.Controls.Add(lvStartLocations, 1, 0);
@@ -585,11 +526,9 @@ namespace StationeersStructureXMLConverter
             startLocationsTableLayout.Name = "startLocationsTableLayout";
             startLocationsTableLayout.RowCount = 1;
             startLocationsTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            startLocationsTableLayout.Size = new Size(1473, 622);
+            startLocationsTableLayout.Size = new Size(1473, 350);
             startLocationsTableLayout.TabIndex = 25;
-            // 
-            // startLocationsButtonPanel
-            // 
+
             startLocationsButtonPanel.AutoSize = true;
             startLocationsButtonPanel.Controls.Add(btnAddLocation);
             startLocationsButtonPanel.Controls.Add(btnDeleteLocation);
@@ -597,61 +536,55 @@ namespace StationeersStructureXMLConverter
             startLocationsButtonPanel.Location = new Point(3, 4);
             startLocationsButtonPanel.Margin = new Padding(3, 4, 3, 4);
             startLocationsButtonPanel.Name = "startLocationsButtonPanel";
-            startLocationsButtonPanel.Size = new Size(60, 140);
+            startLocationsButtonPanel.Size = new Size(54, 108);
             startLocationsButtonPanel.TabIndex = 26;
-            // 
-            // btnAddLocation
-            // 
+
             btnAddLocation.Location = new Point(5, 6);
             btnAddLocation.Margin = new Padding(5, 6, 5, 6);
             btnAddLocation.Name = "btnAddLocation";
             btnAddLocation.Size = new Size(50, 58);
             btnAddLocation.TabIndex = 27;
             btnAddLocation.Text = "+";
+            btnAddLocation.Font = new Font("Microsoft Sans Serif", 18F, FontStyle.Regular);
             btnAddLocation.UseVisualStyleBackColor = true;
             btnAddLocation.Click += btnAddLocation_Click;
-            // 
-            // btnDeleteLocation
-            // 
+
             btnDeleteLocation.Location = new Point(5, 76);
             btnDeleteLocation.Margin = new Padding(5, 6, 5, 6);
             btnDeleteLocation.Name = "btnDeleteLocation";
             btnDeleteLocation.Size = new Size(50, 58);
             btnDeleteLocation.TabIndex = 28;
-            btnDeleteLocation.Text = "🗑";
+            btnDeleteLocation.Text = "\uD83D\uDDD1";
+            btnDeleteLocation.Font = new Font("Segoe UI Emoji", 14F);
+            btnDeleteLocation.TextAlign = ContentAlignment.MiddleCenter;
             btnDeleteLocation.UseVisualStyleBackColor = true;
             btnDeleteLocation.Click += btnDeleteLocation_Click;
-            // 
-            // lvStartLocations
-            // 
-            lvStartLocations.Location = new Point(122, 6);
-            lvStartLocations.Margin = new Padding(5, 6, 5, 6);
+
+            lvStartLocations.Location = new Point(66, 6);
+            lvStartLocations.Margin = new Padding(4);
             lvStartLocations.Name = "lvStartLocations";
-            lvStartLocations.Size = new Size(1346, 610);
+            lvStartLocations.Size = new Size(893, 331);
             lvStartLocations.TabIndex = 29;
             lvStartLocations.UseCompatibleStateImageBehavior = false;
             lvStartLocations.View = View.Details;
-            // 
-            // objectivesGroupBox
-            // 
+
+            // --- Objectives ---
             objectivesGroupBox.AutoSize = true;
             objectivesGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             objectivesGroupBox.Controls.Add(objectivesTableLayout);
-            objectivesGroupBox.Location = new Point(3, 1310);
+            objectivesGroupBox.Location = new Point(3, 776);
             objectivesGroupBox.Margin = new Padding(3, 4, 3, 4);
             objectivesGroupBox.Name = "objectivesGroupBox";
             objectivesGroupBox.Padding = new Padding(3, 4, 3, 4);
-            objectivesGroupBox.Size = new Size(1479, 654);
+            objectivesGroupBox.Size = new Size(1479, 382);
             objectivesGroupBox.TabIndex = 30;
             objectivesGroupBox.TabStop = false;
             objectivesGroupBox.Text = "Objectives";
-            // 
-            // objectivesTableLayout
-            // 
+
             objectivesTableLayout.AutoSize = true;
             objectivesTableLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             objectivesTableLayout.ColumnCount = 2;
-            objectivesTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 117F));
+            objectivesTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 60F));
             objectivesTableLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             objectivesTableLayout.Controls.Add(objectivesButtonPanel, 0, 0);
             objectivesTableLayout.Controls.Add(lvObjectives, 1, 0);
@@ -661,11 +594,9 @@ namespace StationeersStructureXMLConverter
             objectivesTableLayout.Name = "objectivesTableLayout";
             objectivesTableLayout.RowCount = 1;
             objectivesTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            objectivesTableLayout.Size = new Size(1473, 622);
+            objectivesTableLayout.Size = new Size(1473, 350);
             objectivesTableLayout.TabIndex = 31;
-            // 
-            // objectivesButtonPanel
-            // 
+
             objectivesButtonPanel.AutoSize = true;
             objectivesButtonPanel.Controls.Add(btnAddObjective);
             objectivesButtonPanel.Controls.Add(btnDeleteObjective);
@@ -673,59 +604,55 @@ namespace StationeersStructureXMLConverter
             objectivesButtonPanel.Location = new Point(3, 4);
             objectivesButtonPanel.Margin = new Padding(3, 4, 3, 4);
             objectivesButtonPanel.Name = "objectivesButtonPanel";
-            objectivesButtonPanel.Size = new Size(60, 140);
+            objectivesButtonPanel.Size = new Size(54, 108);
             objectivesButtonPanel.TabIndex = 32;
-            // 
-            // btnAddObjective
-            // 
+
             btnAddObjective.Location = new Point(5, 6);
             btnAddObjective.Margin = new Padding(5, 6, 5, 6);
             btnAddObjective.Name = "btnAddObjective";
             btnAddObjective.Size = new Size(50, 58);
             btnAddObjective.TabIndex = 33;
             btnAddObjective.Text = "+";
+            btnAddObjective.Font = new Font("Microsoft Sans Serif", 18F, FontStyle.Regular);
             btnAddObjective.UseVisualStyleBackColor = true;
             btnAddObjective.Click += btnAddObjective_Click;
-            // 
-            // btnDeleteObjective
-            // 
+
             btnDeleteObjective.Location = new Point(5, 76);
             btnDeleteObjective.Margin = new Padding(5, 6, 5, 6);
             btnDeleteObjective.Name = "btnDeleteObjective";
             btnDeleteObjective.Size = new Size(50, 58);
             btnDeleteObjective.TabIndex = 34;
-            btnDeleteObjective.Text = "🗑";
+            btnDeleteObjective.Text = "\uD83D\uDDD1";
+            btnDeleteObjective.Font = new Font("Segoe UI Emoji", 14F);
+            btnDeleteObjective.TextAlign = ContentAlignment.MiddleCenter;
             btnDeleteObjective.UseVisualStyleBackColor = true;
             btnDeleteObjective.Click += btnDeleteObjective_Click;
-            // 
-            // lvObjectives
-            // 
-            lvObjectives.Location = new Point(122, 6);
-            lvObjectives.Margin = new Padding(5, 6, 5, 6);
+
+            lvObjectives.Location = new Point(66, 6);
+            lvObjectives.Margin = new Padding(4);
             lvObjectives.Name = "lvObjectives";
-            lvObjectives.Size = new Size(1346, 610);
+            lvObjectives.Size = new Size(893, 331);
             lvObjectives.TabIndex = 35;
             lvObjectives.UseCompatibleStateImageBehavior = false;
             lvObjectives.View = View.Details;
-            // 
+
+            //
             // tableLayoutPanelButtons
-            // 
+            //
             tableLayoutPanelButtons.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             tableLayoutPanelButtons.ColumnCount = 2;
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelButtons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             tableLayoutPanelButtons.Controls.Add(btnClearAll, 0, 0);
             tableLayoutPanelButtons.Controls.Add(btnSaveWorldSettings, 1, 0);
-            tableLayoutPanelButtons.Location = new Point(1638, 2142);
+            tableLayoutPanelButtons.Location = new Point(1620, 2120);   // up 22px, left 18px
             tableLayoutPanelButtons.Margin = new Padding(3, 4, 3, 4);
             tableLayoutPanelButtons.Name = "tableLayoutPanelButtons";
             tableLayoutPanelButtons.RowCount = 1;
             tableLayoutPanelButtons.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelButtons.Size = new Size(527, 85);
             tableLayoutPanelButtons.TabIndex = 2;
-            // 
-            // btnClearAll
-            // 
+
             btnClearAll.AutoSize = true;
             btnClearAll.Location = new Point(10, 15);
             btnClearAll.Margin = new Padding(10, 15, 10, 15);
@@ -735,9 +662,7 @@ namespace StationeersStructureXMLConverter
             btnClearAll.Text = "Clear All";
             btnClearAll.UseVisualStyleBackColor = true;
             btnClearAll.Click += btnClearAll_Click;
-            // 
-            // btnSaveWorldSettings
-            // 
+
             btnSaveWorldSettings.AutoSize = true;
             btnSaveWorldSettings.Location = new Point(273, 15);
             btnSaveWorldSettings.Margin = new Padding(10, 15, 25, 15);
@@ -747,9 +672,10 @@ namespace StationeersStructureXMLConverter
             btnSaveWorldSettings.Text = "Save";
             btnSaveWorldSettings.UseVisualStyleBackColor = true;
             btnSaveWorldSettings.Click += btnSaveWorldSettings_Click;
-            // 
+
+            //
             // WorldEditorUserControl
-            // 
+            //
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
