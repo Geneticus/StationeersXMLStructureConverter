@@ -23,6 +23,9 @@ namespace StationeersStructureXMLConverter
         private string stationeersPath;
         private ConversionUserControl conversionUserControl;
         private XElement world;
+        private bool isEditingLocation = false;
+        private bool isEditingObjective = false;
+        private Form activeLocationEditor = null;
 
         public WorldEditorUserControl()
         {
@@ -33,84 +36,88 @@ namespace StationeersStructureXMLConverter
 
         private void InitializeListViews()
         {
-            // Configure lvStartLocations
-            lvStartLocations.View = View.Details;
-            lvStartLocations.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            lvStartLocations.Items.Clear();
-            lvStartLocations.Columns.Clear();
-            lvStartLocations.Columns.Add("Name", 250);
-            lvStartLocations.Columns.Add("X", 100);
-            lvStartLocations.Columns.Add("Y", 100);
-            lvStartLocations.Columns.Add("Edit", 60);
+            // Configure dgvStartLocations
+            dgvStartLocations.Columns.Clear();
+            var nameColumn = new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Name",
+                Name = "Name",
+                Width = 320  // ← WIDER
+            };
+            dgvStartLocations.Columns.Add(nameColumn);
+            dgvStartLocations.Columns.Add("X", "X");
+            dgvStartLocations.Columns.Add("Y", "Y");
+            var editColumn = new DataGridViewButtonColumn
+            {
+                HeaderText = "Edit",
+                Text = "Edit",
+                UseColumnTextForButtonValue = true,
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            };
+            dgvStartLocations.Columns.Add(editColumn);
 
-            // Configure lvObjectives
-            lvObjectives.View = View.Details;
-            lvObjectives.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            lvObjectives.Items.Clear();
-            lvObjectives.Columns.Clear();
-            lvObjectives.Columns.Add("Id", 250);
-            lvObjectives.Columns.Add("Description", 250);
-            lvObjectives.Columns.Add("Info Key", 250);
-            lvObjectives.Columns.Add("Edit", 60);
+            dgvStartLocations.CellContentClick += DgvStartLocations_CellContentClick; ;
 
-            // Enable custom drawing for buttons
-            lvStartLocations.OwnerDraw = true;
-            lvObjectives.OwnerDraw = true;
-            lvStartLocations.DrawSubItem += LvStartLocations_DrawSubItem;
-            lvObjectives.DrawSubItem += LvObjectives_DrawSubItem;
-            lvStartLocations.MouseDown += LvStartLocations_MouseDown;
-            lvObjectives.MouseDown += LvObjectives_MouseDown;
+            // Configure dgvObjectives
+            dgvObjectives.Columns.Clear();
+            dgvObjectives.Columns.Clear();
+
+            var idColumn = new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Id",
+                Name = "Id",
+                Width = 220
+            };
+            dgvObjectives.Columns.Add(idColumn);
+
+            var objecivesNameColumn = new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Name",
+                Name = "Name",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+            };
+            dgvObjectives.Columns.Add(objecivesNameColumn);
+
+            dgvObjectives.CellContentClick += DgvObjectives_CellContentClick;
+
         }
 
-        private void LvStartLocations_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        private void DgvStartLocations_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 3)
+            if (isEditingLocation) return;
+            if (e.RowIndex < 0 || e.ColumnIndex != 3) return;
+
+            isEditingLocation = true;
+            try
             {
-                e.DrawBackground();
-                if (e.Item.Selected)
+                var row = dgvStartLocations.Rows[e.RowIndex];
+                var result = OpenStartLocationEditor((XElement)row.Tag, row);
+                if (result == DialogResult.OK)
                 {
-                    e.Graphics.FillRectangle(SystemBrushes.Highlight, e.Bounds);
+                    // OK logic (already in method)
                 }
-                var buttonBounds = new Rectangle(e.Bounds.X + 5, e.Bounds.Y + 2, 50, e.Bounds.Height - 4);
-                ButtonRenderer.DrawButton(e.Graphics, buttonBounds, "Edit", SystemFonts.DefaultFont, false, PushButtonState.Normal);
             }
-            else
+            finally
             {
-                e.DrawDefault = true;
+                isEditingLocation = false;
             }
         }
 
-        private void LvObjectives_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
+        private void DgvObjectives_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 3) // Edit column
-            {
-                Rectangle bounds = e.SubItem.Bounds;
-                Rectangle buttonBounds = new Rectangle(bounds.X + 5, bounds.Y + 5, 50, 20);
-                ButtonRenderer.DrawButton(e.Graphics, buttonBounds, "Edit", SystemFonts.DefaultFont, false, PushButtonState.Normal);
-            }
-            else
-            {
-                e.DrawDefault = true;
-            }
-        }
+            if (isEditingObjective) return;
+            if (e.RowIndex < 0 || e.ColumnIndex != 3) return;
 
-        private void LvStartLocations_MouseDown(object sender, MouseEventArgs e)
-        {
-            var info = lvStartLocations.HitTest(e.Location);
-            if (info.Item != null)
+            isEditingObjective = true;
+            try
             {
-                lvStartLocations.SelectedItems.Clear();
-                info.Item.Selected = true;
-                OpenStartLocationEditor((XElement)info.Item.Tag, info.Item);
+                var row = dgvObjectives.Rows[e.RowIndex];
+                var obj = (XElement)row.Tag;
+                OpenObjectiveEditor(obj, row);
             }
-        }
-
-        private void LvObjectives_MouseDown(object sender, MouseEventArgs e)
-        {
-            var info = lvObjectives.HitTest(e.Location);
-            if (info.SubItem != null && info.Item.SubItems.IndexOf(info.SubItem) == 3)
+            finally
             {
-                btnEditObjective_Click(sender, new EventArgs());
+                isEditingObjective = false;
             }
         }
 
@@ -277,8 +284,10 @@ namespace StationeersStructureXMLConverter
             // === LOAD worldDoc ===
             if (!string.IsNullOrEmpty(worldXmlPath) && File.Exists(worldXmlPath))
             {
-                worldDoc = XDocument.Load(worldXmlPath);
-                InitializeListViews();
+                worldDoc = XDocument.Load(worldXmlPath);                              
+                dgvStartLocations.Invalidate(true);
+                dgvStartLocations.PerformLayout();
+                
             }
             else
             {
@@ -331,7 +340,7 @@ namespace StationeersStructureXMLConverter
             txtNameKey.Text = world.Element("Name")?.Attribute("Key")?.Value ?? "";
             txtDescKey.Text = world.Element("Description")?.Attribute("Key")?.Value ?? "";
             txtShortDescKey.Text = world.Element("ShortDescription")?.Attribute("Key")?.Value ?? "";
-            var summaryKey = world.Element("SummaryText")?.Attribute("Key")?.Value ?? "";
+            txtSummaryKey.Text = world.Element("SummaryText")?.Attribute("Key")?.Value ?? "";
 
             // === LOAD VALUES: MOD → VANILLA → KEY ===
             string GetValueForKey(string key)
@@ -381,7 +390,10 @@ namespace StationeersStructureXMLConverter
             txtNameValue.Text = GetValueForKey(txtNameKey.Text);
             txtDescValue.Text = GetValueForKey(txtDescKey.Text);
             txtShortDescValue.Text = GetValueForKey(txtShortDescKey.Text);
-            txtSummary.Text = GetValueForKey(summaryKey);
+            txtSummary.Text = GetValueForKey(txtSummaryKey.Text);
+            description = txtDescValue.Text;
+            summary = txtShortDescValue.Text;
+
 
             // === POPULATE WORLD ID & PRIORITY ===
             txtWorldId.Text = world?.Attribute("Id")?.Value
@@ -404,46 +416,61 @@ namespace StationeersStructureXMLConverter
             }
 
             // === POPULATE START LOCATIONS ===
-            lvStartLocations.Items.Clear();
-
+            dgvStartLocations.Rows.Clear();
             foreach (var loc in world.Elements("StartLocation"))
             {
-                var id = loc.Attribute("Id")?.Value ?? "Unknown";
                 var nameKey = loc.Element("Name")?.Attribute("Key")?.Value ?? "";
                 var nameValue = GetValueForKey(nameKey);
-                var pos = loc.Element("Position");
-                var x = pos?.Attribute("x")?.Value ?? "0";
-                var y = pos?.Attribute("y")?.Value ?? "0";
+                var x = loc.Element("Position")?.Attribute("x")?.Value ?? "0";
+                var y = loc.Element("Position")?.Attribute("y")?.Value ?? "0";
 
-                var item = new ListViewItem(new[] {
-                    nameValue,  // Column 0: Name
-                    x,          // Column 1: X
-                    y,          // Column 2: Y
-                    "Edit"      // Column 3: Edit
-                });
-                item.Tag = loc;
-                lvStartLocations.Items.Add(item);
+                var rowIndex = dgvStartLocations.Rows.Add(nameValue, x, y);
+                dgvStartLocations.Rows[rowIndex].Tag = loc;
             }
 
             // === POPULATE OBJECTIVES ===
-            objectivesPath = Path.Combine(newModPath, "GameData", "WorldObjectives.xml");
-            if (File.Exists(objectivesPath))
+            dgvObjectives.Rows.Clear();
+
+            var usedGroupIds = world.Elements("WorldObjective")
+                .Select(e => e.Attribute("Id")?.Value)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToHashSet();
+
+            var allGroups = new Dictionary<string, string>();
+
+            // Vanilla
+            string vanillaPath = Path.Combine(StationeersPath, "rocketstation_Data", "StreamingAssets", "Data", "WorldObjectives.xml");
+            if (File.Exists(vanillaPath))
             {
-                objectivesDoc = XDocument.Load(objectivesPath);
-                lvObjectives.Items.Clear();
-                foreach (var obj in objectivesDoc.Root?.Elements("WorldObjective") ?? Enumerable.Empty<XElement>())
+                var doc = XDocument.Load(vanillaPath);
+                foreach (var group in doc.Root.Elements("WorldObjective"))
                 {
-                    var item = new ListViewItem(obj.Attribute("Id")?.Value ?? "Unknown");
-                    item.SubItems.Add(obj.Element("Description")?.Value ?? "");
-                    item.SubItems.Add(obj.Element("Info")?.Attribute("Key")?.Value ?? "");
-                    item.SubItems.Add("Edit");
-                    item.Tag = obj;
-                    lvObjectives.Items.Add(item);
+                    var id = group.Attribute("Id")?.Value;
+                    if (string.IsNullOrEmpty(id)) continue;
+                    var name = group.Element("Name")?.Attribute("Value")?.Value ?? id;
+                    allGroups[id] = name;
                 }
             }
-            else
+
+            // Mod
+            string modPath = Path.Combine(newModPath, "GameData", "WorldObjectives.xml");
+            if (File.Exists(modPath))
             {
-                objectivesDoc = new XDocument(new XElement("WorldObjectivesData"));
+                var doc = XDocument.Load(modPath);
+                foreach (var group in doc.Root.Elements("WorldObjective"))
+                {
+                    var id = group.Attribute("Id")?.Value;
+                    if (string.IsNullOrEmpty(id)) continue;
+                    var name = group.Element("Name")?.Attribute("Value")?.Value ?? id;
+                    allGroups[id] = name;  // Mod overrides vanilla
+                }
+            }
+
+            // Show only USED groups
+            foreach (var kvp in allGroups)
+            {
+                if (!usedGroupIds.Contains(kvp.Key)) continue;
+                dgvObjectives.Rows.Add(kvp.Key, kvp.Value);
             }
         }
 
@@ -576,15 +603,16 @@ namespace StationeersStructureXMLConverter
 
         private void btnDeleteCondition_Click(object sender, EventArgs e)
         {
-            if (clbStartConditions.SelectedIndex >= 0)
-            {
-                string id = clbStartConditions.SelectedItem.ToString();
-                clbStartConditions.Items.RemoveAt(clbStartConditions.SelectedIndex);
-                WorldStartConditions.Remove(id);
-            }
+            if (clbStartConditions.SelectedItems.Count == 0) return;
+
+            var selectedItem = clbStartConditions.SelectedItems[0];
+            string id = selectedItem.ToString();
+
+            clbStartConditions.Items.Remove(selectedItem);
+            WorldStartConditions.Remove(id);
         }
 
-        private void OpenStartLocationEditor(XElement loc = null, ListViewItem item = null)
+        private DialogResult OpenStartLocationEditor(XElement loc = null, DataGridViewRow row = null)
         {
             bool isEdit = loc != null;
             string title = isEdit ? "Edit Start Location" : "Add Start Location";
@@ -592,60 +620,93 @@ namespace StationeersStructureXMLConverter
             using (var dialog = new Form())
             {
                 dialog.Text = title;
-                dialog.StartPosition = FormStartPosition.CenterParent;
-                dialog.AutoSize = true;
-                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                dialog.FormBorderStyle = FormBorderStyle.Sizable;
+                dialog.Size = new Size(700, 550);
                 dialog.MinimumSize = new Size(600, 400);
+                dialog.StartPosition = FormStartPosition.CenterParent;
 
-                // Controls
-                var txtId = new TextBox { Location = new Point(120, 20), Width = 300, Text = isEdit ? loc.Attribute("Id")?.Value ?? "" : "NewLocation" };
-                var txtNameKey = new TextBox { Location = new Point(120, 50), Width = 300, Text = isEdit ? loc.Element("Name")?.Attribute("Key")?.Value ?? "" : "NewLocation_Name" };
-                var txtNameValue = new TextBox { Location = new Point(120, 80), Width = 300, Text = isEdit ? GetValueForKey(txtNameKey.Text) : "New Location" };
-                var txtDescKey = new TextBox { Location = new Point(120, 110), Width = 300, Text = isEdit ? loc.Element("Description")?.Attribute("Key")?.Value ?? "" : "NewLocation_Desc" };
+                var table = new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 2,
+                    RowCount = 8,
+                    Padding = new Padding(10),
+                    AutoScroll = true
+                };
+                table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
+                table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                for (int i = 0; i < 8; i++) table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+                // ID
+                table.Controls.Add(new Label { Text = "ID:", Dock = DockStyle.Fill }, 0, 0);
+                var txtId = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? loc.Attribute("Id")?.Value ?? "" : "NewLocation" };
+                table.Controls.Add(txtId, 1, 0);
+
+                // Name Key
+                table.Controls.Add(new Label { Text = "Name Key:", Dock = DockStyle.Fill }, 0, 1);
+                var txtNameKey = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? loc.Element("Name")?.Attribute("Key")?.Value ?? "" : "NewLocation_Name" };
+                table.Controls.Add(txtNameKey, 1, 1);
+
+                // Name Value
+                table.Controls.Add(new Label { Text = "Name:", Dock = DockStyle.Fill }, 0, 2);
+                var txtNameValue = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? GetValueForKey(txtNameKey.Text) : "New Location" };
+                table.Controls.Add(txtNameValue, 1, 2);
+
+                // Desc Key
+                table.Controls.Add(new Label { Text = "Desc Key:", Dock = DockStyle.Fill }, 0, 3);
+                var txtDescKey = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? loc.Element("Description")?.Attribute("Key")?.Value ?? "" : "NewLocation_Desc" };
+                table.Controls.Add(txtDescKey, 1, 3);
+
+                // Description
+                table.Controls.Add(new Label { Text = "Description:", Dock = DockStyle.Fill }, 0, 4);
                 var txtDescValue = new TextBox
                 {
-                    Location = new Point(120, 140),
-                    Width = 450,  // 1.5x wider
-                    Height = 100,
+                    Dock = DockStyle.Fill,
                     Multiline = true,
                     ScrollBars = ScrollBars.Vertical,
                     AcceptsReturn = true,
                     WordWrap = true,
-                    Text = isEdit ? GetValueForKey(txtDescKey.Text) : "Description here..."
+                    Height = 120
                 };
-                var txtX = new TextBox { Location = new Point(120, 250), Width = 100, Text = isEdit ? loc.Element("Position")?.Attribute("x")?.Value ?? "0" : "0" };
-                var txtY = new TextBox { Location = new Point(230, 250), Width = 100, Text = isEdit ? loc.Element("Position")?.Attribute("y")?.Value ?? "0" : "0" };
-                var txtRadius = new TextBox { Location = new Point(340, 250), Width = 100, Text = isEdit ? loc.Element("SpawnRadius")?.Attribute("Value")?.Value ?? "10" : "10" };
-                var btnOK = new Button { Text = "OK", Location = new Point(120, 320), DialogResult = DialogResult.OK };
+                txtDescValue.Text = isEdit ? GetValueForKey(txtDescKey.Text) : "Description here...";
+                table.Controls.Add(txtDescValue, 1, 4);
+                table.SetRowSpan(txtDescValue, 2);
 
-                dialog.Controls.AddRange(new Control[] {
-            new Label { Text = "ID:", Location = new Point(20, 20), Width = 80 },
-            txtId,
-            new Label { Text = "Name Key:", Location = new Point(20, 50), Width = 80 },
-            txtNameKey,
-            new Label { Text = "Name:", Location = new Point(20, 80), Width = 80 },
-            txtNameValue,
-            new Label { Text = "Desc Key:", Location = new Point(20, 110), Width = 80 },
-            txtDescKey,
-            new Label { Text = "Description:", Location = new Point(20, 140), Width = 80 },
-            txtDescValue,
-            new Label { Text = "X:", Location = new Point(20, 250), Width = 80 },
-            txtX,
-            new Label { Text = "Y:", Location = new Point(130, 250), Width = 80 },
-            txtY,
-            new Label { Text = "Radius:", Location = new Point(240, 250), Width = 80 },
-            txtRadius,
-            btnOK
-        });
+                // X, Y, Radius
+                var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Height = 40, FlowDirection = FlowDirection.LeftToRight };
+                panel.Controls.Add(new Label { Text = "X:", Width = 30 });
+                var txtX = new TextBox { Width = 80, Text = isEdit ? loc.Element("Position")?.Attribute("x")?.Value ?? "0" : "0" };
+                panel.Controls.Add(txtX);
+                panel.Controls.Add(new Label { Text = "Y:", Width = 30 });
+                var txtY = new TextBox { Width = 80, Text = isEdit ? loc.Element("Position")?.Attribute("y")?.Value ?? "0" : "0" };
+                panel.Controls.Add(txtY);
+                panel.Controls.Add(new Label { Text = "Radius:", Width = 50 });
+                var txtRadius = new TextBox { Width = 80, Text = isEdit ? loc.Element("SpawnRadius")?.Attribute("Value")?.Value ?? "10" : "10" };
+                panel.Controls.Add(txtRadius);
+                table.Controls.Add(panel, 1, 6);
 
-                if (dialog.ShowDialog() == DialogResult.OK)
+                // Buttons
+                var btnOK = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 80 };
+                var btnCancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 80 };
+                dialog.CancelButton = btnCancel;
+
+                var btnPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, FlowDirection = FlowDirection.RightToLeft };
+                btnPanel.Controls.Add(btnCancel);
+                btnPanel.Controls.Add(btnOK);
+
+                dialog.Controls.Add(table);
+                dialog.Controls.Add(btnPanel);
+
+                DialogResult result = dialog.ShowDialog();  // ← ONE CALL, STORE RESULT
+
+                if (result == DialogResult.OK)
                 {
                     if (!isEdit)
                     {
                         loc = new XElement("StartLocation");
                         world.Add(loc);
-                        item = new ListViewItem();
-                        lvStartLocations.Items.Add(item);
+                        row = dgvStartLocations.Rows[dgvStartLocations.Rows.Add()];
+                        row.Tag = loc;
                     }
 
                     loc.SetAttributeValue("Id", txtId.Text);
@@ -653,149 +714,181 @@ namespace StationeersStructureXMLConverter
                     loc.Add(new XElement("Name", new XAttribute("Key", txtNameKey.Text)));
                     loc.Element("Description")?.Remove();
                     loc.Add(new XElement("Description", new XAttribute("Key", txtDescKey.Text)));
+
                     var pos = loc.Element("Position") ?? new XElement("Position");
                     pos.SetAttributeValue("x", txtX.Text);
                     pos.SetAttributeValue("y", txtY.Text);
                     loc.Element("Position")?.Remove();
                     loc.Add(pos);
+
                     loc.Element("SpawnRadius")?.Remove();
                     loc.Add(new XElement("SpawnRadius", new XAttribute("Value", txtRadius.Text)));
 
-                    item.SubItems.Clear();
-                    item.SubItems.Add(txtNameValue.Text);
-                    item.SubItems.Add(txtX.Text);
-                    item.SubItems.Add(txtY.Text);
-                    item.SubItems.Add("Edit");
-                    item.Tag = loc;
+                    row.Cells[0].Value = txtNameValue.Text;
+                    row.Cells[1].Value = txtX.Text;
+                    row.Cells[2].Value = txtY.Text;
+                    row.Tag = loc;
 
                     SaveLanguageEntry(txtNameKey.Text, txtNameValue.Text);
                     SaveLanguageEntry(txtDescKey.Text, txtDescValue.Text);
                 }
+
+                return result;  // ← RETURN RESULT
             }
         }
 
         private void btnAddLocation_Click(object sender, EventArgs e)
         {
-            OpenStartLocationEditor();  // ← Called with no parameters
+            OpenStartLocationEditor(null, null);  // ← Called with no parameters
         }
-
-
 
         private void btnDeleteLocation_Click(object sender, EventArgs e)
         {
-            if (lvStartLocations.SelectedItems.Count == 0) return;
-            lvStartLocations.Items.Remove(lvStartLocations.SelectedItems[0]);
+            if (dgvStartLocations.SelectedRows.Count == 0) return;
+
+            var selectedRow = dgvStartLocations.SelectedRows[0];
+            var loc = (XElement)selectedRow.Tag;
+
+            loc.Remove(); // Remove from XML
+            dgvStartLocations.Rows.Remove(selectedRow); // Remove from grid
         }
 
         private void btnAddObjective_Click(object sender, EventArgs e)
         {
-            using (var dialog = new Form())
+            var usedIds = dgvObjectives.Rows
+                .Cast<DataGridViewRow>()
+                .Select(r => r.Cells[0].Value?.ToString())
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToHashSet();
+
+            var pickerItems = new List<(string Id, string Name)>();
+
+            // Vanilla + Mod
+            foreach (var path in new[] {
+        Path.Combine(StationeersPath, "rocketstation_Data", "StreamingAssets", "Data", "WorldObjectives.xml"),
+        Path.Combine(newModPath, "GameData", "WorldObjectives.xml")
+    })
             {
-                dialog.Text = "Add/Edit Objective";
-                dialog.AutoSize = true;
-                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                var txtId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = "Objective" + (lvObjectives.Items.Count + 1) };
-                var txtDesc = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 200, Text = "" };
-                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 200, Text = $"{modName}_Objective{lvObjectives.Items.Count + 1}" };
-                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(120, 110), Width = 200, Height = 100 };
-                clbConditions.Items.AddRange(new[] { "ThingPrefabCondition:StructureSolarPanel:1", "BuildStateCondition:StructureBase:Built" });
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 220), DialogResult = DialogResult.OK };
-                dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
-                    txtId,
-                    new Label { Text = "Description:", Location = new System.Drawing.Point(20, 50), Width = 80 },
-                    txtDesc,
-                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(20, 80), Width = 80 },
-                    txtInfoKey,
-                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(20, 110), Width = 80 },
-                    clbConditions,
-                    btnOk
-                });
-                dialog.MinimumSize = new System.Drawing.Size(350, 300);
-                if (dialog.ShowDialog() == DialogResult.OK)
+                if (!File.Exists(path)) continue;
+                var doc = XDocument.Load(path);
+                foreach (var group in doc.Root.Elements("WorldObjective"))
                 {
-                    var item = new ListViewItem(txtId.Text);
-                    item.SubItems.Add(txtDesc.Text);
-                    item.SubItems.Add(txtInfoKey.Text);
-                    item.SubItems.Add("Edit");
-                    var objElement = new XElement("WorldObjective",
-                        new XAttribute("Id", txtId.Text),
-                        new XElement("Description", txtDesc.Text),
-                        new XElement("Info", new XAttribute("Key", txtInfoKey.Text)));
-                    foreach (var cond in clbConditions.CheckedItems)
+                    var id = group.Attribute("Id")?.Value;
+                    if (string.IsNullOrEmpty(id) || usedIds.Contains(id)) continue;
+                    var name = group.Element("Name")?.Attribute("Value")?.Value ?? id;
+                    pickerItems.Add((id, name));
+                }
+            }
+
+            // Show picker
+            using (var form = new Form { Text = "Add Objective Group", Size = new Size(400, 300) })
+            {
+                var clb = new CheckedListBox { Dock = DockStyle.Fill };
+                foreach (var item in pickerItems)
+                    clb.Items.Add($"{item.Name} ({item.Id})");
+
+                form.Controls.Add(clb);
+                var okBtn = new Button { Text = "OK", DialogResult = DialogResult.OK, Dock = DockStyle.Bottom };
+                form.Controls.Add(okBtn);
+                form.AcceptButton = okBtn;
+
+                if (form.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (int i in clb.CheckedIndices)
                     {
-                        var parts = cond.ToString().Split(':');
-                        if (parts[0] == "ThingPrefabCondition")
-                            objElement.Add(new XElement("ThingPrefabCondition",
-                                new XAttribute("PrefabName", parts[1]),
-                                new XAttribute("Count", parts[2])));
+                        var id = pickerItems[i].Id;
+                        var name = pickerItems[i].Name;
+                        world.Add(new XElement("WorldObjective", new XAttribute("Id", id)));
+                        dgvObjectives.Rows.Add(id, name);
                     }
-                    item.Tag = objElement;
-                    lvObjectives.Items.Add(item);
                 }
             }
         }
 
-        private void btnEditObjective_Click(object sender, EventArgs e)
+        private void OpenObjectiveEditor(XElement obj = null, DataGridViewRow row = null)
         {
-            if (lvObjectives.SelectedItems.Count == 0) return;
-            var item = lvObjectives.SelectedItems[0];
-            var objElement = (XElement)item.Tag;
+            bool isEdit = obj != null;
+            string title = isEdit ? "Edit Objective" : "Add Objective";
+
             using (var dialog = new Form())
             {
-                dialog.Text = "Edit Objective";
-                dialog.AutoSize = true;
-                dialog.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                var txtId = new TextBox { Location = new System.Drawing.Point(120, 20), Width = 200, Text = item.Text };
-                var txtDesc = new TextBox { Location = new System.Drawing.Point(120, 50), Width = 200, Text = item.SubItems[1].Text };
-                var txtInfoKey = new TextBox { Location = new System.Drawing.Point(120, 80), Width = 200, Text = item.SubItems[2].Text };
-                var clbConditions = new CheckedListBox { Location = new System.Drawing.Point(120, 110), Width = 200, Height = 100 };
-                clbConditions.Items.AddRange(new[] { "ThingPrefabCondition:StructureSolarPanel:1", "BuildStateCondition:StructureBase:Built" });
-                var currentConditions = objElement.Elements().Where(el => el.Name.LocalName != "Description" && el.Name.LocalName != "Info").Select(el => $"{el.Name.LocalName}:{el.Attribute("PrefabName")?.Value}:{el.Attribute("Count")?.Value ?? el.Attribute("State")?.Value}");
-                foreach (var cond in currentConditions)
-                {
-                    int index = clbConditions.Items.IndexOf(cond);
-                    if (index >= 0) clbConditions.SetItemChecked(index, true);
-                }
-                var btnOk = new Button { Text = "OK", Location = new System.Drawing.Point(120, 220), DialogResult = DialogResult.OK };
-                dialog.Controls.AddRange(new Control[] {
-                    new Label { Text = "Objective ID:", Location = new System.Drawing.Point(20, 20), Width = 80 },
-                    txtId,
-                    new Label { Text = "Description:", Location = new System.Drawing.Point(20, 50), Width = 80 },
-                    txtDesc,
-                    new Label { Text = "Info Key:", Location = new System.Drawing.Point(20, 80), Width = 80 },
-                    txtInfoKey,
-                    new Label { Text = "Conditions:", Location = new System.Drawing.Point(20, 110), Width = 80 },
-                    clbConditions,
-                    btnOk
-                });
-                dialog.MinimumSize = new System.Drawing.Size(350, 300);
+                dialog.Text = title;
+                dialog.FormBorderStyle = FormBorderStyle.Sizable;
+                dialog.Size = new Size(600, 400);
+                dialog.MinimumSize = new Size(500, 300);
+                dialog.StartPosition = FormStartPosition.CenterParent;
+
+                var table = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4, Padding = new Padding(10) };
+                table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+                table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+
+                // ID
+                table.Controls.Add(new Label { Text = "ID:" }, 0, 0);
+                var txtId = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? obj.Attribute("Id")?.Value ?? "" : "NewObjective" };
+                table.Controls.Add(txtId, 1, 0);
+
+                // Description
+                table.Controls.Add(new Label { Text = "Description:" }, 0, 1);
+                var txtDesc = new TextBox { Dock = DockStyle.Fill, Multiline = true, Height = 80, Text = isEdit ? obj.Element("Description")?.Value ?? "" : "" };
+                table.Controls.Add(txtDesc, 1, 1);
+
+                // Info Key
+                table.Controls.Add(new Label { Text = "Info Key:" }, 0, 2);
+                var txtInfoKey = new TextBox { Dock = DockStyle.Fill, Text = isEdit ? obj.Element("Info")?.Attribute("Key")?.Value ?? "" : "" };
+                table.Controls.Add(txtInfoKey, 1, 2);
+
+                // Buttons
+                var btnOK = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 80 };
+                var btnCancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 80 };
+                dialog.CancelButton = btnCancel;
+
+                var btnPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 50, FlowDirection = FlowDirection.RightToLeft };
+                btnPanel.Controls.Add(btnCancel);
+                btnPanel.Controls.Add(btnOK);
+
+                dialog.Controls.Add(table);
+                dialog.Controls.Add(btnPanel);
+
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    item.Text = txtId.Text;
-                    item.SubItems[1].Text = txtDesc.Text;
-                    item.SubItems[2].Text = txtInfoKey.Text;
-                    item.SubItems[3].Text = "Edit";
-                    objElement.SetAttributeValue("Id", txtId.Text);
-                    objElement.Element("Description").Value = txtDesc.Text;
-                    objElement.Element("Info")?.SetAttributeValue("Key", txtInfoKey.Text);
-                    objElement.Elements().Where(el => el.Name.LocalName != "Description" && el.Name.LocalName != "Info").Remove();
-                    foreach (var cond in clbConditions.CheckedItems)
+                    if (!isEdit)
                     {
-                        var parts = cond.ToString().Split(':');
-                        if (parts[0] == "ThingPrefabCondition")
-                            objElement.Add(new XElement("ThingPrefabCondition",
-                                new XAttribute("PrefabName", parts[1]),
-                                new XAttribute("Count", parts[2])));
+                        obj = new XElement("WorldObjective");
+                        objectivesDoc.Root.Add(obj);
+                        row = dgvObjectives.Rows[dgvObjectives.Rows.Add()];
+                        row.Tag = obj;
                     }
+
+                    obj.SetAttributeValue("Id", txtId.Text);
+                    obj.Element("Description")?.Remove();
+                    obj.Add(new XElement("Description", txtDesc.Text));
+                    obj.Element("Info")?.Remove();
+                    if (!string.IsNullOrEmpty(txtInfoKey.Text))
+                        obj.Add(new XElement("Info", new XAttribute("Key", txtInfoKey.Text)));
+
+                    row.Cells[0].Value = txtId.Text;
+                    row.Cells[1].Value = txtDesc.Text;
+                    row.Cells[2].Value = txtInfoKey.Text;
+                    row.Tag = obj;
                 }
             }
         }
 
         private void btnDeleteObjective_Click(object sender, EventArgs e)
         {
-            if (lvObjectives.SelectedItems.Count == 0) return;
-            lvObjectives.Items.Remove(lvObjectives.SelectedItems[0]);
+            if (dgvObjectives.SelectedRows.Count == 0) return;
+
+            var row = dgvObjectives.SelectedRows[0];
+            var id = row.Cells[0].Value?.ToString();
+            if (string.IsNullOrEmpty(id)) return;
+
+            // Remove from world.xml
+            world.Elements("WorldObjective")
+                .FirstOrDefault(e => e.Attribute("Id")?.Value == id)?
+                .Remove();
+
+            // Remove from grid
+            dgvObjectives.Rows.Remove(row);
         }
 
         private void btnSaveWorldSettings_Click(object sender, EventArgs e)
@@ -863,21 +956,14 @@ namespace StationeersStructureXMLConverter
 
             // === Update Start Locations ===
             world.Elements("StartLocation").Remove();
-            foreach (ListViewItem item in lvStartLocations.Items)
-            {
-                world.Add((XElement)item.Tag);
-            }
-
+ 
             // === Save world.xml ===
             worldDoc.Save(worldXmlPath);
             conversionUserControl.AppendLog($"Saved world settings to {worldXmlPath}");
 
             // === Save Objectives ===
             objectivesDoc.Root?.Elements("WorldObjective").Remove();
-            foreach (ListViewItem item in lvObjectives.Items)
-            {
-                objectivesDoc.Root?.Add((XElement)item.Tag);
-            }
+            
             objectivesDoc.Save(objectivesPath);
             conversionUserControl.AppendLog($"Saved objectives to {objectivesPath}");
 
@@ -937,9 +1023,9 @@ namespace StationeersStructureXMLConverter
                         {
                             // Update or add entries
                             UpdateOrAddRecord(interfaceElement, txtNameKey.Text, txtNameValue.Text);
-                            UpdateOrAddRecord(interfaceElement, txtDescKey.Text, description);
-                            UpdateOrAddRecord(interfaceElement, txtShortDescKey.Text, summary);
-                            UpdateOrAddRecord(interfaceElement, txtSummary.Text, summary);
+                            UpdateOrAddRecord(interfaceElement, txtDescKey.Text, txtDescValue.Text);
+                            UpdateOrAddRecord(interfaceElement, txtShortDescKey.Text, txtShortDescValue.Text);
+                            UpdateOrAddRecord(interfaceElement, txtSummaryKey.Text, txtSummary.Text);
 
                             langDoc.Save(langFile);
                             conversionUserControl.AppendLog($"Updated language file {Path.GetFileName(langFile)}");

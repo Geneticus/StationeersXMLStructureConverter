@@ -18,9 +18,11 @@ namespace StationeersStructureXMLConverter
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabConversion = new System.Windows.Forms.TabPage();
             this.tabWorldEditor = new System.Windows.Forms.TabPage();
+            this.tabobjectiveBuilder = new System.Windows.Forms.TabPage();
             this.tabTools = new System.Windows.Forms.TabPage();
             this.conversionUserControl = new ConversionUserControl();
             this.worldEditorUserControl = new WorldEditorUserControl();
+            this.objectiveBuilderUserControl = new ObjectiveBuilderUserControl();
             this.toolsUserControl = new ToolsUserControl();
             this.tabControlMain.SuspendLayout();
             this.tabConversion.SuspendLayout();
@@ -32,6 +34,7 @@ namespace StationeersStructureXMLConverter
             // 
             this.tabControlMain.Controls.Add(this.tabConversion);
             this.tabControlMain.Controls.Add(this.tabWorldEditor);
+            this.tabControlMain.Controls.Add(this.tabobjectiveBuilder);
             this.tabControlMain.Controls.Add(this.tabTools);
             this.tabControlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
@@ -60,6 +63,16 @@ namespace StationeersStructureXMLConverter
             this.tabWorldEditor.UseVisualStyleBackColor = true;
             this.tabWorldEditor.TabIndex = 1;
             // 
+            // tabobjectiveBuilder
+            //
+            this.tabobjectiveBuilder.AutoScroll = true;
+            this.tabobjectiveBuilder.Controls.Add(this.objectiveBuilderUserControl);
+            this.tabobjectiveBuilder.Location = new System.Drawing.Point(4, 22);
+            this.tabobjectiveBuilder.Name = "tabobjectiveBuilder";
+            this.tabobjectiveBuilder.Text = "Objective Builder";
+            this.tabobjectiveBuilder.UseVisualStyleBackColor = true;
+            this.tabobjectiveBuilder.TabIndex = 2;
+            // 
             // tabTools
             // 
             this.tabTools.AutoScroll = true;
@@ -68,7 +81,7 @@ namespace StationeersStructureXMLConverter
             this.tabTools.Name = "tabTools";
             this.tabTools.Text = "Tools";
             this.tabTools.UseVisualStyleBackColor = true;
-            this.tabTools.TabIndex = 2;
+            this.tabTools.TabIndex = 3;
             // 
             // conversionUserControl
             // 
@@ -83,6 +96,13 @@ namespace StationeersStructureXMLConverter
             this.worldEditorUserControl.Location = new System.Drawing.Point(0, 0);
             this.worldEditorUserControl.Name = "worldEditorUserControl";
             this.worldEditorUserControl.TabIndex = 0;
+            // 
+            // objectiveBuilderUserControl
+            // 
+            this.objectiveBuilderUserControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.objectiveBuilderUserControl.Location = new System.Drawing.Point(0, 0);
+            this.objectiveBuilderUserControl.Name = "objectiveBuilderUserControl";
+            this.objectiveBuilderUserControl.TabIndex = 0;
             // 
             // toolsUserControl
             // 
@@ -107,15 +127,18 @@ namespace StationeersStructureXMLConverter
             this.tabControlMain.ResumeLayout(false);
             this.tabConversion.ResumeLayout(false);
             this.tabWorldEditor.ResumeLayout(false);
+            this.tabobjectiveBuilder.ResumeLayout(false);
             this.tabTools.ResumeLayout(false);
             this.ResumeLayout(false);
         }
         private System.Windows.Forms.TabControl tabControlMain;
         private System.Windows.Forms.TabPage tabConversion;
         private System.Windows.Forms.TabPage tabWorldEditor;
+        private System.Windows.Forms.TabPage tabobjectiveBuilder;
         private System.Windows.Forms.TabPage tabTools;
         private ConversionUserControl conversionUserControl;
         private WorldEditorUserControl worldEditorUserControl;
+        private ObjectiveBuilderUserControl objectiveBuilderUserControl;
         private ToolsUserControl toolsUserControl;
     }
 }
