@@ -16,6 +16,7 @@ namespace StationeersStructureXMLConverter
             InitializeComponent();
             WireEvents();
             EnsureGameDataRoot();
+            //SavePrefabList();
         }
 
         private void WireEvents()
@@ -514,30 +515,48 @@ namespace StationeersStructureXMLConverter
 
         private List<string> GetPrefabList()
         {
-            // From StreamingAssets/Data/*.xml
-            string dataPath = Path.Combine(modPath, "StreamingAssets", "Data");
-            if (!Directory.Exists(dataPath)) return new List<string>();
+            string path = Path.Combine(Application.StartupPath, "prefabs.txt");
+            if (!File.Exists(path)) return new List<string>();
+
+            return File.ReadAllLines(path)
+                .Where(line => !string.IsNullOrWhiteSpace(line))
+                .OrderBy(line => line)
+                .ToList();
+        }
+
+        private void SavePrefabList()
+        {
+            string prefabPath = @"T:\Stationeers Asset Dump\ExportedProject\Assets\GameObject";
+            string outputPath = Path.Combine(Application.StartupPath, "prefabs.txt");
+
+            if (!Directory.Exists(prefabPath))
+            {
+                MessageBox.Show("Prefab folder not found. Run extraction first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             var prefabs = new HashSet<string>();
 
-            foreach (string file in Directory.GetFiles(dataPath, "*.xml", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(prefabPath, "*.prefab", SearchOption.AllDirectories))
             {
                 try
                 {
-                    var doc = XDocument.Load(file);
-                    foreach (var prefab in doc.Root.Elements("Prefab"))
+                    string content = File.ReadAllText(file, System.Text.Encoding.UTF8);
+                    var matches = System.Text.RegularExpressions.Regex.Matches(content, @"m_Name: ([^\r\n]+)");
+                    foreach (System.Text.RegularExpressions.Match m in matches)
                     {
-                        string name = prefab.Attribute("Id")?.Value ?? prefab.Attribute("Name")?.Value;
-                        if (!string.IsNullOrEmpty(name))
+                        string name = m.Groups[1].Value.Trim();
+                        if (!string.IsNullOrEmpty(name) && !name.StartsWith(" "))
                             prefabs.Add(name);
                     }
                 }
-                catch { /* skip */ }
+                catch { }
             }
 
-            return prefabs.OrderBy(p => p).ToList();
+            var sorted = prefabs.OrderBy(p => p).ToList();
+            File.WriteAllLines(outputPath, sorted);
+            MessageBox.Show($"Saved {sorted.Count} prefabs to:\n{outputPath}", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
-
 
         #endregion
 
